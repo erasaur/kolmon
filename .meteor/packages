@@ -10,4 +10,5 @@ jquery
 accounts-ui
 iron:router
 accounts-password
+mizzao:user-status
 
