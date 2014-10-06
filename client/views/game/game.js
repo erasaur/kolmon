@@ -9,8 +9,9 @@ Template.game.rendered = function () {
   img = new Image();
 
   img.onload = function () {
-    var player = Players.findOne(Meteor.user().profile.playerId);
-    var position = player.position;
+    var playerId = Meteor.user().profile.playerId;
+    var position = Survivor.Players.getPosition(playerId);
+
     context.drawImage(img, position.x, position.y);
   }
   img.src = 'frank.png';
@@ -25,16 +26,15 @@ var update = function (dt) {
   context.clearRect (0, 0, 800, 800);
 
   // render each player to canvas
-  var players = Players.find().fetch(); // todo: return position only
-  players.forEach(function (player) {
+  // var players = .fetch(); // todo: return position only
+  Players.find().forEach(function (player) {
     context.drawImage(img, player.position.x, player.position.y);
   });
 
   if (!moving) return;
   // update position of current player
   var playerId = Meteor.user().profile.playerId;
-  var currentPlayer = Players.findOne(playerId);
-  var position = currentPlayer.position;
+  var position = Survivor.Players.getPosition(playerId);
   var offset = speed * dt;
 
   switch (moving) {
@@ -52,7 +52,7 @@ var update = function (dt) {
       break;
   }
 
-  Players.update(playerId, {$set: {'position': position}});
+  Survivor.Players.setPosition(playerId, position);
 }
 
 // main game loop
