@@ -2,23 +2,41 @@ var canvas;
 var context;
 var img;
 var speed = 250;
+var last; // time of last update
+var moving;
 
 Template.game.rendered = function () {
+  var playerId = Meteor.user().profile.playerId;
+  Survivor.Players.enterRoom(playerId, Session.get('currentRoom'));
+
   canvas = document.getElementById('gameCanvas');
   context = canvas.getContext('2d');
   img = new Image();
 
   img.onload = function () {
-    var playerId = Meteor.user().profile.playerId;
     var position = Survivor.Players.getPosition(playerId);
-
     context.drawImage(img, position.x, position.y);
   }
-  img.src = 'frank.png';
+  img.src = '/frank.png';
 
   // global events currently buggy, have to resort to jQuery for now
-  $(window).on("keydown", keyDown);
-  $(window).on("keyup", keyUp);
+  $(window).on('keydown', keyDown);
+  $(window).on('keyup', keyUp);
+
+  start();
+}
+
+var start = function () {
+  var w = window;
+  // better than setInterval apparently
+  requestAnimationFrame = w.requestAnimationFrame || 
+                          w.webkitRequestAnimationFrame || 
+                          w.msRequestAnimationFrame || 
+                          w.mozRequestAnimationFrame;
+
+  // initialize time of last update                      
+  last = Date.now(); 
+  main();
 }
 
 var update = function (dt) {
@@ -26,8 +44,7 @@ var update = function (dt) {
   context.clearRect (0, 0, 800, 800);
 
   // render each player to canvas
-  // var players = .fetch(); // todo: return position only
-  Players.find().forEach(function (player) {
+  Players.find({roomId: Session.get('currentRoom')}).forEach(function (player) {
     context.drawImage(img, player.position.x, player.position.y);
   });
 
@@ -66,18 +83,6 @@ var main = function () {
   requestAnimationFrame(main);
 }
 
-var w = window;
-// better than setInterval apparently
-requestAnimationFrame = w.requestAnimationFrame || 
-                        w.webkitRequestAnimationFrame || 
-                        w.msRequestAnimationFrame || 
-                        w.mozRequestAnimationFrame;
-
-// initialize time of last update                      
-var last = Date.now(); 
-var moving;
-main();
-
 function keyDown (event) {
   event.preventDefault();
   var key = event.keyCode || event.which;
@@ -93,7 +98,10 @@ function keyDown (event) {
   }
 }
 
-function keyUp (event) { moving = 0; }
+function keyUp (event) { 
+  event.preventDefault(); 
+  moving = 0; 
+}
 
 
 

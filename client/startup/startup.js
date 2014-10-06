@@ -1,3 +1,3 @@
 Meteor.startup(function() {
-  Session.setDefault('currentRoom', 1);
+  Session.setDefault('currentRoom', 0);
 });
