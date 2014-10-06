@@ -3,7 +3,7 @@ var context;
 var img;
 var speed = 250;
 var last; // time of last update
-var moving;
+var keysDown = {};
 
 Template.game.rendered = function () {
   var playerId = Meteor.user().profile.playerId;
@@ -48,26 +48,21 @@ var update = function (dt) {
     context.drawImage(img, player.position.x, player.position.y);
   });
 
-  if (!moving) return;
+  if (!keysDown) return;
   // update position of current player
   var playerId = Meteor.user().profile.playerId;
   var position = Survivor.Players.getPosition(playerId);
   var offset = speed * dt;
 
-  switch (moving) {
-    case 1: // moving up
-      position.y -= offset;
-      break;
-    case 2: // moving right
-      position.x += offset;
-      break;
-    case 3: // moving down
-      position.y += offset;
-      break;
-    case 4: // moving left
-      position.x -= offset;
-      break;
-  }
+  if (38 in keysDown) // moving up
+    position.y -= offset;
+  else if (40 in keysDown) // moving down
+    position.y += offset;
+    
+  if (39 in keysDown) // moving right  
+    position.x += offset;
+  else if (37 in keysDown) // moving left
+    position.x -= offset;
 
   Survivor.Players.setPosition(playerId, position);
 }
@@ -87,20 +82,14 @@ function keyDown (event) {
   event.preventDefault();
   var key = event.keyCode || event.which;
 
-  if (key === 38 || key === 87) { // up arrow or W
-    moving = 1;
-  } else if (key === 39 || key === 68) { // right arrow or D
-    moving = 2;
-  } else if (key === 40 || key === 83) { // down arrow or S
-    moving = 3;
-  } else if (key === 37 || key === 65) { // left arrow or A
-    moving = 4;
-  }
+  keysDown[key] = true;
 }
 
 function keyUp (event) { 
   event.preventDefault(); 
-  moving = 0; 
+  var key = event.keyCode || event.which;
+  
+  delete keysDown[key];
 }
 
 

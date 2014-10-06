@@ -27,7 +27,7 @@ Router.map(function() {
   this.route("game", {
     path: "/rooms/:_id",
     // , waitOn: function () {
-    //   return Meteor.subscribe("room", this.params._id); // players, entities, etc
+    //   return Meteor.subscribe("room", this.params._id); // players (filtered by online), entities, etc
     // },
     data: function () {
       Session.set("currentRoom", this.params._id);
