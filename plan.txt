@@ -1,0 +1,2 @@
+Issues:
+leaving the room after moving around a lot (queuing a lot of method calls) causes a significant delay as the server tries to catch up 

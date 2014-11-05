@@ -43,15 +43,16 @@ Router.route('/rooms/:_id', {
     // TODO: players (filtered by online), entities, etc
     return Meteor.subscribe('singleRoom', this.params._id); 
   },
-  data: function () {
+  onRun: function () {
     Session.set('currentRoom', this.params._id);
-    Meteor.call('enterRoom', this.params._id);
-
+    Meteor.call('enterRoom', Meteor.userId(), this.params._id);
+  },
+  data: function () {
     return Rooms.findOne(this.params._id);
   },
   onStop: function () {
     stop(); // stop the game
     Session.set('currentRoom');
-    Meteor.call('leaveRoom', this.params._id);
+    Meteor.call('leaveRoom', Meteor.userId(), this.params._id);
   }
 });

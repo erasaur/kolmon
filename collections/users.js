@@ -101,14 +101,38 @@ Schema.User = new SimpleSchema({
 
 Meteor.users.attachSchema(Schema.User);
 
+Meteor.users.allow({
+  update: function (userId, user) {
+    return userId === user._id;
+  },
+  remove: function (userId, user) {
+    return userId === user._id;
+  }
+});
+
+Meteor.users.deny({
+  update: function (userId, user, fields) {
+    // TODO: how to make sure players don't give themselves buffs/teleport?
+    // buffs can practically be put in server, but not changing position
+    var editable = ['profile', 'game'];
+    return _.difference(fields, editable).length > 0;
+  }
+});
+
+setPosition = function (userId, position) {
+  Meteor.users.update(userId, { 
+    $set: { 'game.position': position }
+  });
+};
+
 Meteor.methods({
-  setPosition: function (position) {
-    Meteor.users.update(Meteor.userId(), { 
+  setPosition: function (userId, position) {
+    Meteor.users.update(userId, { 
       $set: { 'game.position': position }
     });
   },
-  enterRoom: function (roomId) { 
-    var userId = Meteor.userId();
+  enterRoom: function (userId, roomId) { 
+    console.log('enterroom');
     var defaults = { 
       'position': { 'x': 400, 'y': 400 }, 
       'roomId': roomId, 
@@ -120,8 +144,7 @@ Meteor.methods({
 
     Meteor.call('addUser', roomId, userId);
   },
-  leaveRoom: function (roomId) { 
-    var userId = Meteor.userId();
+  leaveRoom: function (userId, roomId) { 
     Meteor.users.update(userId, { $set: { 'game.roomId': 'rooms' } });
 
     Meteor.call('removeUser', roomId, userId);

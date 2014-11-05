@@ -7,7 +7,7 @@ var keysDown = {};
 var requestId;
 
 Template.room.rendered = function () {
-  Meteor.call('enterRoom', Session.get('currentRoom'));
+  Meteor.call('enterRoom', Meteor.userId(), Session.get('currentRoom'));
 
   canvas = document.getElementById('game-canvas');
   context = canvas.getContext('2d');
@@ -24,7 +24,7 @@ Template.room.rendered = function () {
   $(window).on('keyup', keyUp);
 
   start();
-}
+};
 
 var start = function () {
   var w = window;
@@ -79,11 +79,11 @@ var update = function (dt) {
   else if (37 in keysDown) // moving left
     position.x -= offset;
 
-  Meteor.call('setPosition', position);
+  Meteor.call('setPosition', Meteor.userId(), position);
 };
 
 // main game loop
-var main = function () {
+function main () {
   var now = Date.now();
   var dt = now - last; // time since last update
 
@@ -91,7 +91,7 @@ var main = function () {
 
   last = now;
   requestId = requestAnimationFrame(main);
-};
+}
 
 function keyDown (event) {
   event.preventDefault();
