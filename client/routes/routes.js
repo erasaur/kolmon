@@ -44,14 +44,14 @@ Router.route('/rooms/:_id', {
     return Meteor.subscribe('singleRoom', this.params._id); 
   },
   data: function () {
-    var userId = Meteor.userId();
-    Survivor.Users.enterRoom(userId, this.params._id);
+    Session.set('currentRoom', this.params._id);
+    Meteor.call('enterRoom', this.params._id);
 
     return Rooms.findOne(this.params._id);
   },
   onStop: function () {
-    var userId = Meteor.userId();
     stop(); // stop the game
-    Survivor.Users.leaveRoom(userId, this.params._id);
+    Session.set('currentRoom');
+    Meteor.call('leaveRoom', this.params._id);
   }
 });

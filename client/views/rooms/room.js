@@ -7,7 +7,7 @@ var keysDown = {};
 var requestId;
 
 Template.room.rendered = function () {
-  Survivor.Users.enterRoom(Session.get('currentRoom'));
+  Meteor.call('enterRoom', Session.get('currentRoom'));
 
   canvas = document.getElementById('game-canvas');
   context = canvas.getContext('2d');
@@ -79,7 +79,7 @@ var update = function (dt) {
   else if (37 in keysDown) // moving left
     position.x -= offset;
 
-  Survivor.Users.setPosition(position);
+  Meteor.call('setPosition', position);
 };
 
 // main game loop

@@ -4,7 +4,7 @@ Accounts.onCreateUser(function (options, user) {
       x: 400, 
       y: 400
     },
-    roomId: 0
+    roomId: 'rooms'
   };
 
   user.game = defaults;
