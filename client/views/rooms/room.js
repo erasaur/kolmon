@@ -5,11 +5,11 @@ var speed = 250;
 var last; // time of last update
 var keysDown = {};
 
-Template.game.rendered = function () {
+Template.room.rendered = function () {
   var playerId = Meteor.user().profile.playerId;
   Survivor.Players.enterRoom(playerId, Session.get('currentRoom'));
 
-  canvas = document.getElementById('gameCanvas');
+  canvas = document.getElementById('game-canvas');
   context = canvas.getContext('2d');
   img = new Image();
 

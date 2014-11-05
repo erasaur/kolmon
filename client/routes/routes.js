@@ -8,26 +8,27 @@ Router.plugin('dataNotFound', { dataNotFoundTemplate: 'notFound' });
 
 Router.onBeforeAction(function () {
   if (!Meteor.loggingIn() && !Meteor.user())
-    this.render('home');
+    this.redirect('landing');
   else
     this.next();
 
-}, { except: ['home'] });
+}, { except: ['landing'] });
 
 Router.onBeforeAction(function () {
   if (Meteor.user()) {
-    if (!!Session.get('currentRoom'))
-      this.render('game');
+    var room = Session.get('currentRoom');
+    if (room)
+      this.redirect('room', { _id: room });
     else 
-      this.render('rooms');
+      this.redirect('rooms');
   }
-  else
+  else 
     this.next();
 
-}, { only: ['home'] });
+}, { only: ['landing'] });
 
 Router.route('/', {
-  name: 'home'
+  name: 'landing'
 });
 Router.route('/rooms', {
   // waitOn: function () {
@@ -35,12 +36,12 @@ Router.route('/rooms', {
   // }
 });
 Router.route('/rooms/:_id', {
-  name: 'game',
+  name: 'room',
   // waitOn: function () {
   //   return Meteor.subscribe('room', this.params._id); // players (filtered by online), entities, etc
   // },
   data: function () {
     Session.set('currentRoom', this.params._id);
-    //return Rooms.findOne(this.params._id);
+    return Rooms.findOne(this.params._id);
   }
 });
