@@ -13,16 +13,9 @@
 
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse" id="main-nav">
-        {{#if currentUser}}
-          <ul class="nav navbar-nav navbar-right">
-            <form class="navbar-form">
-              <button id="js-logout" class="btn btn-primary" type="submit">Log Out</button>
-            </form>
-          </ul>
-          <p class="navbar-text navbar-right">Welcome, {{currentUser.username}}!</p>
-        {{else}}
-          {{> loginButtons}}
-        {{/if}}
+        <ul class="nav navbar-nav navbar-right">
+          <li class="navbar-text">{{> loginButtons align="right"}}</li>
+        </ul>
       </div>
     </div>
   </nav>
