@@ -9,8 +9,10 @@ Router.plugin('dataNotFound', { dataNotFoundTemplate: 'notFound' });
 Router.onBeforeAction(function () {
   if (!Meteor.loggingIn() && !Meteor.user())
     this.render('home');
+  else
+    this.next();
 
-}, {except: ['home']});
+}, { except: ['home'] });
 
 Router.onBeforeAction(function () {
   if (Meteor.user()) {
@@ -19,8 +21,10 @@ Router.onBeforeAction(function () {
     else 
       this.render('rooms');
   }
+  else
+    this.next();
 
-}, {only: ['home']});
+}, { only: ['home'] });
 
 Router.route('/', {
   name: 'home'
