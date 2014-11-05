@@ -1,0 +1,3 @@
+// Meteor.publish('singleRoom', function () {
+  
+// });

@@ -1,4 +1,6 @@
 <template name="game">
+  {{> contentFor region="nav" template="nav"}}
+
   <a href="{{pathFor 'rooms'}}">Lobby</a>
   <canvas id="gameCanvas" width="800" height="800"></canvas>
 </template>

@@ -1,4 +1,6 @@
 <template name="rooms">
+  {{> contentFor region="nav" template="nav"}}
+
   {{#each rooms}}
     <a href="{{pathFor 'game'}}">{{name}}</a>
   {{/each}}
