@@ -4,19 +4,19 @@ var img;
 var speed = 250;
 var last; // time of last update
 var keysDown = {};
+var requestId;
 
 Template.room.rendered = function () {
-  var playerId = Meteor.user().profile.playerId;
-  Survivor.Players.enterRoom(playerId, Session.get('currentRoom'));
+  Meteor.call('enterRoom', Meteor.userId(), Session.get('currentRoom'));
 
   canvas = document.getElementById('game-canvas');
   context = canvas.getContext('2d');
   img = new Image();
 
   img.onload = function () {
-    var position = Survivor.Players.getPosition(playerId);
+    var position = Meteor.user() && Meteor.user().game.position;
     context.drawImage(img, position.x, position.y);
-  }
+  };
   img.src = '/frank.png';
 
   // global events currently buggy, have to resort to jQuery for now
@@ -24,7 +24,7 @@ Template.room.rendered = function () {
   $(window).on('keyup', keyUp);
 
   start();
-}
+};
 
 var start = function () {
   var w = window;
@@ -32,26 +32,41 @@ var start = function () {
   requestAnimationFrame = w.requestAnimationFrame || 
                           w.webkitRequestAnimationFrame || 
                           w.msRequestAnimationFrame || 
-                          w.mozRequestAnimationFrame;
+                          w.mozRequestAnimationFrame || 
+                          function (callback) {
+                            w.setTimeout(callback, 1000 / 60);
+                          };
 
   // initialize time of last update                      
   last = Date.now(); 
-  main();
-}
 
+  if (!requestId)
+    main();
+};
+
+stop = function () {
+  if (requestId) {
+    window.cancelAnimationFrame(requestId);
+    requestId = null;
+  }
+};
+
+// update positions of players
 var update = function (dt) {
   if (!context) return;
-  context.clearRect (0, 0, 800, 800);
+  context.clearRect(0, 0, 800, 800); // clear the canvas
+
+  var users = Meteor.users.find({ 'game.roomId': Session.get('currentRoom') });
 
   // render each player to canvas
-  Players.find({roomId: Session.get('currentRoom')}).forEach(function (player) {
-    context.drawImage(img, player.position.x, player.position.y);
+  users.forEach(function (user) {
+    context.drawImage(img, user.game.position.x, user.game.position.y);
   });
 
   if (!keysDown) return;
+
   // update position of current player
-  var playerId = Meteor.user().profile.playerId;
-  var position = Survivor.Players.getPosition(playerId);
+  var position = Meteor.user() && Meteor.user().game.position;
   var offset = speed * dt;
 
   if (38 in keysDown) // moving up
@@ -64,18 +79,18 @@ var update = function (dt) {
   else if (37 in keysDown) // moving left
     position.x -= offset;
 
-  Survivor.Players.setPosition(playerId, position);
-}
+  Meteor.call('setPosition', Meteor.userId(), position);
+};
 
 // main game loop
-var main = function () {
+function main () {
   var now = Date.now();
   var dt = now - last; // time since last update
 
   update(dt/1000); // divide by 1000 ms
 
   last = now;
-  requestAnimationFrame(main);
+  requestId = requestAnimationFrame(main);
 }
 
 function keyDown (event) {

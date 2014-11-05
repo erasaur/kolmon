@@ -1,10 +1,10 @@
 Rooms = new Mongo.Collection('rooms');
 
-Survivor.Rooms = {
-  addPlayer: function (roomId, playerId) {
-    Rooms.update(roomId, { $push: { 'players': playerId } });
+Meteor.methods({
+  addUser: function (roomId, userId) {
+    Rooms.update(roomId, { $addToSet: { 'userIds': userId } });
   },
-  removePlayer: function (roomId, playerId) {
-    Rooms.update(roomId, { $pull: { 'players': playerId } });
+  removeUser: function (roomId, userId) {
+    Rooms.update(roomId, { $pull: { 'userIds': userId } });
   }
-};
+});
