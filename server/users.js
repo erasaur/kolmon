@@ -1,19 +1,13 @@
 Accounts.onCreateUser(function (options, user) {
-  var player = {
-    userId: user._id, 
+  var defaults = {
     position: {
       x: 400, 
-      y: 400,
-      angle: 0
+      y: 400
     },
     roomId: 0
   };
 
-  var playerId = Players.insert(player);
-
-  user.profile = {
-    playerId: playerId
-  };
+  user.game = defaults;
 
   return user;
 });

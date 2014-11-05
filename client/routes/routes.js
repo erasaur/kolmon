@@ -27,21 +27,31 @@ Router.onBeforeAction(function () {
 
 }, { only: ['landing'] });
 
+Meteor.subscribe('currentUser');
+
 Router.route('/', {
   name: 'landing'
 });
 Router.route('/rooms', {
-  // waitOn: function () {
-  //   return Meteor.subscribe('rooms');
-  // }
+  waitOn: function () {
+    return Meteor.subscribe('allRooms'); // TODO: limit
+  }
 });
 Router.route('/rooms/:_id', {
   name: 'room',
-  // waitOn: function () {
-  //   return Meteor.subscribe('room', this.params._id); // players (filtered by online), entities, etc
-  // },
+  waitOn: function () {
+    // TODO: players (filtered by online), entities, etc
+    return Meteor.subscribe('singleRoom', this.params._id); 
+  },
   data: function () {
-    Session.set('currentRoom', this.params._id);
+    var userId = Meteor.userId();
+    Survivor.Users.enterRoom(userId, this.params._id);
+
     return Rooms.findOne(this.params._id);
+  },
+  onStop: function () {
+    var userId = Meteor.userId();
+    stop(); // stop the game
+    Survivor.Users.leaveRoom(userId, this.params._id);
   }
 });
