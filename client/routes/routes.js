@@ -8,7 +8,7 @@ Router.plugin('dataNotFound', { dataNotFoundTemplate: 'notFound' });
 
 Router.onBeforeAction(function () {
   if (!Meteor.loggingIn() && !Meteor.user())
-    this.redirect('landing');
+    this.render('landing');
   else
     this.next();
 
@@ -18,12 +18,11 @@ Router.onBeforeAction(function () {
   if (Meteor.user()) {
     var room = Session.get('currentRoom');
     if (room)
-      this.redirect('room', { _id: room });
+      this.render('room', { _id: room });
     else 
-      this.redirect('rooms');
+      this.render('rooms');    
   }
-  else 
-    this.next();
+  this.next();
 
 }, { only: ['landing'] });
 
@@ -46,6 +45,7 @@ Router.route('/rooms/:_id', {
   onRun: function () {
     Session.set('currentRoom', this.params._id);
     Meteor.call('enterRoom', Meteor.userId(), this.params._id);
+    this.next();
   },
   data: function () {
     return Rooms.findOne(this.params._id);
