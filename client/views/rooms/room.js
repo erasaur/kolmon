@@ -27,26 +27,30 @@ Template.room.rendered = function () {
 };
 
 var start = function () {
-  var w = window;
+  // var w = window;
   // better than setInterval apparently
-  requestAnimationFrame = w.requestAnimationFrame || 
-                          w.webkitRequestAnimationFrame || 
-                          w.msRequestAnimationFrame || 
-                          w.mozRequestAnimationFrame || 
-                          function (callback) {
-                            w.setTimeout(callback, 1000 / 60);
-                          };
+  // requestAnimationFrame = w.requestAnimationFrame || 
+  //                         w.webkitRequestAnimationFrame || 
+  //                         w.msRequestAnimationFrame || 
+  //                         w.mozRequestAnimationFrame || 
+  //                         function (callback) {
+  //                           w.setTimeout(callback, 1000 / 60);
+  //                         };
 
   // initialize time of last update                      
   last = Date.now(); 
 
-  if (!requestId)
-    main();
+  // if (!requestId)
+  stop();
+  requestId = Meteor.setInterval(function () {
+    main();    
+  }, 20);
 };
 
 stop = function () {
   if (requestId) {
-    window.cancelAnimationFrame(requestId);
+    // window.cancelAnimationFrame(requestId);
+    Meteor.clearInterval(requestId);
     requestId = null;
   }
 };
@@ -56,6 +60,7 @@ var update = function (dt) {
   if (!context) return;
   context.clearRect(0, 0, 800, 800); // clear the canvas
 
+  // TODO: move this outside of loop and update once every x seconds?
   var users = Meteor.users.find({ 'game.roomId': Session.get('currentRoom') });
 
   // render each player to canvas
@@ -63,7 +68,7 @@ var update = function (dt) {
     context.drawImage(img, user.game.position.x, user.game.position.y);
   });
 
-  if (!keysDown) return;
+  if (_.isEmpty(keysDown)) return;
 
   // update position of current player
   var position = Meteor.user() && Meteor.user().game.position;
@@ -79,7 +84,10 @@ var update = function (dt) {
   else if (37 in keysDown) // moving left
     position.x -= offset;
 
-  Meteor.call('setPosition', Meteor.userId(), position);
+  // Meteor.call('setPosition', Meteor.userId(), position);
+  Meteor.users.update(Meteor.userId(), { 
+    $set: { 'game.position': position }
+  });
 };
 
 // main game loop
@@ -90,7 +98,7 @@ function main () {
   update(dt/1000); // divide by 1000 ms
 
   last = now;
-  requestId = requestAnimationFrame(main);
+  // requestId = requestAnimationFrame(main);
 }
 
 function keyDown (event) {
