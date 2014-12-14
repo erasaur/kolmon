@@ -85,7 +85,6 @@ var update = function (dt) {
     } else {
       players[user._id] = user.game.position;
     }
-    console.log('drawing');
     context.drawImage(img, players[user._id].x, players[user._id].y, PX_PER_CELL, PX_PER_CELL);
   });
 };
@@ -94,8 +93,6 @@ var update = function (dt) {
 function main () {
   var now = Date.now();
   var dt = now - last; // time since last update
-
-  update(dt);
 
   // move should have completed, so update position
   if (startedMoving && now >= startedMoving + MOVE_TIME) {
@@ -122,6 +119,7 @@ function main () {
     direction = 0;
   }
 
+  update(dt);
   last = now;
 }
 
