@@ -51,7 +51,6 @@ Router.route('/rooms/:_id', {
     return Rooms.findOne(this.params._id);
   },
   onStop: function () {
-    stop(); // stop the game
     Session.set('currentRoom');
     Meteor.call('leaveRoom', Meteor.userId(), this.params._id);
   }

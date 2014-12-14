@@ -1,28 +1,40 @@
 var canvas, context, img;
-var speed = 250;
+
 var last; // time of last update
-var position; // current player position
 var requestId; // id returned by setInterval
-var keysDown = {};
+
+var direction = 0;
+var startedMoving;
+
+// TODO: clear out players that disconnect
+var players = {}; // local copy of player positions
+
+var MOVE_TIME = 500; // 500 ms to travel 1 cell
+var UPDATE_STEP = 50;
 
 Template.room.rendered = function () {
-  Meteor.call('enterRoom', Meteor.userId(), Session.get('currentRoom'));
+  var user = Meteor.user();
+  if (!user) return;
 
-  canvas = document.getElementById('game-canvas');
+  Meteor.call('enterRoom', user._id, Session.get('currentRoom'));
+
+  canvas = this.find('#game-canvas');
   context = canvas.getContext('2d');
   img = new Image();
 
   img.onload = function () {
-    var position = Meteor.user() && Meteor.user().game.position;
+    var position = user.game.position;
     context.drawImage(img, position.x, position.y);
   };
   img.src = '/frank.png';
 
-  // global events currently buggy, have to resort to jQuery for now
   $(window).on('keydown', keyDown);
-  $(window).on('keyup', keyUp);
 
   start();
+};
+
+Template.room.destroyed = function () {
+  stop();
 };
 
 var start = function () {
@@ -30,10 +42,10 @@ var start = function () {
   last = Date.now(); 
 
   stop();
-  requestId = Meteor.setInterval(main, 30);
+  requestId = Meteor.setInterval(main, UPDATE_STEP);
 };
 
-stop = function () {
+var stop = function () {
   if (requestId) {
     Meteor.clearInterval(requestId);
     requestId = null;
@@ -43,33 +55,38 @@ stop = function () {
 // update positions of players
 var update = function (dt) {
   if (!context) return;
-  context.clearRect(0, 0, 800, 800); // clear the canvas
+  context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // clear the canvas
 
-  var users = Meteor.users.find({ 'game.roomId': Session.get('currentRoom') });
+  var users = Meteor.users.find({ 'game.roomId': Session.get('currentRoom') }, {
+    fields: { 'game': 1 }
+  });
 
   // render each player to canvas
   users.forEach(function (user) {
-    context.drawImage(img, user.game.position.x, user.game.position.y, 30, 30);
-  });
+    players[user._id] = players[user._id] || user.game.position;
 
-  if (_.isEmpty(keysDown)) return;
+    if (user.game.direction) {
+      var offset = (dt / MOVE_TIME) * PX_PER_CELL; // fraction of time * total dist
 
-  // update position of current player
-  var position = Meteor.user() && Meteor.user().game.position;
-  var offset = speed * dt;
-
-  if (keysDown[38]) // moving up
-    position.y -= offset;
-  else if (keysDown[40]) // moving down
-    position.y += offset;
-  else if (keysDown[39]) // moving right  
-    position.x += offset;
-  else if (keysDown[37]) // moving left
-    position.x -= offset;
-
-  // Meteor.call('setPosition', Meteor.userId(), position);
-  Meteor.users.update(Meteor.userId(), { 
-    $set: { 'game.position': position }
+      switch (user.game.direction) {
+        case 1: 
+          players[user._id].y -= offset;
+          break;
+        case 2:
+          players[user._id].x += offset;
+          break;
+        case 3:
+          players[user._id].y += offset;
+          break;
+        case 4:
+          players[user._id].x -= offset;
+          break;
+      }
+    } else {
+      players[user._id] = user.game.position;
+    }
+    console.log('drawing');
+    context.drawImage(img, players[user._id].x, players[user._id].y, PX_PER_CELL, PX_PER_CELL);
   });
 };
 
@@ -78,23 +95,50 @@ function main () {
   var now = Date.now();
   var dt = now - last; // time since last update
 
-  update(dt/1000); // divide by 1000 ms
+  update(dt);
+
+  // move should have completed, so update position
+  if (startedMoving && now >= startedMoving + MOVE_TIME) {
+    var user = Meteor.user();
+    var newPos = user.game.position;
+
+    switch (direction) {
+      case 1: 
+        newPos.y -= PX_PER_CELL;
+        break;
+      case 2:
+        newPos.x += PX_PER_CELL;
+        break;
+      case 3:
+        newPos.y += PX_PER_CELL;
+        break;
+      case 4:
+        newPos.x -= PX_PER_CELL;
+        break;
+    }
+
+    Meteor.call('setPosition', user._id, newPos);
+    startedMoving = null;
+    direction = 0;
+  }
 
   last = now;
 }
 
 function keyDown (event) {
   event.preventDefault();
-  var key = event.keyCode || event.which;
 
-  keysDown[key] = true;
-}
-
-function keyUp (event) { 
-  event.preventDefault(); 
+  var user = Meteor.user();
   var key = event.keyCode || event.which;
-  
-  keysDown[key] = null;
+  var move = { 38: 1, 39: 2, 40: 3, 37: 4 }[key];
+
+  // if moving already or invalid key
+  if (!user || user.game.direction || !move) return;
+
+  // TODO: only if valid move (e.g no wall), update direction
+  direction = move;
+  startedMoving = last;
+  Meteor.call('setDirection', user._id, direction);
 }
 
 
