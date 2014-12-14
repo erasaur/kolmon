@@ -11,38 +11,6 @@ Schema.UserProfile = new SimpleSchema({
   }
 });
 
-Schema.UserStats = new SimpleSchema({
-  killCount: {
-    type: Number,
-    min: 0,
-    defaultValue: 0
-  },
-  deathCount: {
-    type: Number,
-    min: 0,
-    defaultValue: 0
-  },
-  isAdmin: {
-    type: Boolean,
-    defaultValue: false
-  },
-  isPremium: {
-    type: Boolean,
-    defaultValue: false
-  }
-});
-
-Schema.UserPosition = new SimpleSchema({
-  x: {
-    type: Number,
-    decimal: true
-  },
-  y: {
-    type: Number,
-    decimal: true
-  }
-})
-
 Schema.UserGame = new SimpleSchema({
   roomId: {
     type: String,
@@ -51,7 +19,9 @@ Schema.UserGame = new SimpleSchema({
   position: {
     type: Schema.UserPosition
   },
-  // TODO: equips, buffs, etc.
+  direction: { // 0 - static, 1 - up, 2 - right, 3 - down, 4 - left
+    type: Number
+  }
 });
 
 Schema.User = new SimpleSchema({
@@ -86,9 +56,6 @@ Schema.User = new SimpleSchema({
     type: Object,
     blackbox: true
   },
-  stats: { // public but uneditable
-    type: Schema.UserStats
-  },
   game: {
     type: Schema.UserGame
   },
@@ -122,29 +89,34 @@ Meteor.users.allow({
 // });
 
 Meteor.methods({
-  // setPosition: function (userId, position) {
-  //   Meteor.users.update(userId, { 
-  //     $set: { 'game.position': position }
-  //   });
-  // },
+  setPosition: function (userId, position) {
+    Meteor.users.update(userId, { 
+      $set: { 'game.position': position, 'game.direction': 0 }
+    });
+  },
+  setDirection: function (userId, direction) {
+    Meteor.users.update(userId, {
+      $set: { 'game.direction': direction }
+    });
+  },
   enterRoom: function (userId, roomId) { 
-    console.log('enterroom');
+    if (!this.userId) return;
+
+    var room = Rooms.findOne(roomId);
+    if (!room || !room.slots) 
+      throw new Meteor.Error('room-error', 'Room does not exist or has no slots.');
+
     var defaults = { 
       'position': { 'x': 400, 'y': 400 }, 
-      'roomId': roomId, 
-      // TODO: equips, buffs, etc.
+      'roomId': roomId,
+      'direction': 0
     };
-    Meteor.users.update(userId, {
-      $set: { 'game': defaults } 
-    });
 
-    Rooms.update(roomId, { $addToSet: { 'userIds': userId } });
-    // Meteor.call('addUser', roomId, userId);
+    Meteor.users.update(userId, { $set: { 'game': defaults } });
+    Rooms.update(roomId, { $addToSet: { 'userIds': userId }, $inc: { 'slots': -1 } });
   },
   leaveRoom: function (userId, roomId) { 
     Meteor.users.update(userId, { $set: { 'game.roomId': 'rooms' } });
-
-    Rooms.update(roomId, { $pull: { 'userIds': userId } });
-    // Meteor.call('removeUser', roomId, userId);
+    Rooms.update(roomId, { $pull: { 'userIds': userId }, $inc: { 'slots': 1 } });
   }
 });
