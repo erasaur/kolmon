@@ -100,7 +100,7 @@ Meteor.methods({
     });
   },
   enterRoom: function (userId, roomId) { 
-    if (!this.userId) return;
+    if (!userId) return;
 
     var room = Rooms.findOne(roomId);
     if (!room || !room.slots) 

@@ -44,7 +44,6 @@ Router.route('/rooms/:_id', {
   },
   onRun: function () {
     Session.set('currentRoom', this.params._id);
-    Meteor.call('enterRoom', Meteor.userId(), this.params._id);
     this.next();
   },
   data: function () {

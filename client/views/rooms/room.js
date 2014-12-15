@@ -1,5 +1,4 @@
-var canvas, context, img;
-
+var bgContext, playerContext;
 var last; // time of last update
 var requestId; // id returned by setInterval
 
@@ -10,7 +9,69 @@ var startedMoving;
 var players = {}; // local copy of player positions
 
 var MOVE_TIME = 500; // 500 ms to travel 1 cell
-var UPDATE_STEP = 50;
+var UPDATE_STEP = 50; // ms per update
+
+var options; // default options for creating new player
+
+function Player (options) {
+  var image = new Image();
+  image.src = options.image;
+  this.image = image;
+
+  this.context = options.context;
+  this.width = options.width;
+  this.height = options.height;
+  this.position = options.position;
+  this.direction = options.direction;
+
+  this.frameIndex = 0; // current frame in spritesheet
+  this.stepsSinceLast = 0; // steps since last frame change
+  this.numFrames = options.numFrames || 1; // how many frames
+  this.stepsPerFrame = MOVE_TIME / this.numFrames; // how many steps before frame change
+}
+
+Player.prototype.move = function (dir, offset) {
+  switch (dir) {
+    case 1: 
+      this.position.y -= offset;
+      break;
+    case 2:
+      this.position.x += offset;
+      break;
+    case 3:
+      this.position.y += offset;
+      break;
+    case 4:
+      this.position.x -= offset;
+      break;
+  }
+};
+
+Player.prototype.render = function () {
+  if (this.direction) {
+    this.stepsSinceLast++;
+
+    if (this.stepsSinceLast > this.stepsPerFrame) {
+      this.frameIndex = this.frameIndex >= numFrames - 1 ? 0 : this.frameIndex + 1;
+      this.stepsSinceLast = 0;
+    }  
+  } else {
+    this.frameIndex = 0;
+    this.stepsSinceLast = 0;
+  }
+
+  this.context.drawImage(
+    this.image, 
+    this.frameIndex * this.width / this.numFrames, // source x in spritesheet
+    0, // source y in spritesheet
+    this.width / this.numFrames, 
+    this.height, 
+    this.position.x, 
+    this.position.y, 
+    this.width / this.numFrames, 
+    this.height 
+  );
+};
 
 Template.room.rendered = function () {
   var user = Meteor.user();
@@ -18,21 +79,31 @@ Template.room.rendered = function () {
 
   Meteor.call('enterRoom', user._id, Session.get('currentRoom'));
 
-  canvas = this.find('#game-canvas');
-  context = canvas.getContext('2d');
-  img = new Image();
+  var bgCanvas = this.find('#canvas-background');
+  var playerCanvas = this.find('#canvas-players');
 
-  img.onload = function () {
-    var position = user.game.position;
-    context.drawImage(img, position.x, position.y);
+  bgContext = bgCanvas.getContext('2d');  
+  playerContext = playerCanvas.getContext('2d');
+
+  options = {
+    context: playerContext,
+    image: '/frank.png',
+    width: PX_PER_CELL,
+    height: PX_PER_CELL,
+    position: user.game.position
   };
-  img.src = '/frank.png';
+
+  players[user._id] = new Player(options);
+  players[user._id].render();
 
   $(window).on('keydown', keyDown);
 
   start();
 };
-
+Template.room.helpers({
+  canvasWidth: CANVAS_WIDTH,
+  canvasHeight: CANVAS_HEIGHT
+});
 Template.room.destroyed = function () {
   stop();
 };
@@ -54,8 +125,8 @@ var stop = function () {
 
 // update positions of players
 var update = function (dt) {
-  if (!context) return;
-  context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // clear the canvas
+  // bgContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // clear the canvas
+  playerContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   var users = Meteor.users.find({ 'game.roomId': Session.get('currentRoom') }, {
     fields: { 'game': 1 }
@@ -63,29 +134,33 @@ var update = function (dt) {
 
   // render each player to canvas
   users.forEach(function (user) {
-    players[user._id] = players[user._id] || user.game.position;
-
-    if (user.game.direction) {
-      var offset = (dt / MOVE_TIME) * PX_PER_CELL; // fraction of time * total dist
-
-      switch (user.game.direction) {
-        case 1: 
-          players[user._id].y -= offset;
-          break;
-        case 2:
-          players[user._id].x += offset;
-          break;
-        case 3:
-          players[user._id].y += offset;
-          break;
-        case 4:
-          players[user._id].x -= offset;
-          break;
-      }
-    } else {
-      players[user._id] = user.game.position;
+    if (!players[user._id]) {
+      options.position = user.game.position;
+      players[user._id] = new Player(options);
     }
-    context.drawImage(img, players[user._id].x, players[user._id].y, PX_PER_CELL, PX_PER_CELL);
+
+    (function (player, dir, pos) {
+      if (dir) {
+        var offset = (dt / MOVE_TIME) * PX_PER_CELL; // fraction of time * total dist
+
+        player.move(dir, offset);
+      } else {
+        player.position = pos;
+      }  
+      
+      player.render();
+    })(players[user._id], user.game.direction, user.game.position);
+
+
+    // if (user.game.direction) {
+    //   var offset = (dt / MOVE_TIME) * PX_PER_CELL; // fraction of time * total dist
+
+    //   players[user._id].move(user.game.direction, offset);
+    // } else {
+    //   players[user._id].position = user.game.position;
+    // }
+
+    // context.drawImage(img, players[user._id].position.x, players[user._id].position.y, PX_PER_CELL, PX_PER_CELL);
   });
 };
 
