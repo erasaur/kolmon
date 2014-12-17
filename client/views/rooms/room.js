@@ -60,7 +60,7 @@ Player.prototype.render = function () {
     this.frameIndex = 0;
     this.stepsSinceLast = 0;
   }
-  
+
   var width = Math.max(1, this.width / this.numFrames);
   var height = Math.max(1, this.height);
 
@@ -119,10 +119,11 @@ Template.room.helpers({
       var minY = u.position.y - PX_PER_CELL;
       var maxY = u.position.y + PX_PER_CELL;
 
+      console.log(minX, maxX);
+
       var res = Meteor.users.find({ 'game.roomId': u.roomId, $and: [
         { 'game.position.x': { $gte: minX } }, 
-        { 'game.position.x': { $lte: maxX } }
-      ], $and: [
+        { 'game.position.x': { $lte: maxX } },
         { 'game.position.y': { $gte: minY } },
         { 'game.position.y': { $lte: maxY } }
       ]}, { fields: { '_id': 1, 'username': 1 } }).fetch();
