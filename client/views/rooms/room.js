@@ -14,6 +14,7 @@ var UPDATE_STEP = 50; // ms per update
 var options; // default options for creating new player
 
 function Player (options) {
+  // TODO: change image based on direction
   var image = new Image();
   image.src = options.image;
   this.image = image;
@@ -150,17 +151,6 @@ var update = function (dt) {
       
       player.render();
     })(players[user._id], user.game.direction, user.game.position);
-
-
-    // if (user.game.direction) {
-    //   var offset = (dt / MOVE_TIME) * PX_PER_CELL; // fraction of time * total dist
-
-    //   players[user._id].move(user.game.direction, offset);
-    // } else {
-    //   players[user._id].position = user.game.position;
-    // }
-
-    // context.drawImage(img, players[user._id].position.x, players[user._id].position.y, PX_PER_CELL, PX_PER_CELL);
   });
 };
 
