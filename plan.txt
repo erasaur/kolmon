@@ -1,10 +1,12 @@
 Issues:
 
 Optimizing performance:
-- use webgl instead of canvas (significantly faster)
-- move the game related stuff to separate collection. a potential source of the problem could be that everytime the user's position is updated, the entire user object has to be validated agains the db schema (including irrelevant things like username, email, killCount, etc), so separating player and user might have been a good idea after all. 
-- not sure if this will improve performance, but what if we just have the room document hold an array of all the positions of the players inside the room? instead of fetching all the users, fetching a single room document & iterating over the array locally might be faster
+- fetch users only within current viewport
+- ?? use webgl instead of canvas (significantly faster)
 
 Done:
 - throttle update loop (lower fps, less db writes, etc)
 - leaving the room after moving around a lot (queuing a lot of method calls) causes a significant delay as the server tries to catch up (need some testing)
+// fixed due to refactoring of movement system. updates occur only after the user moves, which throttles it to max 2 updates/sec which is performant enough.
+- move the game related stuff to separate collection. a potential source of the problem could be that everytime the user's position is updated, the entire user object has to be validated agains the db schema (including irrelevant things like username, email, killCount, etc), so separating player and user might have been a good idea after all. 
+- not sure if this will improve performance, but what if we just have the room document hold an array of all the positions of the players inside the room? instead of fetching all the users, fetching a single room document & iterating over the array locally might be faster
