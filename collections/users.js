@@ -89,17 +89,24 @@ Meteor.users.allow({
 // });
 
 Meteor.methods({
-  setPosition: function (userId, position) {
-    Meteor.users.update(userId, { 
+  setPosition: function (position) {
+    var user = Meteor.user();
+    if (!user) return;
+
+    Meteor.users.update(user._id, { 
       $set: { 'game.position': position, 'game.direction': 0 }
     });
   },
-  setDirection: function (userId, direction) {
+  setDirection: function (direction) {
+    var userId = Meteor.userId();
+    if (!userId) return;
+
     Meteor.users.update(userId, {
       $set: { 'game.direction': direction }
     });
   },
-  enterRoom: function (userId, roomId) { 
+  enterRoom: function (roomId) { 
+    var userId = Meteor.userId();
     if (!userId) return;
 
     var room = Rooms.findOne(roomId);
@@ -116,6 +123,9 @@ Meteor.methods({
     Rooms.update(roomId, { $addToSet: { 'userIds': userId }, $inc: { 'slots': -1 } });
   },
   leaveRoom: function (userId, roomId) { 
+    var user = Meteor.user();
+    if (!user || user._id !== userId && !isAdmin(user)) return;
+
     Meteor.users.update(userId, { $set: { 'game.roomId': 'rooms' } });
     Rooms.update(roomId, { $pull: { 'userIds': userId }, $inc: { 'slots': 1 } });
   }

@@ -1,7 +1,7 @@
 <template name="room">
   {{> contentFor region="nav" template="nav"}}
 
-  <a href="{{pathFor 'rooms'}}">Lobby</a>
+  <a href="{{pathFor 'rooms'}}">Lobby</a> Users nearby: {{#each nearbyPlayers}}{{username}}{{/each}}
   <canvas id="canvas-background" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
   <canvas id="canvas-players" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
 </template>

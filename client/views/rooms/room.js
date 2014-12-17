@@ -60,17 +60,20 @@ Player.prototype.render = function () {
     this.frameIndex = 0;
     this.stepsSinceLast = 0;
   }
+  
+  var width = Math.max(1, this.width / this.numFrames);
+  var height = Math.max(1, this.height);
 
   this.context.drawImage(
     this.image, 
-    this.frameIndex * this.width / this.numFrames, // source x in spritesheet
+    this.frameIndex * width, // source x in spritesheet
     0, // source y in spritesheet
-    this.width / this.numFrames, 
-    this.height, 
+    width, 
+    height, 
     this.position.x, 
     this.position.y, 
-    this.width / this.numFrames, 
-    this.height 
+    width, 
+    height 
   );
 };
 
@@ -78,7 +81,7 @@ Template.room.rendered = function () {
   var user = Meteor.user();
   if (!user) return;
 
-  Meteor.call('enterRoom', user._id, Session.get('currentRoom'));
+  Meteor.call('enterRoom', Session.get('currentRoom'));
 
   var bgCanvas = this.find('#canvas-background');
   var playerCanvas = this.find('#canvas-players');
@@ -101,9 +104,33 @@ Template.room.rendered = function () {
 
   start();
 };
+var count = 0;
 Template.room.helpers({
   canvasWidth: CANVAS_WIDTH,
-  canvasHeight: CANVAS_HEIGHT
+  canvasHeight: CANVAS_HEIGHT,
+  nearbyPlayers: function () {
+    var user = Meteor.user();
+    if (!user) return;
+
+    // retrieve players in vicinity
+    return (function (u) {
+      var minX = u.position.x - PX_PER_CELL;
+      var maxX = u.position.x + PX_PER_CELL;
+      var minY = u.position.y - PX_PER_CELL;
+      var maxY = u.position.y + PX_PER_CELL;
+
+      var res = Meteor.users.find({ 'game.roomId': u.roomId, $and: [
+        { 'game.position.x': { $gte: minX } }, 
+        { 'game.position.x': { $lte: maxX } }
+      ], $and: [
+        { 'game.position.y': { $gte: minY } },
+        { 'game.position.y': { $lte: maxY } }
+      ]}, { fields: { '_id': 1, 'username': 1 } }).fetch();
+      
+      console.log(++count);
+      return res;
+    })(user.game);
+  }
 });
 Template.room.destroyed = function () {
   stop();
@@ -179,7 +206,7 @@ function main () {
         break;
     }
 
-    Meteor.call('setPosition', user._id, newPos);
+    Meteor.call('setPosition', newPos);
     startedMoving = null;
     direction = 0;
   }
@@ -201,7 +228,7 @@ function keyDown (event) {
   // TODO: only if valid move (e.g no wall), update direction
   direction = move;
   startedMoving = last;
-  Meteor.call('setDirection', user._id, direction);
+  Meteor.call('setDirection', direction);
 }
 
 
