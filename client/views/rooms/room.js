@@ -119,8 +119,6 @@ Template.room.helpers({
       var minY = u.position.y - PX_PER_CELL;
       var maxY = u.position.y + PX_PER_CELL;
 
-      console.log(minX, maxX);
-
       var res = Meteor.users.find({ 'game.roomId': u.roomId, $and: [
         { 'game.position.x': { $gte: minX } }, 
         { 'game.position.x': { $lte: maxX } },
@@ -154,7 +152,7 @@ var stop = function () {
 
 // update positions of players
 var update = function (dt) {
-  // bgContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // clear the canvas
+  bgContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // clear the canvas
   playerContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   var users = Meteor.users.find({ 'game.roomId': Session.get('currentRoom') }, {
