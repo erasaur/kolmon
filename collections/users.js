@@ -114,7 +114,7 @@ Meteor.methods({
       throw new Meteor.Error('room-error', 'Room does not exist or has no slots.');
 
     var defaults = { 
-      'position': { 'x': 400, 'y': 400 }, 
+      'position': { 'x': CENTER_X, 'y': CENTER_Y }, 
       'roomId': roomId,
       'direction': 0
     };

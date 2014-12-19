@@ -1,6 +1,6 @@
 Accounts.onCreateUser(function (options, user) {
   var defaults = {
-    position: { x: 400, y: 400 },
+    position: { x: CENTER_X, y: CENTER_Y },
     roomId: 'rooms',
     direction: 0
   };

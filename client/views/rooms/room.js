@@ -126,7 +126,7 @@ Template.room.helpers({
         { 'game.position.y': { $lte: maxY } }
       ]}, { fields: { '_id': 1, 'username': 1 } }).fetch();
       
-      console.log(++count);
+      // console.log(++count);
       return res;
     })(user.game);
   }
