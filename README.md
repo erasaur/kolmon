@@ -1,4 +1,5 @@
-survivor
+Kolmon
+
 ========
 
-Fast-paced top-down Meteor shooter
+A very serious RPG
