@@ -1,27 +1,42 @@
 <template name="landing">
   {{> contentFor region="nav" template="nav"}}
 
-<h1 align="center"> KOLMON </h1>
-<div align="center">
-  <iframe width="420" height="315" src="//www.youtube.com/embed/btPJPFnesV4" frameborder="0" allowfullscreen></iframe><br>
+<h1 align="center">KOLMON</h1>
+  {{> landingCarousel}}
+<div class="social" align="center">
+  <a href=https://facebook.com>
+    <span class="fa-stack fa-lg">
+      <i class="fa fa-circle fa-stack-2x"></i>
+      <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+    </span>
+  </a>
+
+  <a href=https://github.com/erasaur/kolmon>
+    <span class="fa-stack fa-lg">
+      <i class="fa fa-circle fa-stack-2x"></i>
+      <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+    </span>
+  </a>
+
+  <a href=https://twitter.com>
+    <span class="fa-stack fa-lg">
+      <i class="fa fa-circle fa-stack-2x"></i>
+      <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+    </span>
+  </a>
 </div>
-
-<button type="button" onclick="alert('The sign up tab on the top right will drop down?')" align="center">Create An Account</button><br>
-<h2 align="center">Droolworthy Screenshots</h2>
-<h2 align="center">Features in bite-sized chunks w/ pretty icons</h2>
-
 <div class="footer" align="center">
+  
   <ul id="footer">
-    <li class="sub">Facebook</li>
-    <li class="sub"><a href=https://github.com/erasaur/kolmon>Github</a></li>
-    <li class="sub">Twitter</li>
-    <li class="sub">Contact Us</li>
-    <li class="sub">About </li>
-    <li class="sub">Copyright©2014 </li>
+    <li class="sub">
+    </li>
   </ul>
  
-  <form align="center">Subscribe:<br>
-    <input type = "text"><br>
-  </form> 
+  <div class="input-group margin-bottom-sm">
+    <span class="input-group-addon">
+      <i class="fa fa-envelope-o fa-fw"></i>
+    </span>
+    <input class="form-control" type="text" placeholder="Subscribe">
+  </div>
 </div>
 </template>
