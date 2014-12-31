@@ -19,7 +19,7 @@ Schema.UserGame = new SimpleSchema({
   position: {
     type: Schema.UserPosition
   },
-  direction: { // 0 - static, 1 - up, 2 - right, 3 - down, 4 - left
+  direction: { // 0 - static, 1 - up, 2 - left, 3 - right, 4 - bottom
     type: Number
   }
 });
@@ -93,7 +93,7 @@ Meteor.methods({
     var user = Meteor.user();
     if (!user) return;
 
-    Meteor.users.update(user._id, { 
+    Meteor.users.update(user._id, {
       $set: { 'game.position': position, 'game.direction': 0 }
     });
   },
@@ -105,16 +105,16 @@ Meteor.methods({
       $set: { 'game.direction': direction }
     });
   },
-  enterRoom: function (roomId) { 
+  enterRoom: function (roomId) {
     var userId = Meteor.userId();
     if (!userId) return;
 
     var room = Rooms.findOne(roomId);
-    if (!room || !room.slots) 
+    if (!room || !room.slots)
       throw new Meteor.Error('room-error', 'Room does not exist or has no slots.');
 
-    var defaults = { 
-      'position': { 'x': CENTER_X, 'y': CENTER_Y }, 
+    var defaults = {
+      'position': { 'x': CENTER_X, 'y': CENTER_Y },
       'roomId': roomId,
       'direction': 0
     };
@@ -122,7 +122,7 @@ Meteor.methods({
     Meteor.users.update(userId, { $set: { 'game': defaults } });
     Rooms.update(roomId, { $addToSet: { 'userIds': userId }, $inc: { 'slots': -1 } });
   },
-  leaveRoom: function (userId, roomId) { 
+  leaveRoom: function (userId, roomId) {
     var user = Meteor.user();
     if (!user || user._id !== userId && !isAdmin(user)) return;
 
