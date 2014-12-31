@@ -1,0 +1,29 @@
+<template name="landingCarousel">
+  {{#if pictures.length}}
+    <div id="landing-carousel" class="carousel slide clearfix" data-ride="carousel">
+      <ol class="carousel-indicators">
+        {{#each pictures}}
+          <li data-target="#landing-carousel" data-slide-to="{{index}}" class="active"></li>
+        {{/each}}
+      </ol>
+<!-- Carousel items -->
+      <div class="carousel-inner">
+        {{#each pictures}}
+          <div class="item {{isActive}}">
+            <img src="{{url}}" alt="{{metadata.caption}}">
+            <div class="carousel-caption">
+              {{metadata.caption}}
+            </div>
+          </div>
+        {{/each}}
+      </div>
+<!-- Carousel nav -->
+      <a class="carousel-control left" href="#landing-carousel" role="button" data-slide="prev">
+        <span class="glyphicon glyphicon-chevron-left"></span>
+      </a>
+      <a class="carousel-control right" href="#landing-carousel" role="button" data-slide="next">
+        <span class="glyphicon glyphicon-chevron-right"></span>
+      </a>
+    </div>
+  {{/if}}
+</template>
