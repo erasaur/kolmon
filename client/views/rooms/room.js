@@ -28,52 +28,55 @@ function Player (options) {
   this.frameIndex = 0; // current frame in spritesheet
   this.stepsSinceLast = 0; // steps since last frame change
   this.numFrames = options.numFrames || 1; // how many frames
-  this.stepsPerFrame = MOVE_TIME / this.numFrames; // how many steps before frame change
+  this.stepsPerFrame = 3; // how many steps before frame change
 }
 
 Player.prototype.move = function (dir, offset) {
+  this.direction = dir;
+  this.moving = true;
+
   switch (dir) {
-    case 1: 
+    case 1:
       this.position.y -= offset;
       break;
     case 2:
-      this.position.x += offset;
+      this.position.x -= offset;
       break;
     case 3:
-      this.position.y += offset;
+      this.position.x += offset;
       break;
     case 4:
-      this.position.x -= offset;
+      this.position.y += offset;
       break;
   }
 };
 
 Player.prototype.render = function () {
-  if (this.direction) {
+  if (this.moving) {
     this.stepsSinceLast++;
 
     if (this.stepsSinceLast > this.stepsPerFrame) {
-      this.frameIndex = this.frameIndex >= numFrames - 1 ? 0 : this.frameIndex + 1;
+      this.frameIndex = this.frameIndex >= this.numFrames - 1 ? 0 : this.frameIndex + 1;
       this.stepsSinceLast = 0;
-    }  
+    }
   } else {
     this.frameIndex = 0;
     this.stepsSinceLast = 0;
   }
 
-  var width = Math.max(1, this.width / this.numFrames);
-  var height = Math.max(1, this.height);
+  var width = Math.max(1, this.width);
+  var height = Math.max(1, this.height / this.numFrames);
 
   this.context.drawImage(
-    this.image, 
-    this.frameIndex * width, // source x in spritesheet
-    0, // source y in spritesheet
-    width, 
-    height, 
-    this.position.x, 
-    this.position.y, 
-    width, 
-    height 
+    this.image,
+    (this.direction % 4) * width, // source x in spritesheet
+    this.frameIndex * height, // source y in spritesheet
+    width,
+    height,
+    this.position.x,
+    this.position.y + (PX_PER_CELL - height),
+    width,
+    height
   );
 };
 
@@ -86,15 +89,17 @@ Template.room.rendered = function () {
   var bgCanvas = this.find('#canvas-background');
   var playerCanvas = this.find('#canvas-players');
 
-  bgContext = bgCanvas.getContext('2d');  
+  bgContext = bgCanvas.getContext('2d');
   playerContext = playerCanvas.getContext('2d');
 
   options = {
     context: playerContext,
-    image: '/frank.png',
+    image: '/player.png',
     width: PX_PER_CELL,
-    height: PX_PER_CELL,
-    position: user.game.position
+    height: 66,
+    position: user.game.position,
+    numFrames: 3,
+    direction: 0
   };
 
   players[user._id] = new Player(options);
@@ -120,12 +125,12 @@ Template.room.helpers({
       var maxY = u.position.y + PX_PER_CELL;
 
       var res = Meteor.users.find({ 'game.roomId': u.roomId, $and: [
-        { 'game.position.x': { $gte: minX } }, 
+        { 'game.position.x': { $gte: minX } },
         { 'game.position.x': { $lte: maxX } },
         { 'game.position.y': { $gte: minY } },
         { 'game.position.y': { $lte: maxY } }
       ]}, { fields: { '_id': 1, 'username': 1 } }).fetch();
-      
+
       // console.log(++count);
       return res;
     })(user.game);
@@ -136,8 +141,8 @@ Template.room.destroyed = function () {
 };
 
 var start = function () {
-  // initialize time of last update                      
-  last = Date.now(); 
+  // initialize time of last update
+  last = Date.now();
 
   stop();
   requestId = Meteor.setInterval(main, UPDATE_STEP);
@@ -156,7 +161,7 @@ var update = function (dt) {
   playerContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   var users = Meteor.users.find({ 'game.roomId': Session.get('currentRoom') }, {
-    fields: { 'game': 1 }
+    fields: { 'game': 1 }, sort: { 'game.position.y': 1 }
   });
 
   // render each player to canvas
@@ -172,9 +177,10 @@ var update = function (dt) {
 
         player.move(dir, offset);
       } else {
+        player.moving = false;
         player.position = pos;
-      }  
-      
+      }
+
       player.render();
     })(players[user._id], user.game.direction, user.game.position);
   });
@@ -191,17 +197,17 @@ function main () {
     var newPos = user.game.position;
 
     switch (direction) {
-      case 1: 
+      case 1:
         newPos.y -= PX_PER_CELL;
         break;
       case 2:
-        newPos.x += PX_PER_CELL;
+        newPos.x -= PX_PER_CELL;
         break;
       case 3:
-        newPos.y += PX_PER_CELL;
+        newPos.x += PX_PER_CELL;
         break;
       case 4:
-        newPos.x -= PX_PER_CELL;
+        newPos.y += PX_PER_CELL;
         break;
     }
 
@@ -219,7 +225,7 @@ function keyDown (event) {
 
   var user = Meteor.user();
   var key = event.keyCode || event.which;
-  var move = { 38: 1, 39: 2, 40: 3, 37: 4 }[key];
+  var move = { 38: 1, 39: 3, 40: 4, 37: 2 }[key];
 
   // if moving already or invalid key
   if (!user || user.game.direction || !move) return;
