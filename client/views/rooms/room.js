@@ -74,7 +74,7 @@ Player.prototype.render = function () {
     width,
     height,
     this.position.x,
-    this.position.y + (PX_PER_CELL - height),
+    this.position.y,
     width,
     height
   );
@@ -92,6 +92,15 @@ Template.room.rendered = function () {
   bgContext = bgCanvas.getContext('2d');
   playerContext = playerCanvas.getContext('2d');
 
+  // init background
+  var bgImg = new Image();
+  console.log('/' + this.data.map);
+  bgImg.onload = function () {
+    bgContext.drawImage(bgImg, 0, 0);
+  };
+  bgImg.src = '/' + this.data.map;
+
+  // init player
   options = {
     context: playerContext,
     image: '/player.png',
@@ -109,7 +118,7 @@ Template.room.rendered = function () {
 
   start();
 };
-var count = 0;
+
 Template.room.helpers({
   canvasWidth: CANVAS_WIDTH,
   canvasHeight: CANVAS_HEIGHT,
@@ -131,7 +140,6 @@ Template.room.helpers({
         { 'game.position.y': { $lte: maxY } }
       ]}, { fields: { '_id': 1, 'username': 1 } }).fetch();
 
-      // console.log(++count);
       return res;
     })(user.game);
   }
@@ -157,7 +165,7 @@ var stop = function () {
 
 // update positions of players
 var update = function (dt) {
-  bgContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // clear the canvas
+  // bgContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // clear the canvas
   playerContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   var users = Meteor.users.find({ 'game.roomId': Session.get('currentRoom') }, {
