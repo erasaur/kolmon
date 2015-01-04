@@ -179,18 +179,20 @@ var update = function (dt) {
       players[user._id] = new Player(options);
     }
 
-    (function (player, dir, pos) {
-      if (dir) {
+    var now = Date.now();
+
+    (function (player, dir, start, pos) {
+      if (dir && now <= start + MOVE_TIME) {
         var offset = (dt / MOVE_TIME) * PX_PER_CELL; // fraction of time * total dist
 
         player.move(dir, offset);
-      } else {
+      } else if (!dir) {
         player.moving = false;
         player.position = pos;
       }
 
       player.render();
-    })(players[user._id], user.game.direction, user.game.position);
+    })(players[user._id], user.game.direction, user.game.startTime, user.game.position);
   });
 };
 
@@ -241,7 +243,7 @@ function keyDown (event) {
   // TODO: only if valid move (e.g no wall), update direction
   direction = move;
   startedMoving = last;
-  Meteor.call('setDirection', direction);
+  Meteor.call('setDirection', direction, startedMoving);
 }
 
 

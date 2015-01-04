@@ -97,12 +97,15 @@ Meteor.methods({
       $set: { 'game.position': position, 'game.direction': 0 }
     });
   },
-  setDirection: function (direction) {
+  setDirection: function (direction, startTime) {
     var userId = Meteor.userId();
     if (!userId) return;
 
     Meteor.users.update(userId, {
-      $set: { 'game.direction': direction }
+      $set: {
+        'game.direction': direction,
+        'game.startTime': startTime
+      }
     });
   },
   enterRoom: function (roomId) {
