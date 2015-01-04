@@ -70,7 +70,7 @@ Player.prototype.render = function () {
   this.context.drawImage(
     this.image,
     (this.direction % 4) * width, // source x in spritesheet
-    this.frameIndex * height, // source y in spritesheet
+    this.frameIndex * height + 1, // source y in spritesheet
     width,
     height,
     this.position.x,
