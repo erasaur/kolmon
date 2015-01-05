@@ -35,20 +35,7 @@ Player.prototype.move = function (dir, offset) {
   this.direction = dir;
   this.moving = true;
 
-  switch (dir) {
-    case 1:
-      this.position.y -= offset;
-      break;
-    case 2:
-      this.position.x -= offset;
-      break;
-    case 3:
-      this.position.x += offset;
-      break;
-    case 4:
-      this.position.y += offset;
-      break;
-  }
+  this.position = nextPosition(this.position, dir, offset);
 };
 
 Player.prototype.render = function () {
@@ -94,7 +81,6 @@ Template.room.rendered = function () {
 
   // init background
   var bgImg = new Image();
-  console.log('/' + this.data.map);
   bgImg.onload = function () {
     bgContext.drawImage(bgImg, 0, 0);
   };
@@ -114,7 +100,8 @@ Template.room.rendered = function () {
   players[user._id] = new Player(options);
   players[user._id].render();
 
-  $(window).on('keydown', keyDown);
+  var boundKeyDown = keyDown.bind(this.data);
+  $(window).on('keydown', boundKeyDown);
 
   start();
 };
@@ -179,10 +166,11 @@ var update = function (dt) {
       players[user._id] = new Player(options);
     }
 
-    var now = Date.now();
-
     (function (player, dir, start, pos) {
-      if (dir && now <= start + MOVE_TIME) {
+      var now = Date.now();
+      var moveDone = now > start + MOVE_TIME;
+      
+      if (dir && !moveDone) {
         var offset = (dt / MOVE_TIME) * PX_PER_CELL; // fraction of time * total dist
 
         player.move(dir, offset);
@@ -201,25 +189,11 @@ function main () {
   var now = Date.now();
   var dt = now - last; // time since last update
 
-  // move should have completed, so update position
-  if (startedMoving && now >= startedMoving + MOVE_TIME) {
+  // make sure previous move completed before updating position
+  var moveDone = now >= startedMoving + MOVE_TIME;
+  if (startedMoving && moveDone) {
     var user = Meteor.user();
-    var newPos = user.game.position;
-
-    switch (direction) {
-      case 1:
-        newPos.y -= PX_PER_CELL;
-        break;
-      case 2:
-        newPos.x -= PX_PER_CELL;
-        break;
-      case 3:
-        newPos.x += PX_PER_CELL;
-        break;
-      case 4:
-        newPos.y += PX_PER_CELL;
-        break;
-    }
+    var newPos = nextPosition(user.game.position, direction);
 
     Meteor.call('setPosition', newPos);
     startedMoving = null;
@@ -241,6 +215,16 @@ function keyDown (event) {
   if (!user || user.game.direction || !move) return;
 
   // TODO: only if valid move (e.g no wall), update direction
+  var newPos = nextPosition(user.game.position, move);
+  if (_.some(this.walls, function (wall) {
+    return (
+      newPos.x < wall.x + wall.w &&
+      newPos.x > wall.x &&
+      newPos.y < wall.y + wall.h &&
+      newPos.y > wall.y
+    );
+  })) return;
+
   direction = move;
   startedMoving = last;
   Meteor.call('setDirection', direction, startedMoving);
