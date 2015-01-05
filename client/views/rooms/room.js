@@ -35,20 +35,7 @@ Player.prototype.move = function (dir, offset) {
   this.direction = dir;
   this.moving = true;
 
-  switch (dir) {
-    case 1:
-      this.position.y -= offset;
-      break;
-    case 2:
-      this.position.x -= offset;
-      break;
-    case 3:
-      this.position.x += offset;
-      break;
-    case 4:
-      this.position.y += offset;
-      break;
-  }
+  this.position = nextPosition(this.position, dir, offset);
 };
 
 Player.prototype.render = function () {
@@ -70,11 +57,11 @@ Player.prototype.render = function () {
   this.context.drawImage(
     this.image,
     (this.direction % 4) * width, // source x in spritesheet
-    this.frameIndex * height, // source y in spritesheet
+    this.frameIndex * height + 1, // source y in spritesheet
     width,
     height,
     this.position.x,
-    this.position.y + (PX_PER_CELL - height),
+    this.position.y,
     width,
     height
   );
@@ -92,6 +79,14 @@ Template.room.rendered = function () {
   bgContext = bgCanvas.getContext('2d');
   playerContext = playerCanvas.getContext('2d');
 
+  // init background
+  var bgImg = new Image();
+  bgImg.onload = function () {
+    bgContext.drawImage(bgImg, 0, 0);
+  };
+  bgImg.src = '/' + this.data.map;
+
+  // init player
   options = {
     context: playerContext,
     image: '/player.png',
@@ -105,11 +100,12 @@ Template.room.rendered = function () {
   players[user._id] = new Player(options);
   players[user._id].render();
 
-  $(window).on('keydown', keyDown);
+  var boundKeyDown = keyDown.bind(this.data);
+  $(window).on('keydown', boundKeyDown);
 
   start();
 };
-var count = 0;
+
 Template.room.helpers({
   canvasWidth: CANVAS_WIDTH,
   canvasHeight: CANVAS_HEIGHT,
@@ -131,7 +127,6 @@ Template.room.helpers({
         { 'game.position.y': { $lte: maxY } }
       ]}, { fields: { '_id': 1, 'username': 1 } }).fetch();
 
-      // console.log(++count);
       return res;
     })(user.game);
   }
@@ -157,7 +152,7 @@ var stop = function () {
 
 // update positions of players
 var update = function (dt) {
-  bgContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // clear the canvas
+  // bgContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // clear the canvas
   playerContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   var users = Meteor.users.find({ 'game.roomId': Session.get('currentRoom') }, {
@@ -171,18 +166,21 @@ var update = function (dt) {
       players[user._id] = new Player(options);
     }
 
-    (function (player, dir, pos) {
-      if (dir) {
+    (function (player, dir, start, pos) {
+      var now = Date.now();
+      var moveDone = now > start + MOVE_TIME;
+      
+      if (dir && !moveDone) {
         var offset = (dt / MOVE_TIME) * PX_PER_CELL; // fraction of time * total dist
 
         player.move(dir, offset);
-      } else {
+      } else if (!dir) {
         player.moving = false;
         player.position = pos;
       }
 
       player.render();
-    })(players[user._id], user.game.direction, user.game.position);
+    })(players[user._id], user.game.direction, user.game.startTime, user.game.position);
   });
 };
 
@@ -191,25 +189,11 @@ function main () {
   var now = Date.now();
   var dt = now - last; // time since last update
 
-  // move should have completed, so update position
-  if (startedMoving && now >= startedMoving + MOVE_TIME) {
+  // make sure previous move completed before updating position
+  var moveDone = now >= startedMoving + MOVE_TIME;
+  if (startedMoving && moveDone) {
     var user = Meteor.user();
-    var newPos = user.game.position;
-
-    switch (direction) {
-      case 1:
-        newPos.y -= PX_PER_CELL;
-        break;
-      case 2:
-        newPos.x -= PX_PER_CELL;
-        break;
-      case 3:
-        newPos.x += PX_PER_CELL;
-        break;
-      case 4:
-        newPos.y += PX_PER_CELL;
-        break;
-    }
+    var newPos = nextPosition(user.game.position, direction);
 
     Meteor.call('setPosition', newPos);
     startedMoving = null;
@@ -231,9 +215,19 @@ function keyDown (event) {
   if (!user || user.game.direction || !move) return;
 
   // TODO: only if valid move (e.g no wall), update direction
+  var newPos = nextPosition(user.game.position, move);
+  if (_.some(this.walls, function (wall) {
+    return (
+      newPos.x < wall.x + wall.w &&
+      newPos.x > wall.x &&
+      newPos.y < wall.y + wall.h &&
+      newPos.y > wall.y
+    );
+  })) return;
+
   direction = move;
   startedMoving = last;
-  Meteor.call('setDirection', direction);
+  Meteor.call('setDirection', direction, startedMoving);
 }
 
 
