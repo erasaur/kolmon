@@ -1,4 +1,4 @@
-var bgContext, playerContext;
+var foreContext, bgContext, playerContext;
 var last; // time of last update
 var requestId; // id returned by setInterval
 
@@ -7,6 +7,7 @@ var startedMoving;
 
 // TODO: clear out players that disconnect
 var players = {}; // local copy of player positions
+var foreground = {};
 
 var MOVE_TIME = 500; // 500 ms to travel 1 cell
 var UPDATE_STEP = 50; // ms per update
@@ -28,7 +29,7 @@ function Player (options) {
   this.frameIndex = 0; // current frame in spritesheet
   this.stepsSinceLast = 0; // steps since last frame change
   this.numFrames = options.numFrames || 1; // how many frames
-  this.stepsPerFrame = 3; // how many steps before frame change
+  this.stepsPerFrame = 2; // how many steps before frame change
 }
 
 Player.prototype.move = function (dir, offset) {
@@ -73,18 +74,36 @@ Template.room.rendered = function () {
 
   Meteor.call('enterRoom', Session.get('currentRoom'));
 
+  var foreCanvas = this.find('#canvas-foreground');
   var bgCanvas = this.find('#canvas-background');
   var playerCanvas = this.find('#canvas-players');
 
+  foreContext = foreCanvas.getContext('2d');
   bgContext = bgCanvas.getContext('2d');
   playerContext = playerCanvas.getContext('2d');
 
   // init background
-  var bgImg = new Image();
-  bgImg.onload = function () {
-    bgContext.drawImage(bgImg, 0, 0);
-  };
-  bgImg.src = '/' + this.data.map;
+  var bgImages = this.data.background;
+  var bgSrcs = _.pluck(bgImages, 'src');
+  loadImages(bgSrcs, function (images) {
+    _.each(images, function (image, ind) {
+      var origin = bgImages[ind];
+      bgContext.drawImage(image, origin.x, origin.y);
+    });
+  });
+
+  // init foreground
+  foreground.data = this.data.foreground;
+  var foreSrcs = _.pluck(foreground.data, 'src');
+  loadImages(foreSrcs, function (images) {
+    foreground.images = images;
+  });
+
+  // var bgImg = new Image();
+  // bgImg.onload = function () {
+  //   bgContext.drawImage(bgImg, 0, 0);
+  // };
+  // bgImg.src = '/' + this.data.map;
 
   // init player
   options = {
@@ -169,7 +188,7 @@ var update = function (dt) {
     (function (player, dir, start, pos) {
       var now = Date.now();
       var moveDone = now > start + MOVE_TIME;
-      
+
       if (dir && !moveDone) {
         var offset = (dt / MOVE_TIME) * PX_PER_CELL; // fraction of time * total dist
 
@@ -181,6 +200,11 @@ var update = function (dt) {
 
       player.render();
     })(players[user._id], user.game.direction, user.game.startTime, user.game.position);
+  });
+
+  _.each(foreground.images, function (image, ind) {
+    var origin = foreground.data[ind];
+    foreContext.drawImage(image, origin.x, origin.y);
   });
 };
 
@@ -217,11 +241,12 @@ function keyDown (event) {
   // TODO: only if valid move (e.g no wall), update direction
   var newPos = nextPosition(user.game.position, move);
   if (_.some(this.walls, function (wall) {
+    console.log(newPos);
     return (
       newPos.x < wall.x + wall.w &&
-      newPos.x > wall.x &&
-      newPos.y < wall.y + wall.h &&
-      newPos.y > wall.y
+      newPos.x >= wall.x &&
+      newPos.y < wall.y + wall.h - PX_PER_CELL &&
+      newPos.y >= wall.y - PX_PER_CELL
     );
   })) return;
 
