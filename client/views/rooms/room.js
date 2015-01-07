@@ -1,4 +1,4 @@
-var foreContext, bgContext, playerContext;
+var playerContext;
 var last; // time of last update
 var requestId; // id returned by setInterval
 
@@ -7,7 +7,7 @@ var startedMoving;
 
 // TODO: clear out players that disconnect
 var players = {}; // local copy of player positions
-var foreground = {};
+var map;
 
 var MOVE_TIME = 500; // 500 ms to travel 1 cell
 var UPDATE_STEP = 50; // ms per update
@@ -68,36 +68,87 @@ Player.prototype.render = function () {
   );
 };
 
+function Map (options) {
+  var self = this;
+  self.background = {
+    data: options.background,
+    images: _.keys(options.background)
+  };
+  self.foreground = {
+    data: options.foreground,
+    images: _.keys(options.foreground)
+  };
+  self.images = {};
+  self.bgContext = options.bgContext;
+  self.fgContext = options.fgContext;
+
+  var bgSrcs = self.background.images;
+  var fgSrcs = self.foreground.images;
+  var imageSrcs = bgSrcs.concat(fgSrcs);
+
+  _.each(imageSrcs, function (src) {
+    if (_.has(self.images, src)) return;
+
+    self.images[src] = new Image();
+    self.images[src].src = '/' + src + '.png';
+  });
+}
+
+Map.prototype.render = function (context, options) {
+  var self = this;
+  var srcs = options.images;
+  _.each(srcs, function (src) {
+    var image = self.images[src];
+    var origin = options.data[src];
+    context.drawImage(image, origin.x, origin.y);
+  });
+};
+Map.prototype.renderBg = function () {
+  this.render(this.bgContext, this.background);
+};
+Map.prototype.renderFg = function () {
+  this.render(this.fgContext, this.foreground);
+};
+
 Template.room.rendered = function () {
   var user = Meteor.user();
   if (!user) return;
 
   Meteor.call('enterRoom', Session.get('currentRoom'));
 
-  var foreCanvas = this.find('#canvas-foreground');
+  var fgCanvas = this.find('#canvas-foreground');
   var bgCanvas = this.find('#canvas-background');
   var playerCanvas = this.find('#canvas-players');
 
-  foreContext = foreCanvas.getContext('2d');
-  bgContext = bgCanvas.getContext('2d');
+  var fgContext = fgCanvas.getContext('2d');
+  var bgContext = bgCanvas.getContext('2d');
   playerContext = playerCanvas.getContext('2d');
 
-  // init background
-  var bgImages = this.data.background;
-  var bgSrcs = _.pluck(bgImages, 'src');
-  loadImages(bgSrcs, function (images) {
-    _.each(images, function (image, ind) {
-      var origin = bgImages[ind];
-      bgContext.drawImage(image, origin.x, origin.y);
-    });
+  map = new Map({
+    bgContext: bgContext,
+    fgContext: fgContext,
+    background: this.data.background,
+    foreground: this.data.foreground
   });
+  map.renderBg();
+  map.renderFg();
 
-  // init foreground
-  foreground.data = this.data.foreground;
-  var foreSrcs = _.pluck(foreground.data, 'src');
-  loadImages(foreSrcs, function (images) {
-    foreground.images = images;
-  });
+  // // init background
+  // var bgImages = this.data.background;
+  // var bgSrcs = _.pluck(bgImages, 'src');
+  // loadImages(bgSrcs, function (images) {
+  //   _.each(images, function (image, ind) {
+  //     var origin = bgImages[ind];
+  //     bgContext.drawImage(image, origin.x, origin.y);
+  //   });
+  // });
+
+  // // init foreground
+  // foreground.data = this.data.foreground;
+  // var foreSrcs = _.pluck(foreground.data, 'src');
+  // loadImages(foreSrcs, function (images) {
+  //   foreground.images = images;
+  // });
 
   // var bgImg = new Image();
   // bgImg.onload = function () {
@@ -171,7 +222,6 @@ var stop = function () {
 
 // update positions of players
 var update = function (dt) {
-  // bgContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // clear the canvas
   playerContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   var users = Meteor.users.find({ 'game.roomId': Session.get('currentRoom') }, {
@@ -200,11 +250,6 @@ var update = function (dt) {
 
       player.render();
     })(players[user._id], user.game.direction, user.game.startTime, user.game.position);
-  });
-
-  _.each(foreground.images, function (image, ind) {
-    var origin = foreground.data[ind];
-    foreContext.drawImage(image, origin.x, origin.y);
   });
 };
 
@@ -241,7 +286,6 @@ function keyDown (event) {
   // TODO: only if valid move (e.g no wall), update direction
   var newPos = nextPosition(user.game.position, move);
   if (_.some(this.walls, function (wall) {
-    console.log(newPos);
     return (
       newPos.x < wall.x + wall.w &&
       newPos.x >= wall.x &&
