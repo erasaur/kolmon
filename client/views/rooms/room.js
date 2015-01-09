@@ -1,4 +1,4 @@
-var bgContext, playerContext;
+var playerContext;
 var last; // time of last update
 var requestId; // id returned by setInterval
 
@@ -7,6 +7,7 @@ var startedMoving;
 
 // TODO: clear out players that disconnect
 var players = {}; // local copy of player positions
+var map;
 
 var MOVE_TIME = 500; // 500 ms to travel 1 cell
 var UPDATE_STEP = 50; // ms per update
@@ -28,7 +29,7 @@ function Player (options) {
   this.frameIndex = 0; // current frame in spritesheet
   this.stepsSinceLast = 0; // steps since last frame change
   this.numFrames = options.numFrames || 1; // how many frames
-  this.stepsPerFrame = 3; // how many steps before frame change
+  this.stepsPerFrame = 2; // how many steps before frame change
 }
 
 Player.prototype.move = function (dir, offset) {
@@ -67,24 +68,70 @@ Player.prototype.render = function () {
   );
 };
 
+function Map (options) {
+  var self = this;
+  self.background = {
+    data: options.background,
+    images: _.keys(options.background)
+  };
+  self.foreground = {
+    data: options.foreground,
+    images: _.keys(options.foreground)
+  };
+  self.images = {};
+  self.bgContext = options.bgContext;
+  self.fgContext = options.fgContext;
+
+  var bgSrcs = self.background.images;
+  var fgSrcs = self.foreground.images;
+  var imageSrcs = bgSrcs.concat(fgSrcs);
+
+  _.each(imageSrcs, function (src) {
+    if (_.has(self.images, src)) return;
+
+    self.images[src] = new Image();
+    self.images[src].src = '/' + src + '.png';
+  });
+}
+
+Map.prototype.render = function (context, options) {
+  var self = this;
+  var srcs = options.images;
+  _.each(srcs, function (src) {
+    var image = self.images[src];
+    var origin = options.data[src];
+    context.drawImage(image, origin.x, origin.y);
+  });
+};
+Map.prototype.renderBg = function () {
+  this.render(this.bgContext, this.background);
+};
+Map.prototype.renderFg = function () {
+  this.render(this.fgContext, this.foreground);
+};
+
 Template.room.rendered = function () {
   var user = Meteor.user();
   if (!user) return;
 
   Meteor.call('enterRoom', Session.get('currentRoom'));
 
+  var fgCanvas = this.find('#canvas-foreground');
   var bgCanvas = this.find('#canvas-background');
   var playerCanvas = this.find('#canvas-players');
 
-  bgContext = bgCanvas.getContext('2d');
+  var fgContext = fgCanvas.getContext('2d');
+  var bgContext = bgCanvas.getContext('2d');
   playerContext = playerCanvas.getContext('2d');
 
-  // init background
-  var bgImg = new Image();
-  bgImg.onload = function () {
-    bgContext.drawImage(bgImg, 0, 0);
-  };
-  bgImg.src = '/' + this.data.map;
+  map = new Map({
+    bgContext: bgContext,
+    fgContext: fgContext,
+    background: this.data.background,
+    foreground: this.data.foreground
+  });
+  map.renderBg();
+  map.renderFg();
 
   // init player
   options = {
@@ -152,7 +199,6 @@ var stop = function () {
 
 // update positions of players
 var update = function (dt) {
-  // bgContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // clear the canvas
   playerContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   var users = Meteor.users.find({ 'game.roomId': Session.get('currentRoom') }, {
@@ -169,7 +215,7 @@ var update = function (dt) {
     (function (player, dir, start, pos) {
       var now = Date.now();
       var moveDone = now > start + MOVE_TIME;
-      
+
       if (dir && !moveDone) {
         var offset = (dt / MOVE_TIME) * PX_PER_CELL; // fraction of time * total dist
 
@@ -219,9 +265,9 @@ function keyDown (event) {
   if (_.some(this.walls, function (wall) {
     return (
       newPos.x < wall.x + wall.w &&
-      newPos.x > wall.x &&
-      newPos.y < wall.y + wall.h &&
-      newPos.y > wall.y
+      newPos.x >= wall.x &&
+      newPos.y < wall.y + wall.h - PX_PER_CELL &&
+      newPos.y >= wall.y - PX_PER_CELL
     );
   })) return;
 
