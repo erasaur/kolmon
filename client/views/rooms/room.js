@@ -133,29 +133,6 @@ Template.room.rendered = function () {
   map.renderBg();
   map.renderFg();
 
-  // // init background
-  // var bgImages = this.data.background;
-  // var bgSrcs = _.pluck(bgImages, 'src');
-  // loadImages(bgSrcs, function (images) {
-  //   _.each(images, function (image, ind) {
-  //     var origin = bgImages[ind];
-  //     bgContext.drawImage(image, origin.x, origin.y);
-  //   });
-  // });
-
-  // // init foreground
-  // foreground.data = this.data.foreground;
-  // var foreSrcs = _.pluck(foreground.data, 'src');
-  // loadImages(foreSrcs, function (images) {
-  //   foreground.images = images;
-  // });
-
-  // var bgImg = new Image();
-  // bgImg.onload = function () {
-  //   bgContext.drawImage(bgImg, 0, 0);
-  // };
-  // bgImg.src = '/' + this.data.map;
-
   // init player
   options = {
     context: playerContext,
