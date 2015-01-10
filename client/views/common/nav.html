@@ -13,6 +13,16 @@
 
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse" id="main-nav">
+        <ul class="nav navbar-nav">
+	  <li class="{{currentPage 'rooms'}}"><a href="{{pathFor 'rooms'}}">Rooms</a></li>
+	  <li class="{{currentPage 'guide'}}"><a href="{{pathFor 'guide'}}">Guide</a></li>
+	  <li class="{{currentPage 'rankings'}}"><a href="{{pathFor 'rankings'}}">Rankings</a></li>
+	  <li class="{{currentPage 'community'}}"><a href="{{pathFor 'community'}}">Community</a></li>
+	  <li class="{{currentPage 'shop'}}"><a href="{{pathFor 'shop'}}">Shop</a></li>
+	  <li class="{{currentPage 'support'}}"><a href="{{pathFor 'support'}}">Support</a></li>
+        
+	</ul>
+
         <ul class="nav navbar-nav navbar-right">
           <li class="navbar-text">{{> loginButtons align="right"}}</li>
 	        <li class="navbar=text"></li>
