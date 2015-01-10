@@ -31,6 +31,21 @@ Meteor.subscribe('currentUser');
 Router.route('/', {
   name: 'landing'
 });
+
+Router.route('/guide', {
+});
+
+Router.route('/rankings', {
+});
+
+Router.route('/community', {
+});
+
+Router.route('/shop', {
+});
+
+Router.route('/support', {
+});
 Router.route('/rooms', {
   waitOn: function () {
     return Meteor.subscribe('allRooms'); // TODO: limit
