@@ -15,7 +15,6 @@ var UPDATE_STEP = 50; // ms per update
 var options; // default options for creating new player
 
 function Player (options) {
-  // TODO: change image based on direction
   var image = new Image();
   image.src = options.image;
   this.image = image;
