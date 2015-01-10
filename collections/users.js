@@ -21,6 +21,9 @@ Schema.UserGame = new SimpleSchema({
   },
   direction: { // 0 - static, 1 - up, 2 - left, 3 - right, 4 - bottom
     type: Number
+  },
+  challenges: {
+    type: Object
   }
 });
 
