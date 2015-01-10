@@ -15,9 +15,13 @@ var UPDATE_STEP = 50; // ms per update
 var options; // default options for creating new player
 
 function Player (options) {
+  var self = this;
   var image = new Image();
+  image.onload = function () {
+    self.image = this;
+  };
   image.src = options.image;
-  this.image = image;
+  // this.image = image;
 
   this.context = options.context;
   this.width = options.width;
@@ -39,6 +43,8 @@ Player.prototype.move = function (dir, offset) {
 };
 
 Player.prototype.render = function () {
+  if (!this.image) return;
+
   if (this.moving) {
     this.stepsSinceLast++;
 
