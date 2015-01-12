@@ -73,7 +73,7 @@ Player.prototype.render = function () {
   );
 };
 
-function Map (options) {
+function Map (options, callback) {
   var self = this;
   self.background = {
     data: options.background,
@@ -89,12 +89,16 @@ function Map (options) {
 
   var bgSrcs = self.background.images;
   var fgSrcs = self.foreground.images;
-  var imageSrcs = bgSrcs.concat(fgSrcs);
+  var imageSrcs = _.union(bgSrcs, fgSrcs);
+  var loaded = 0;
 
   _.each(imageSrcs, function (src) {
-    if (_.has(self.images, src)) return;
-
     self.images[src] = new Image();
+    self.images[src].onload = function () {
+      if (++loaded >= imageSrcs.length) {
+        callback.call(self);
+      }
+    };
     self.images[src].src = '/' + src + '.png';
   });
 }
@@ -107,12 +111,14 @@ Map.prototype.render = function (context, options) {
     var origin = options.data[src];
     context.drawImage(image, origin.x, origin.y);
   });
+
+  return self;
 };
 Map.prototype.renderBg = function () {
-  this.render(this.bgContext, this.background);
+  return this.render(this.bgContext, this.background);
 };
 Map.prototype.renderFg = function () {
-  this.render(this.fgContext, this.foreground);
+  return this.render(this.fgContext, this.foreground);
 };
 
 Template.room.rendered = function () {
@@ -129,14 +135,15 @@ Template.room.rendered = function () {
   var bgContext = bgCanvas.getContext('2d');
   playerContext = playerCanvas.getContext('2d');
 
-  map = new Map({
+  var options = {
     bgContext: bgContext,
     fgContext: fgContext,
     background: this.data.background,
     foreground: this.data.foreground
+  };
+  map = new Map(options, function () {
+    this.renderBg().renderFg();              
   });
-  map.renderBg();
-  map.renderFg();
 
   // init player
   options = {
