@@ -92,15 +92,15 @@ Meteor.users.allow({
 // });
 
 Meteor.methods({
-  challengePlayer: function (playerId) {
-    var userId = Meteor.userId();
-    if (!userId) return;
+  challengePlayer: function (player) {
+    var user = Meteor.user();
+    if (!user || !player) return;
 
-    Meteor.users.update(userId, {
-      $addToSet: { 'game.challenges.sent': userId }
+    Meteor.users.update(user._id, {
+      $addToSet: { 'game.challenges.sent': { _id: player._id, username: player.username } }
     });
-    Meteor.users.update(playerId, {
-      $addToSet: { 'game.challenges.received': userId }
+    Meteor.users.update(player._id, {
+      $addToSet: { 'game.challenges.received': { _id: user._id, username: user.username } }
     });
   },
   setPosition: function (position) {

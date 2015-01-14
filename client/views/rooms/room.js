@@ -196,8 +196,9 @@ Template.room.helpers({
 
 Template.room.events({
   'click .js-challenge-player': function (event, template) {
+    if (this._id === Meteor.userId()) return;
     if (confirm('challenge ' + this.username + '?')) {
-      Meteor.call('challengePlayer', this._id);
+      Meteor.call('challengePlayer', this);
     }
   }
 });

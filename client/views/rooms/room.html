@@ -17,7 +17,7 @@
 
       <span>Challenges sent:</span>
       <ul>
-        {{#unless challenges.sent}}
+        {{#unless challenges.sent.length}}
           <li>None</li>
         {{/unless}}
 
@@ -28,7 +28,7 @@
 
       <span>Challenges received:</span>
       <ul>
-        {{#unless challenges.sent}}
+        {{#unless challenges.received.length}}
           <li>None</li>
         {{/unless}}
 
