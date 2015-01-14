@@ -19,8 +19,8 @@ Router.onBeforeAction(function () {
     var room = Session.get('currentRoom');
     if (room)
       this.render('room', { _id: room });
-    else 
-      this.render('rooms');    
+    else
+      this.render('rooms');
   }
   this.next();
 
@@ -32,20 +32,12 @@ Router.route('/', {
   name: 'landing'
 });
 
-Router.route('/guide', {
-});
+Router.route('/guide');
+Router.route('/rankings');
+Router.route('/community');
+Router.route('/shop');
+Router.route('/support');
 
-Router.route('/rankings', {
-});
-
-Router.route('/community', {
-});
-
-Router.route('/shop', {
-});
-
-Router.route('/support', {
-});
 Router.route('/rooms', {
   waitOn: function () {
     return Meteor.subscribe('allRooms'); // TODO: limit
@@ -55,7 +47,7 @@ Router.route('/rooms/:_id', {
   name: 'room',
   waitOn: function () {
     // TODO: players (filtered by online), entities, etc
-    return Meteor.subscribe('singleRoom', this.params._id); 
+    return Meteor.subscribe('singleRoom', this.params._id);
   },
   onRun: function () {
     Session.set('currentRoom', this.params._id);
