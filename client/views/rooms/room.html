@@ -7,7 +7,7 @@
       <span>Users nearby:</span> 
       <ul>
         {{#unless nearbyPlayers.length}}
-          <li>No players nearby.</li>
+          <li>None</li>
         {{/unless}}
 
         {{#each nearbyPlayers}}
@@ -15,9 +15,24 @@
         {{/each}}
       </ul>
 
-      <span>Challenging:</span>
+      <span>Challenges sent:</span>
       <ul>
-        {{#each challenging}}
+        {{#unless challenges.sent}}
+          <li>None</li>
+        {{/unless}}
+
+        {{#each challenges.sent}}
+          <li>{{username}}</li>
+        {{/each}}
+      </ul>
+
+      <span>Challenges received:</span>
+      <ul>
+        {{#unless challenges.sent}}
+          <li>None</li>
+        {{/unless}}
+
+        {{#each challenges.received}}
           <li>{{username}}</li>
         {{/each}}
       </ul>

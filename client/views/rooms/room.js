@@ -12,7 +12,7 @@ var map;
 var MOVE_TIME = 500; // 500 ms to travel 1 cell
 var UPDATE_STEP = 50; // ms per update
 
-var options; // default options for creating new player
+var playerDefaults = {};
 
 function Player (options) {
   var self = this;
@@ -21,7 +21,6 @@ function Player (options) {
     self.image = this;
   };
   image.src = options.image;
-  // this.image = image;
 
   this.context = options.context;
   this.width = options.width;
@@ -146,7 +145,7 @@ Template.room.rendered = function () {
   });
 
   // init player
-  options = {
+  playerDefaults = {
     context: playerContext,
     image: '/player.png',
     width: PX_PER_CELL,
@@ -156,7 +155,7 @@ Template.room.rendered = function () {
     direction: 0
   };
 
-  players[user._id] = new Player(options);
+  players[user._id] = new Player(playerDefaults);
   players[user._id].render();
 
   var boundKeyDown = keyDown.bind(this.data);
@@ -168,9 +167,9 @@ Template.room.rendered = function () {
 Template.room.helpers({
   canvasWidth: CANVAS_WIDTH,
   canvasHeight: CANVAS_HEIGHT,
-  challenging: function () {
+  challenges: function () {
     var user = Meteor.user();
-    return user && user.game && user.game.challenges.sent;
+    return user && user.game && user.game.challenges;
   },
   nearbyPlayers: function () {
     var user = Meteor.user();
@@ -233,8 +232,8 @@ var update = function (dt) {
   // render each player to canvas
   users.forEach(function (user) {
     if (!players[user._id]) {
-      options.position = user.game.position;
-      players[user._id] = new Player(options);
+      playerDefaults.position = user.game.position;
+      players[user._id] = new Player(playerDefaults);
     }
 
     (function (player, dir, start, pos) {

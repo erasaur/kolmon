@@ -92,14 +92,14 @@ Meteor.users.allow({
 // });
 
 Meteor.methods({
-  challengePlayer: function (challengingId) {
+  challengePlayer: function (playerId) {
     var userId = Meteor.userId();
     if (!userId) return;
 
     Meteor.users.update(userId, {
       $addToSet: { 'game.challenges.sent': userId }
     });
-    Meteor.users.update(challengingId, {
+    Meteor.users.update(playerId, {
       $addToSet: { 'game.challenges.received': userId }
     });
   },
