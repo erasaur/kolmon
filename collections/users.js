@@ -92,11 +92,22 @@ Meteor.users.allow({
 // });
 
 Meteor.methods({
-  setPosition: function (position) {
-    var user = Meteor.user();
-    if (!user) return;
+  challengePlayer: function (challengingId) {
+    var userId = Meteor.userId();
+    if (!userId) return;
 
-    Meteor.users.update(user._id, {
+    Meteor.users.update(userId, {
+      $addToSet: { 'game.challenges.sent': userId }
+    });
+    Meteor.users.update(challengingId, {
+      $addToSet: { 'game.challenges.received': userId }
+    });
+  },
+  setPosition: function (position) {
+    var userId = Meteor.userId();
+    if (!userId) return;
+
+    Meteor.users.update(userId, {
       $set: { 'game.position': position, 'game.direction': 0 }
     });
   },

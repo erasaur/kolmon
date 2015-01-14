@@ -142,7 +142,7 @@ Template.room.rendered = function () {
     foreground: this.data.foreground
   };
   map = new Map(options, function () {
-    this.renderBg().renderFg();              
+    this.renderBg().renderFg();
   });
 
   // init player
@@ -168,6 +168,10 @@ Template.room.rendered = function () {
 Template.room.helpers({
   canvasWidth: CANVAS_WIDTH,
   canvasHeight: CANVAS_HEIGHT,
+  challenging: function () {
+    var user = Meteor.user();
+    return user && user.game && user.game.challenges.sent;
+  },
   nearbyPlayers: function () {
     var user = Meteor.user();
     if (!user) return;
@@ -190,6 +194,15 @@ Template.room.helpers({
     })(user.game);
   }
 });
+
+Template.room.events({
+  'click .js-challenge-player': function (event, template) {
+    if (confirm('challenge ' + this.username + '?')) {
+      Meteor.call('challengePlayer', this._id);
+    }
+  }
+});
+
 Template.room.destroyed = function () {
   stop();
 };
