@@ -1,6 +1,6 @@
 var playerContext;
 var last; // time of last update
-var requestId; // id returned by setInterval
+// var requestId; // id returned by setInterval
 
 var direction = 0;
 var startedMoving;
@@ -13,6 +13,25 @@ var MOVE_TIME = 500; // 500 ms to travel 1 cell
 var UPDATE_STEP = 50; // ms per update
 
 var playerDefaults = {};
+
+var kolTimer = {
+  timers: {},
+  set: function (id, fn, delay) {
+    this.timers[id] = Meteor.setInterval(fn, delay);
+  },
+  stop: function (id) {
+    var self = this;
+    var stop = function (id, timerId) {
+      Meteor.clearInterval(timerId);
+      delete self.timers[id];
+    };
+    if (typeof id === 'undefined') {
+      _.each(this.timers, function (val, key) { stop(key, val); });
+      return;
+    }
+    stop(id, this.timers[id]);
+  }
+};
 
 function Player (options) {
   var self = this;
@@ -222,14 +241,16 @@ var start = function () {
   last = Date.now();
 
   stop();
-  requestId = Meteor.setInterval(main, UPDATE_STEP);
+  // requestId = Meteor.setInterval(main, UPDATE_STEP);
+  kolTimer.set('main', main, UPDATE_STEP);
 };
 
 var stop = function () {
-  if (requestId) {
-    Meteor.clearInterval(requestId);
-    requestId = null;
-  }
+  kolTimer.stop();
+  // if (requestId) {
+  //   Meteor.clearInterval(requestId);
+  //   requestId = null;
+  // }
 };
 
 // update positions of players
