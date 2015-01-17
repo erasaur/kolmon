@@ -1,4 +1,4 @@
-Issues:
+- Add a TTL to player challenges (either separate doc or some long-running interval)
 
 Optimizing performance:
 - fetch users only within current viewport

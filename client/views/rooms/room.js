@@ -195,10 +195,20 @@ Template.room.helpers({
 });
 
 Template.room.events({
-  'click .js-challenge-player': function (event, template) {
-    if (this._id === Meteor.userId()) return;
+  'click .js-challenge-send': function (event, template) {
+    if (this.playerId === Meteor.userId()) return;
     if (confirm('challenge ' + this.username + '?')) {
-      Meteor.call('challengePlayer', this);
+      Meteor.call('challengeSend', this);
+    }
+  },
+  'click .js-challenge-accept': function (event, template) {
+    var fromSelf = this.playerId === Meteor.userId();
+    var tooLate = new Date().getTime() - this.createdAt.getTime() >= 1800000;
+
+    // 5 min expiry time
+    if (fromSelf || tooLate) return;
+    if (confirm('accept ' + this.username + '\'s challenge?')) {
+      Meteor.call('challengeAccept', this);
     }
   }
 });
@@ -285,7 +295,6 @@ function keyDown (event) {
   // if moving already or invalid key
   if (!user || user.game.direction || !move) return;
 
-  // TODO: only if valid move (e.g no wall), update direction
   var newPos = nextPosition(user.game.position, move);
   if (_.some(this.walls, function (wall) {
     return (

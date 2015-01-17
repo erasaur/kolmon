@@ -11,7 +11,7 @@
         {{/unless}}
 
         {{#each nearbyPlayers}}
-          <li><a href="#" class="js-challenge-player">{{username}}</a></li>
+          <li><a href="#" class="js-challenge-send">{{username}}</a></li>
         {{/each}}
       </ul>
 
@@ -33,7 +33,7 @@
         {{/unless}}
 
         {{#each challenges.received}}
-          <li>{{username}}</li>
+          <li><a href="#" class="js-challenge-accept">{{username}}</a></li>
         {{/each}}
       </ul>
     </div>

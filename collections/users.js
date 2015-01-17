@@ -92,16 +92,24 @@ Meteor.users.allow({
 // });
 
 Meteor.methods({
-  challengePlayer: function (player) {
+  challengeSend: function (player) {
     var user = Meteor.user();
     if (!user || !player) return;
+    var now = new Date();
 
-    Meteor.users.update(user._id, {
-      $addToSet: { 'game.challenges.sent': { _id: player._id, username: player.username } }
-    });
-    Meteor.users.update(player._id, {
-      $addToSet: { 'game.challenges.received': { _id: user._id, username: user.username } }
-    });
+    Meteor.users.update(user._id, { $addToSet: {
+      'game.challenges.sent': {
+        createdAt: now, playerId: player._id, username: player.username
+      }
+    }});
+    Meteor.users.update(player._id, { $addToSet: {
+      'game.challenges.received': {
+        createdAt: now, playerId: user._id, username: user.username
+      }
+    }});
+  },
+  challengeAccept: function (player) {
+    // TODO
   },
   setPosition: function (position) {
     var userId = Meteor.userId();
