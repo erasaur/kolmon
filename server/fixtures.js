@@ -1,3 +1,7 @@
+if (Challenges.find().count() === 0) {
+  Challenges._ensureIndex({ createdAt: 1, expireAfterSeconds: 300000 });
+}
+
 if (Rooms.find().count() === 0) {
   Rooms.insert({
     name: 'Main Room',

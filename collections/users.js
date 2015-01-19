@@ -82,35 +82,7 @@ Meteor.users.allow({
   }
 });
 
-// Meteor.users.deny({
-//   update: function (userId, user, fields) {
-//     // TODO: how to make sure players don't give themselves buffs/teleport?
-//     // buffs can practically be put in server, but not changing position
-//     var editable = ['profile', 'game'];
-//     return _.difference(fields, editable).length > 0;
-//   }
-// });
-
 Meteor.methods({
-  challengeSend: function (player) {
-    var user = Meteor.user();
-    if (!user || !player) return;
-    var now = new Date();
-
-    Meteor.users.update(user._id, { $addToSet: {
-      'game.challenges.sent': {
-        createdAt: now, playerId: player._id, username: player.username
-      }
-    }});
-    Meteor.users.update(player._id, { $addToSet: {
-      'game.challenges.received': {
-        createdAt: now, playerId: user._id, username: user.username
-      }
-    }});
-  },
-  challengeAccept: function (player) {
-    // TODO
-  },
   setPosition: function (position) {
     var userId = Meteor.userId();
     if (!userId) return;

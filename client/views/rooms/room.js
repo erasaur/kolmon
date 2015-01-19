@@ -1,6 +1,5 @@
 var playerContext;
 var last; // time of last update
-// var requestId; // id returned by setInterval
 
 var direction = 0;
 var startedMoving;
@@ -241,16 +240,11 @@ var start = function () {
   last = Date.now();
 
   stop();
-  // requestId = Meteor.setInterval(main, UPDATE_STEP);
   kolTimer.set('main', main, UPDATE_STEP);
 };
 
 var stop = function () {
   kolTimer.stop();
-  // if (requestId) {
-  //   Meteor.clearInterval(requestId);
-  //   requestId = null;
-  // }
 };
 
 // update positions of players
