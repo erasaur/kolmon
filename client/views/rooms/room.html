@@ -17,22 +17,22 @@
 
       <span>Challenges sent:</span>
       <ul>
-        {{#unless challenges.sent.length}}
+        {{#unless challengesSent.count}}
           <li>None</li>
         {{/unless}}
 
-        {{#each challenges.sent}}
+        {{#each challengesSent}}
           <li>{{username}}</li>
         {{/each}}
       </ul>
 
       <span>Challenges received:</span>
       <ul>
-        {{#unless challenges.received.length}}
+        {{#unless challengesReceived.count}}
           <li>None</li>
         {{/unless}}
 
-        {{#each challenges.received}}
+        {{#each challengesReceived}}
           <li><a href="#" class="js-challenge-accept">{{username}}</a></li>
         {{/each}}
       </ul>

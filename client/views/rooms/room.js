@@ -185,9 +185,13 @@ Template.room.rendered = function () {
 Template.room.helpers({
   canvasWidth: CANVAS_WIDTH,
   canvasHeight: CANVAS_HEIGHT,
-  challenges: function () {
-    var user = Meteor.user();
-    return user && user.game && user.game.challenges;
+  challengesSent: function () {
+    var userId = Meteor.userId();
+    return userId && Challenges.find({ 'sender.id': userId });
+  },
+  challengesReceived: function () {
+    var userId = Meteor.userId();
+    return userId && Challenges.find({ 'receiver.id': userId });
   },
   nearbyPlayers: function () {
     var user = Meteor.user();
