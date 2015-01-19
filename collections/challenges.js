@@ -6,6 +6,9 @@ ChallengeSchema = new SimpleSchema({
   createdAt: {
     type: Date
   },
+  roomId: {
+    type: String
+  },
   sender: {
     type: Object
   },
@@ -24,6 +27,7 @@ Meteor.methods({
 
     var challenge = {
       createdAt: new Date(),
+      roomId: user.game.roomId,
       sender: {
         id: user._id,
         username: user.username
@@ -35,7 +39,6 @@ Meteor.methods({
     };
 
     // check(challenge, ChallengeSchema);
-
     Challenges.insert(challenge);
   },
   challengeAccept: function (player) {

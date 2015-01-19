@@ -186,12 +186,14 @@ Template.room.helpers({
   canvasWidth: CANVAS_WIDTH,
   canvasHeight: CANVAS_HEIGHT,
   challengesSent: function () {
-    var userId = Meteor.userId();
-    return userId && Challenges.find({ 'sender.id': userId });
+    var user = Meteor.user();
+    if (!user) return;
+    return Challenges.find({ 'roomId': user.game.roomId, 'sender.id': user._id });
   },
   challengesReceived: function () {
-    var userId = Meteor.userId();
-    return userId && Challenges.find({ 'receiver.id': userId });
+    var user = Meteor.user();
+    if (!user) return;
+    return Challenges.find({ 'roomId': user.game.roomId, 'receiver.id': user._id });
   },
   nearbyPlayers: function () {
     var user = Meteor.user();
