@@ -7,8 +7,8 @@ Meteor.publish('singleRoom', function (roomId) {
     }),
     Rooms.find(roomId),
     Challenges.find({ $or: [
-      { 'sent.id': this.userId },
-      { 'received.id': this.userId }
+      { 'sender.id': this.userId },
+      { 'receiver.id': this.userId }
     ]})
   ];
 });

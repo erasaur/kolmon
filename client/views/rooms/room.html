@@ -22,7 +22,7 @@
         {{/unless}}
 
         {{#each challengesSent}}
-          <li>{{username}}</li>
+          <li>{{receiver.username}}</li>
         {{/each}}
       </ul>
 
@@ -33,7 +33,7 @@
         {{/unless}}
 
         {{#each challengesReceived}}
-          <li><a href="#" class="js-challenge-accept">{{username}}</a></li>
+          <li><a href="#" class="js-challenge-accept">{{sender.username}}</a></li>
         {{/each}}
       </ul>
     </div>
