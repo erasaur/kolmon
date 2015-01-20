@@ -1,46 +1,59 @@
 <template name="room">
   {{> contentFor region="nav" template="nav"}}
 
-  <div class="col-sm-2">
-  <a href="{{pathFor 'rooms'}}">Lobby</a> 
-    <div>
-      <span>Users nearby:</span> 
-      <ul>
-        {{#unless nearbyPlayers.length}}
-          <li>None</li>
-        {{/unless}}
+  {{#if currentUser.game.inBattle}}
+    {{> battle}}
+  {{else}}
+    <div class="col-sm-2">
+    <a href="{{pathFor 'rooms'}}">Lobby</a> 
+      <div>
+        <span>Users nearby:</span> 
+        <ul>
+          {{#unless nearbyPlayers.count}}
+            <li>None</li>
+          {{/unless}}
 
-        {{#each nearbyPlayers}}
-          <li><a href="#" class="js-challenge-send">{{username}}</a></li>
-        {{/each}}
-      </ul>
+          {{#each nearbyPlayers}}
+            <li><a href="#" class="js-challenge-send">{{username}}</a></li>
+          {{/each}}
+        </ul>
 
-      <span>Challenges sent:</span>
-      <ul>
-        {{#unless challengesSent.count}}
-          <li>None</li>
-        {{/unless}}
+        <span>Challenges sent:</span>
+        <ul>
+          {{#unless challengesSent.count}}
+            <li>None</li>
+          {{/unless}}
 
-        {{#each challengesSent}}
-          <li>{{receiver.username}}</li>
-        {{/each}}
-      </ul>
+          {{#each challengesSent}}
+            <li>{{receiver.username}}</li>
+          {{/each}}
+        </ul>
 
-      <span>Challenges received:</span>
-      <ul>
-        {{#unless challengesReceived.count}}
-          <li>None</li>
-        {{/unless}}
+        <span>Challenges received:</span>
+        <ul>
+          {{#unless challengesReceived.count}}
+            <li>None</li>
+          {{/unless}}
 
-        {{#each challengesReceived}}
-          <li><a href="#" class="js-challenge-accept">{{sender.username}}</a></li>
-        {{/each}}
-      </ul>
+          {{#each challengesReceived}}
+            <li><a href="#" class="js-challenge-accept">{{sender.username}}</a></li>
+          {{/each}}
+        </ul>
+      </div>
     </div>
-  </div>
-  <div class="col-sm-10">
-    <canvas id="canvas-background" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
-    <canvas id="canvas-players" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
-    <canvas id="canvas-foreground" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
-  </div>
+    <div class="col-sm-10">
+      <canvas id="canvas-background" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+      <canvas id="canvas-players" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+      <canvas id="canvas-foreground" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+    </div>
+  {{/if}}
+</template>
+
+<template name="battle">
+
+</template>
+
+<template name="modalChallenge">
+  Commencing battle with {{username}}:
+  {{countdown}}
 </template>

@@ -16,6 +16,7 @@ var playerDefaults = {};
 var kolTimer = {
   timers: {},
   set: function (id, fn, delay) {
+    if (this.timers[id]) this.stop(id);
     this.timers[id] = Meteor.setInterval(fn, delay);
   },
   stop: function (id) {
@@ -139,6 +140,7 @@ Map.prototype.renderFg = function () {
 };
 
 Template.room.rendered = function () {
+  var self = this;
   var user = Meteor.user();
   if (!user) return;
 
@@ -180,7 +182,50 @@ Template.room.rendered = function () {
   $(window).on('keydown', boundKeyDown);
 
   start();
+
+  Tracker.autorun(function () {
+    var challenge = Challenges.findOne({ $or: [
+      { 'sender.id': user._id },
+      { 'receiver.id': user._id }
+    ], status: STATUS_ACCEPTED });
+    var $message = $('#modal-challenge');
+    if (challenge && (!$message || !$message.length)) {
+      (function (s, r) {
+        var isSender = s.id === user._id;
+        console.log('asdf');
+        var modal = Blaze.renderWithData(Template.modalChallenge, {
+          username: isSender ? r.username : s.username
+        }, $('body')[0]);
+        $('#modal-challenge').modal('show').on('hidden.bs.modal', function () {
+          Blaze.remove(modal);
+        })
+      })(challenge.sender, challenge.receiver);
+    }
+  });
 };
+
+Template.modalChallenge.created = function () {
+  this._countdown = new ReactiveVar(3);
+};
+Template.modalChallenge.rendered = function () {
+  var self = this;
+  kolTimer.set('countdown', function () {
+    var curr = self._countdown.get();
+    if (--curr <= 0) {
+      kolTimer.stop('countdown');
+      $('#modal-challenge').modal('hide');
+      return;
+    }
+    self._countdown.set(curr);
+  }, 1000);
+};
+
+Template.modalChallenge.helpers({
+  countdown: function () {
+    var template = Template.instance();
+    return template && template._countdown && template._countdown.get();
+  }
+});
 
 Template.room.helpers({
   canvasWidth: CANVAS_WIDTH,
@@ -211,7 +256,7 @@ Template.room.helpers({
         { 'game.position.x': { $lte: maxX } },
         { 'game.position.y': { $gte: minY } },
         { 'game.position.y': { $lte: maxY } }
-      ]}, { fields: { '_id': 1, 'username': 1 } }).fetch();
+      ]}, { fields: { '_id': 1, 'username': 1 } });
 
       return res;
     })(user.game);
@@ -226,12 +271,8 @@ Template.room.events({
     }
   },
   'click .js-challenge-accept': function (event, template) {
-    var fromSelf = this.playerId === Meteor.userId();
-    var tooLate = new Date().getTime() - this.createdAt.getTime() >= 1800000;
-
-    // 5 min expiry time
-    if (fromSelf || tooLate) return;
-    if (confirm('accept ' + this.username + '\'s challenge?')) {
+    if (this.playerId === Meteor.userId()) return;
+    if (confirm('accept ' + this.sender.username + '\'s challenge?')) {
       Meteor.call('challengeAccept', this);
     }
   }
@@ -274,13 +315,13 @@ var update = function (dt) {
 
       if (dir && !moveDone) {
         var offset = (dt / MOVE_TIME) * PX_PER_CELL; // fraction of time * total dist
-
         player.move(dir, offset);
       } else if (!dir) {
         player.moving = false;
         player.position = pos;
       }
 
+      // TODO if in battle, render indicator above player
       player.render();
     })(players[user._id], user.game.direction, user.game.startTime, user.game.position);
   });
