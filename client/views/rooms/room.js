@@ -140,11 +140,16 @@ Map.prototype.renderFg = function () {
 };
 
 Template.room.rendered = function () {
-  var self = this;
   var user = Meteor.user();
   if (!user) return;
 
   Meteor.call('enterRoom', Session.get('currentRoom'));
+};
+
+Template.map.rendered = function () {
+  var self = this;
+  var user = Meteor.user();
+  if (!user) return;
 
   var fgCanvas = this.find('#canvas-foreground');
   var bgCanvas = this.find('#canvas-background');
@@ -227,7 +232,7 @@ Template.modalChallenge.helpers({
   }
 });
 
-Template.room.helpers({
+Template.map.helpers({
   canvasWidth: CANVAS_WIDTH,
   canvasHeight: CANVAS_HEIGHT,
   challengesSent: function () {
@@ -263,7 +268,7 @@ Template.room.helpers({
   }
 });
 
-Template.room.events({
+Template.map.events({
   'click .js-challenge-send': function (event, template) {
     if (this.playerId === Meteor.userId()) return;
     if (confirm('challenge ' + this.username + '?')) {
@@ -279,19 +284,19 @@ Template.room.events({
 });
 
 Template.room.destroyed = function () {
-  stop();
+  kolTimer.stop(); // stop all timers
+};
+
+Template.map.destroyed = function () {
+  kolTimer.stop('main');
 };
 
 var start = function () {
   // initialize time of last update
   last = Date.now();
 
-  stop();
+  kolTimer.stop('main');
   kolTimer.set('main', main, UPDATE_STEP);
-};
-
-var stop = function () {
-  kolTimer.stop();
 };
 
 // update positions of players

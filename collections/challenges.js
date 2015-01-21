@@ -31,6 +31,15 @@ Meteor.methods({
     var user = Meteor.user();
     if (!user || !player) return;
 
+    var challenge = Challenges.findOne({ $or: [
+      { 'sender.id': user._id },
+      { 'receiver.id': user._id }
+    ]});
+
+    // XXX limit to one challenge at a time?
+    // if (challenge)
+    //   throw new Meteor.Error('already-challenged', 'Players can only send one challenge at a time.');
+
     var challenge = {
       createdAt: new Date(),
       roomId: user.game.roomId,

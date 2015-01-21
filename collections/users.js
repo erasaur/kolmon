@@ -101,29 +101,5 @@ Meteor.methods({
         'game.startTime': startTime
       }
     });
-  },
-  enterRoom: function (roomId) {
-    var userId = Meteor.userId();
-    if (!userId) return;
-
-    var room = Rooms.findOne(roomId);
-    if (!room || !room.slots)
-      throw new Meteor.Error('room-error', 'Room does not exist or has no slots.');
-
-    var defaults = {
-      'position': { 'x': CENTER_X, 'y': CENTER_Y },
-      'roomId': roomId,
-      'direction': 0
-    };
-
-    Meteor.users.update(userId, { $set: { 'game': defaults } });
-    Rooms.update(roomId, { $addToSet: { 'userIds': userId }, $inc: { 'slots': -1 } });
-  },
-  leaveRoom: function (userId, roomId) {
-    var user = Meteor.user();
-    if (!user || user._id !== userId && !isAdmin(user)) return;
-
-    Meteor.users.update(userId, { $set: { 'game.roomId': 'rooms' } });
-    Rooms.update(roomId, { $pull: { 'userIds': userId }, $inc: { 'slots': 1 } });
   }
 });

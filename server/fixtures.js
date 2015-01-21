@@ -1,5 +1,5 @@
 if (Challenges.find().count() === 0) {
-  Challenges._ensureIndex({ createdAt: 1 }, { expireAfterSeconds: 300000 });
+  Challenges._ensureIndex({ createdAt: 1 }, { expireAfterSeconds: 300 });
 }
 
 if (Rooms.find().count() === 0) {
