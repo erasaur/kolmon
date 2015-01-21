@@ -10,6 +10,10 @@ Accounts.onCreateUser(function (options, user) {
   return user;
 });
 
+UserStatus.events.on('connectionIdle', function (fields) {
+  var user = Meteor.user();
+  Meteor.call('leaveRoom', user._id, user.game.roomId);
+});
 UserStatus.events.on('connectionLogout', function (fields) {
   cleanupUser(fields.userId);
 });

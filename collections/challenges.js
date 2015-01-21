@@ -67,11 +67,14 @@ Meteor.methods({
     var sender = Meteor.users.findOne(challenge.sender.id);
     var receiver = Meteor.users.findOne(challenge.receiver.id);
 
+    if (!sender || !receiver)
+      throw new Meteor.Error('invalid-user', 'Player does not exist');
+
     if (sender.inBattle || receiver.inBattle)
       throw new Meteor.Error('already-battling', 'One of the users on either side of the challenge is already in battle');
 
     Challenges.update(challenge._id, { $set: { status: STATUS_ACCEPTED } });
-    Meteor.users.update({ _id: { $in: [sender,receiver] } }, {
+    Meteor.users.update({ _id: { $in: [sender._id,receiver._id] } }, {
       $set: { 'game.inBattle': true }
     }, { multi: true });
   },
