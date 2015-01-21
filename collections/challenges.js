@@ -29,7 +29,7 @@ Challenges = new Mongo.Collection('challenges');
 Meteor.methods({
   challengeSend: function (player) {
     var user = Meteor.user();
-    if (!user || !player) return;
+    if (!user || !player || user._id === player._id) return;
 
     var challenge = Challenges.findOne({ $or: [
       { 'sender.id': user._id },

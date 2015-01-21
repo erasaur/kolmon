@@ -270,13 +270,13 @@ Template.map.helpers({
 
 Template.map.events({
   'click .js-challenge-send': function (event, template) {
-    if (this.playerId === Meteor.userId()) return;
+    if (this._id === Meteor.userId()) return;
     if (confirm('challenge ' + this.username + '?')) {
       Meteor.call('challengeSend', this);
     }
   },
   'click .js-challenge-accept': function (event, template) {
-    if (this.playerId === Meteor.userId()) return;
+    if (this.sender._id === Meteor.userId()) return;
     if (confirm('accept ' + this.sender.username + '\'s challenge?')) {
       Meteor.call('challengeAccept', this);
     }
@@ -285,6 +285,7 @@ Template.map.events({
 
 Template.room.destroyed = function () {
   kolTimer.stop(); // stop all timers
+  Meteor.call('leaveRoom', Meteor.userId(), Session.get('currentRoom'));
 };
 
 Template.map.destroyed = function () {
