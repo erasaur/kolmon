@@ -232,6 +232,11 @@ Template.modalChallenge.helpers({
   }
 });
 
+Template.battle.helpers({
+  canvasWidth: CANVAS_WIDTH,
+  canvasHeight: CANVAS_HEIGHT,
+});
+
 Template.map.helpers({
   canvasWidth: CANVAS_WIDTH,
   canvasHeight: CANVAS_HEIGHT,
