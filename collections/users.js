@@ -24,7 +24,59 @@ Schema.UserGame = new SimpleSchema({
   },
   inBattle: {
     type: Boolean
+  },
+  opponent: {
+    type: Object
+  },
+  'opponent.username': {
+    type: String
+  },
+  'opponent.id': {
+    type: String
+  },
+  currentTurn: { // currently executing the turn
+    type: Boolean
+  },
+  // timeLeft: { // time left for turn
+  //   type: Number,
+  //   decimal: true
+  // }
+});
+
+Schema.UserBag = new SimpleSchema({
+  items: {
+    type: [String]
+  },
+  balls: {
+    type: [String]
+  },
+  keyItems: {
+    type: [String]
+  },
+  machines: { // tm/hm
+    type: [String]
   }
+});
+
+Schema.Pokemon = new SimpleSchema({
+  name: {
+    type: String,
+    optional: true,
+    // regEx: SimpleSchema.RegEx.Name
+  },
+  type: {
+    type: Number,
+    // allowedValues: POKEMON_TYPES
+  },
+  level: {
+    type: Number,
+    min: 1
+  },
+  hp: {
+    type: Number,
+    min: 0
+  }
+  // XXX nature, gender, item, color, etc.
 });
 
 Schema.User = new SimpleSchema({
@@ -59,7 +111,17 @@ Schema.User = new SimpleSchema({
     type: Object,
     blackbox: true
   },
-  game: {
+  bag: {
+    type: Schema.UserBag
+  },
+  pokemon: {
+    type: [Schema.Pokemon]
+  },
+  team: {
+    type: [Schema.Pokemon],
+    max: 4
+  },
+  game: { // XXX move to separate collection. every move sends entire user doc & invalidates all functions depending on user
     type: Schema.UserGame
   },
   status: { // for user-status

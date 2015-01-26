@@ -1,0 +1,16 @@
+<template name="pokemon">
+  <img src="{{type}}.png">
+</template>
+
+<template name="battle">
+  <!-- <div class="col-sm-12"> -->
+  <!--   <canvas id="canvas-battle" width="{{canvasWidth}}" height="{{canvasHeight}}" class="center"></canvas> --> 
+  <!-- </div> -->
+  <div class="col-sm-6">
+    {{> pokemon currentPokemon}}
+  </div>
+
+  <div class="col-sm-6">
+    {{> pokemon opponentPokemon}}
+  </div>
+</template>

@@ -189,7 +189,7 @@ Template.map.rendered = function () {
   start();
 
   Tracker.autorun(function () {
-    var challenge = Challenges.findOne({ $or: [
+    var challenge = Challenges.findOne({ $or: [ // XXX separate package and class
       { 'sender.id': user._id },
       { 'receiver.id': user._id }
     ], status: STATUS_ACCEPTED });
@@ -197,7 +197,6 @@ Template.map.rendered = function () {
     if (challenge && (!$message || !$message.length)) {
       (function (s, r) {
         var isSender = s.id === user._id;
-        console.log('asdf');
         var modal = Blaze.renderWithData(Template.modalChallenge, {
           username: isSender ? r.username : s.username
         }, $('body')[0]);
@@ -232,9 +231,16 @@ Template.modalChallenge.helpers({
   }
 });
 
-Template.battle.helpers({
-  canvasWidth: CANVAS_WIDTH,
-  canvasHeight: CANVAS_HEIGHT,
+Template.room.helpers({
+  opponent: function () {
+    var challenge = Challenges.findOne({ $or: [
+      { 'sender.id': user._id },
+      { 'receiver.id': user._id }
+    ], status: STATUS_ACCEPTED });
+    var isSender = challenge.sender.id === user._id;
+    var userId = isSender ? receiver.id : sender.id;
+    return Meteor.users.findOne(userId);
+  }
 });
 
 Template.map.helpers({
@@ -242,13 +248,17 @@ Template.map.helpers({
   canvasHeight: CANVAS_HEIGHT,
   challengesSent: function () {
     var user = Meteor.user();
-    if (!user) return;
-    return Challenges.find({ 'roomId': user.game.roomId, 'sender.id': user._id });
+    return user && Challenges.find({
+      'roomId': user.game.roomId,
+      'sender.id': user._id
+    });
   },
   challengesReceived: function () {
     var user = Meteor.user();
-    if (!user) return;
-    return Challenges.find({ 'roomId': user.game.roomId, 'receiver.id': user._id });
+    return user && Challenges.find({
+      'roomId': user.game.roomId,
+      'receiver.id': user._id
+    });
   },
   nearbyPlayers: function () {
     var user = Meteor.user();

@@ -2,7 +2,7 @@
   {{> contentFor region="nav" template="nav"}}
 
   {{#if currentUser.game.inBattle}}
-    {{> battle}}
+    {{> battle opponent}}
   {{else}}
     {{> map}}
   {{/if}}
@@ -50,12 +50,6 @@
     <canvas id="canvas-background" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
     <canvas id="canvas-players" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
     <canvas id="canvas-foreground" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
-  </div>
-</template>
-
-<template name="battle">
-  <div class="col-sm-12">
-    <canvas id="canvas-battle" width="{{canvasWidth}}" height="{{canvasHeight}}" class="center"></canvas> 
   </div>
 </template>
 

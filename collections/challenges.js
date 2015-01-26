@@ -74,7 +74,7 @@ Meteor.methods({
       throw new Meteor.Error('already-battling', 'One of the users on either side of the challenge is already in battle');
 
     Challenges.update(challenge._id, { $set: { status: STATUS_ACCEPTED } });
-    Meteor.users.update({ _id: { $in: [sender._id,receiver._id] } }, {
+    Meteor.users.update({ _id: { $in: [sender._id, receiver._id] } }, {
       $set: { 'game.inBattle': true }
     }, { multi: true });
   },
