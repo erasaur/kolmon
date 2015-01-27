@@ -1,4 +1,9 @@
 - Add a TTL to player challenges (either separate doc or some long-running interval)
+- Change challenges to Games collection
+-- add index on subdoc (sender, receiver) -- can only be one game where sender and receiver are same
+-- when game is accepted change flag (started, accepted, etc) to true
+-- keep track of turns inside Game doc
+-- keep references of games inside user (e.g sent, received, etc)
 
 Optimizing performance:
 - fetch users only within current viewport
