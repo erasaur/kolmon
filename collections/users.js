@@ -1,5 +1,14 @@
 var Schema = {};
 
+Schema.UserStats = new SimpleSchema({
+  battleCount: {
+    type: Number
+  },
+  pokedollars: {
+    type: Number
+  }
+});
+
 Schema.UserProfile = new SimpleSchema({
   name: {
     type: String,
@@ -26,7 +35,8 @@ Schema.UserGame = new SimpleSchema({
     type: Boolean
   },
   opponent: {
-    type: Object
+    type: Object,
+    optional: true
   },
   'opponent.username': {
     type: String
@@ -58,15 +68,82 @@ Schema.UserBag = new SimpleSchema({
   }
 });
 
+Schema.Move = new SimpleSchema({
+  _id: {
+    type: String,
+    optional: true
+  },
+  name: {
+    type: String
+  },
+  power: {
+    type: Number,
+    min: 10,
+    max: 250 // XXX is this correct??
+  },
+  accuracy: {
+    type: Number
+  },
+  type: {
+    type: Number,
+    // allowedValues: MOVE_TYPES // fire, water, grass, etc.
+  }
+});
+
+// XXX horrible naming..
+Schema.PokemonMove = new SimpleSchema({
+  id: {
+    type: String // _id of the move
+  },
+  pp: {
+    type: Number,
+    min: 0,
+    // defaultValue:  // XXX depends on move
+  },
+});
+
+// maps each pokemon to its possible movelist
+Schema.MoveLists = new SimpleSchema({
+  _id: {
+    type: String
+  },
+  pokemon: {
+    type: String
+  },
+  moves: {
+    type: [String]
+  }
+});
+
+// evo = findOne({ pokemon: myPoke })
+// myPokeLvl >= evo.levels[i] && myPoke !== evo.pokemon[i+1] ? evolve(myPoke)
+// Schema.Evolutions = new SimpleSchema({
+//   _id: {
+//     type: String
+//   },
+    // pokemon: [String] // charmander, charmeleon, charizard
+    // levels: [String] // 16, 36
+// });
+
+Schema.CanonicalPokemon = new SimpleSchema({
+  _id: {
+    type: String
+  },
+  // type: { // XXX move to separate schema
+  //   type: Number,
+  //   // allowedValues: POKEMON_TYPES
+  // },
+  // XXX other base stats
+});
+
 Schema.Pokemon = new SimpleSchema({
   name: {
     type: String,
     optional: true,
     // regEx: SimpleSchema.RegEx.Name
   },
-  type: {
-    type: Number,
-    // allowedValues: POKEMON_TYPES
+  id: {
+    type: String // _id of pokemon
   },
   level: {
     type: Number,
@@ -75,6 +152,13 @@ Schema.Pokemon = new SimpleSchema({
   hp: {
     type: Number,
     min: 0
+  },
+  moves: { // XXX limit what moves based on poke
+    type: [Schema.PokemonMove]
+  },
+  status: {
+    type: String,
+    // allowedValues: STATUS_TYPES // paralysis, burn, confusion, etc.
   }
   // XXX nature, gender, item, color, etc.
 });
@@ -110,6 +194,9 @@ Schema.User = new SimpleSchema({
   services: {
     type: Object,
     blackbox: true
+  },
+  stats: {
+    type: Schema.UserStats
   },
   bag: {
     type: Schema.UserBag

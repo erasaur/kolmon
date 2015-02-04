@@ -13,6 +13,7 @@ Template.battle.helpers({
     var battle = instance.battle;
     var user = Meteor.user();
     return battle.myTurn(user);
+  }
 });
 
 Template.battle.events({
