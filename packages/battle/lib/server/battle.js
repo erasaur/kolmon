@@ -29,13 +29,14 @@ function parseCommand (command) {
   var command = command.trim(); // XXX clean input
   if (!command) return;
 
-  var names = /[a-z]+/ig;
-  var commands = /:[a-z]+/i;
+  // beginning of string or following a space (excludes :commands)
+  var names = /(?:^|\s+)([a-z]+)/ig.exec(command); 
+  var commands = command.match(/\B:\w+/i); // asdf:asdf fails, but :asdf succeeds
 
   return {
-    receiver: command.match(names)[0], // poke being commanded
-    target: command.match(names)[1], // target of attack -- might be empty
-    move: command.match(commands)[0] // move
+    receiver: names[0], // poke being commanded
+    target: names[1], // target of attack -- might be empty
+    move: commands[0] // move
   };
 }
 
