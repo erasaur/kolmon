@@ -14,7 +14,7 @@ function endBattle (turns, won) {
 
   var money = calcReward(turns);
 
-  Meteor.users.update(user._id, { 
+  Meteor.users.update(user._id, {
     $set: { 'game.inBattle': false, 'game.opponent': null },
     $inc: { 'stats.battleCount': 1, 'stats.pokedollars': won ? money[0] : money[1] }
   });
@@ -30,7 +30,7 @@ function parseCommand (command) {
   if (!command) return;
 
   // beginning of string or following a space (excludes :commands)
-  var names = /(?:^|\s+)([a-z]+)/ig.exec(command); 
+  var names = /(?:^|\s+)([a-z]+)/ig.exec(command);
   var commands = command.match(/\B:\w+/i); // asdf:asdf fails, but :asdf succeeds
 
   return {
@@ -52,13 +52,13 @@ Meteor.methods({
         // XXX make sure it's a valid command..
       }),
       target: String
-    }); 
+    });
 
     var user = Meteor.user();
     var opponent = user && user.game.opponent;
     if (!user || !opponent) return;
 
-    var pokemon = _.find(user.pokemon, function (pokemon) {
+    var pokemon = _.find(user.team, function (pokemon) {
       return pokemon.hp > 0;
     });
 
@@ -66,12 +66,24 @@ Meteor.methods({
 
     // check PP
     var move = pokemon.moves[command.move];
-    if (!move) 
+    var actualMove = Moves.findOne({ 'name': move.id }); // XXX naming...
+    if (!move)
       throw new Meteor.Error('invalid-move', i18n.t('invalid_move'));
     else if (move.pp <= 0)
       throw new Meteor.Error('no-pp', i18n.t('no_pp'));
-    
+
     // XXX miss rate, effects (confusion, burn, etc.)
     // XXX STAB, super effective, not effective, no effect
+    var target = _.find(opponent.team, function (pokemon) {
+      return pokemon.name === command.target;
+    });
+    if (!target || target.hp <= 0)
+      throw new Meteor.Error('invalid-target', i18n.t('invalid_target'));
+
+    var newHP = target.hp -= actualMove.power; // XXX calculate the damage
+    // XXX does meteor support projections yet?
+    Meteor.users.update({ '_id': opponent.id, 'team.name': target }, {
+      $set: { 'team.$.hp': newHP }
+    });
   },
 });
