@@ -1,44 +1,44 @@
-function calcReward (turns) {
-  var base = [ 1000, 200 ]; // [ win, lose ]
-  var limit = Math.floor(Math.sqrt(base[0]/base[1]));
-  var offset = Math.min(Math.max(Math.log(turns), 1), limit);
+var Pokemon = (function () {
 
-  // winner gets more for fewer turns, and loser
-  // gets less with fewer turns (but, still gets some!)
-  return [ base[0]/offset, base[1]*offset ];
-}
+  function Pokemon (pokemon) {
+    var pokemon = _.isString(pokemon) ? Pokemon.findOne(pokemon) : pokemon;
+    _.extend(this, pokemon);
+    this._moves = Moves.find({ '_id': { $in: _.pluck(this.moves, 'id') } });
+  }
 
-function endBattle (turns, won) {
-  var user = Meteor.user();
-  var opponent = user && user.game.opponent;
+  Pokemon.prototype = {
 
-  var money = calcReward(turns);
+    constructor: Pokemon,
 
-  Meteor.users.update(user._id, {
-    $set: { 'game.inBattle': false, 'game.opponent': null },
-    $inc: { 'stats.battleCount': 1, 'stats.pokedollars': won ? money[0] : money[1] }
-  });
-  Meteor.users.update(opponent._id, {
-    $set: { 'game.inBattle': false, 'game.opponent': null },
-    $inc: { 'stats.battleCount': 1, 'stats.pokedollars': won ? money[1] : money[0] }
-  });
-}
+    // XXX miss rate, effects (confusion, burn, etc.)
+    // XXX STAB, super effective, not effective, no effect
+    execMove: function (moveName, target) {
+      var move = _.find(this._moves, function (move, index) {
+        return move.name === moveName;
+      });
+      var moveInfo = move && Moves.findOne(move.id);
 
-function parseCommand (command) {
-  // pikachu :tackle bulbasaur
-  var command = command.trim(); // XXX clean input
-  if (!command) return;
+      if (_.isUndefined(moveInfo))
+        throw new Meteor.Error('invalid-move', i18n.t('invalid_move'));
+      if (move.pp <= 0)
+        throw new Meteor.Error('no-pp', i18n.t('no_pp'));
 
-  // beginning of string or following a space (excludes :commands)
-  var names = /(?:^|\s+)([a-z]+)/ig.exec(command);
-  var commands = command.match(/\B:\w+/i); // asdf:asdf fails, but :asdf succeeds
+      var newHP = target.hp - moveInfo.power; // XXX calculate the damage
 
-  return {
-    receiver: names[0], // poke being commanded
-    target: names[1], // target of attack -- might be empty
-    move: commands[0] // move
+      // XXX does meteor support projections yet?
+      Pokemon.update({ '_id': target._id }, {
+        $set: { 'team.$.hp': newHP }
+      });
+      Pokemon.update({ '_id': this._id, 'moves.id': move._id }, {
+        $inc: { 'moves.$.pp': -1 }
+      });
+    }
+
   };
-}
+
+  return Pokemon;
+
+})();
 
 Meteor.methods({
   initBattle: function () {
@@ -48,42 +48,30 @@ Meteor.methods({
     command = parseCommand(command);
     check(command, {
       move: Match.Where(function (move) {
-        check(move, String);
-        // XXX make sure it's a valid command..
+        check(move, String); // XXX make sure it's a valid command
       }),
       target: String
     });
 
     var user = Meteor.user();
     var opponent = user && user.game.opponent;
-    if (!user || !opponent) return;
+    if (!user || !opponent || !hasTurn(user)) return; // not our turn yet
 
-    var pokemon = _.find(user.team, function (pokemon) {
+    var team = Pokemon.find({ '_id': { $in: user.teamIds } });
+    var pokemon = _.find(team, function (pokemon) {
       return pokemon.hp > 0;
     });
-
     if (!pokemon) endBattle(false); // lost already
 
-    // check PP
-    var move = pokemon.moves[command.move];
-    var actualMove = Moves.findOne({ 'name': move.id }); // XXX naming...
-    if (!move)
-      throw new Meteor.Error('invalid-move', i18n.t('invalid_move'));
-    else if (move.pp <= 0)
-      throw new Meteor.Error('no-pp', i18n.t('no_pp'));
-
-    // XXX miss rate, effects (confusion, burn, etc.)
-    // XXX STAB, super effective, not effective, no effect
-    var target = _.find(opponent.team, function (pokemon) {
-      return pokemon.name === command.target;
+    var oteam = Pokemon.find({ '_id': { $in: opponent.teamIds } });
+    var target = _.find(oteam, function (target) {
+      return target.name === command.target;
     });
     if (!target || target.hp <= 0)
       throw new Meteor.Error('invalid-target', i18n.t('invalid_target'));
 
-    var newHP = target.hp -= actualMove.power; // XXX calculate the damage
-    // XXX does meteor support projections yet?
-    Meteor.users.update({ '_id': opponent.id, 'team.name': target }, {
-      $set: { 'team.$.hp': newHP }
-    });
+    var pokemon = new Pokemon(pokemon);
+    pokemon.execMove(command.move, target);
   },
 });
+

@@ -44,7 +44,7 @@ Schema.UserGame = new SimpleSchema({
   'opponent.id': {
     type: String
   },
-  currentTurn: { // currently executing the turn
+  hasTurn: { // currently executing the turn
     type: Boolean
   },
   // timeLeft: { // time left for turn
@@ -94,6 +94,9 @@ Schema.Move = new SimpleSchema({
 Schema.PokemonMove = new SimpleSchema({
   id: {
     type: String // _id of the move
+  },
+  name: {
+    type: String
   },
   pp: {
     type: Number,
