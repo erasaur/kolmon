@@ -1,43 +1,41 @@
 var Pokemon = (function () {
-
   function Pokemon (pokemon) {
-    var pokemon = _.isString(pokemon) ? Pokemon.findOne(pokemon) : pokemon;
+    var pokemon = _.isString(pokemon) ? 
+      Pokemon.findOne(pokemon) : pokemon;
     _.extend(this, pokemon);
     this._moves = Moves.find({ '_id': { $in: _.pluck(this.moves, 'id') } });
   }
 
   Pokemon.prototype = {
-
     constructor: Pokemon,
 
     // XXX miss rate, effects (confusion, burn, etc.)
     // XXX STAB, super effective, not effective, no effect
     execMove: function (moveName, target) {
-      var move = _.find(this._moves, function (move, index) {
+      var move = _.find(this.moves, function (move, index) {
         return move.name === moveName;
       });
-      var moveInfo = move && Moves.findOne(move.id);
+      var moveInfo = _.find(this._moves, function (move, index) {
+        return move.name === moveName;
+      });
 
-      if (_.isUndefined(moveInfo))
+      if (!move || !moveInfo)
         throw new Meteor.Error('invalid-move', i18n.t('invalid_move'));
       if (move.pp <= 0)
         throw new Meteor.Error('no-pp', i18n.t('no_pp'));
 
-      var newHP = target.hp - moveInfo.power; // XXX calculate the damage
-
+      // XXX calculate the damage
       // XXX does meteor support projections yet?
       Pokemon.update({ '_id': target._id }, {
-        $set: { 'team.$.hp': newHP }
+        $inc: { 'team.$.hp': moveInfo.power }
       });
       Pokemon.update({ '_id': this._id, 'moves.id': move._id }, {
         $inc: { 'moves.$.pp': -1 }
       });
     }
-
   };
 
   return Pokemon;
-
 })();
 
 Meteor.methods({
