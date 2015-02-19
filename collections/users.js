@@ -140,6 +140,10 @@ Schema.CanonicalPokemon = new SimpleSchema({
 });
 
 Schema.Pokemon = new SimpleSchema({
+  _id: {
+    type: String,
+    optional: true
+  },
   name: {
     type: String,
     optional: true,
@@ -147,6 +151,9 @@ Schema.Pokemon = new SimpleSchema({
   },
   id: {
     type: String // _id of pokemon
+  },
+  trainerId: { // owner of pokemon
+    type: String
   },
   level: {
     type: Number,
@@ -165,6 +172,8 @@ Schema.Pokemon = new SimpleSchema({
   }
   // XXX nature, gender, item, color, etc.
 });
+
+// Pokemon = new Mongo.Collection('pokemon');
 
 Schema.User = new SimpleSchema({
   _id: {
@@ -204,11 +213,11 @@ Schema.User = new SimpleSchema({
   bag: {
     type: Schema.UserBag
   },
-  pokemon: {
-    type: [Schema.Pokemon]
-  },
-  team: {
-    type: [Schema.Pokemon],
+  // pokemon: { // all pokemon (PC)
+  //   type: [String]
+  // },
+  teamIds: {
+    type: [String],
     max: 4
   },
   game: { // XXX move to separate collection. every move sends entire user doc & invalidates all functions depending on user
