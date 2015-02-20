@@ -33,7 +33,7 @@ var cleanupUser = function (userId) {
 
 Meteor.methods({
   enterRoom: function (roomId) {
-    check(roomId, String);
+    check(roomId, Match.OneOf(String, Number));
 
     var userId = Meteor.userId();
     if (!userId) return;
@@ -53,7 +53,8 @@ Meteor.methods({
     Rooms.update(roomId, { $addToSet: { 'userIds': userId }, $inc: { 'slots': -1 } });
   },
   leaveRoom: function (userId, roomId) {
-    check([userId, roomId], [String]);
+    check(userId, String);
+    check(roomId, Match.OneOf(String, Number));
 
     var user = Meteor.user();
     if (!user || user._id !== userId && !isAdmin(user)) return;

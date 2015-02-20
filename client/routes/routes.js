@@ -18,9 +18,9 @@ Router.onBeforeAction(function () {
   if (Meteor.user()) {
     var room = Session.get('currentRoom');
     if (room)
-      this.render('room', { _id: room });
+      this.redirect('room', { _id: room });
     else
-      this.render('rooms');
+      this.redirect('rooms');
   }
   this.next();
 
