@@ -7,9 +7,9 @@ Feature: Attractive Landing Page
   Scenario: Visitors can see a welcome message
     Given I am a new visitor
     When I navigate to the landing page
-    Then I see the heading "Welcome"
+    Then I see the heading "KOLMON"
 
-  Scenario: Visitors can join the game
+  Scenario: Visitors can join by signing up
     Given I am a new visitor
     When I navigate to the landing page
     Then I see a button to sign up
