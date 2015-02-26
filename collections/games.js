@@ -3,27 +3,36 @@ Schemas.Game = new SimpleSchema({
     type: String,
     optional: true
   },
-  playerId: {
+  userId: {
     type: String
   },
   roomId: {
     type: String,
-    defaultValue: 0
+    optional: true
   },
   x: {
-    type: Number
+    type: Number,
+    optional: true,
+    min: 0,
+    max: CANVAS_WIDTH
   },
   y: {
-    type: Number
+    type: Number,
+    optional: true,
+    min: 0,
+    max: CANVAS_HEIGHT
   },
   direction: { // 0 - static, 1 - up, 2 - left, 3 - right, 4 - bottom
-    type: Number
+    type: Number,
+    optional: true
   },
   inBattle: {
-    type: Boolean
+    type: Boolean,
+    defaultValue: false
   },
   startTime: { // initiation time of last move
-    type: Date
+    type: Date,
+    optional: true
   }
 });
 
@@ -32,27 +41,22 @@ Games.attachSchema(Schemas.Game);
 
 Meteor.methods({
   setPosition: function (position) {
-    var user = Meteor.user();
+    check(position, { x: Number, y: Number });
 
+    var user = Meteor.user();
     if (!user)
       throw new Meteor.Error('logged-out', i18n.t('please_login'));
 
-    check(position, {
-      x: Number,
-      y: Number,
-    });
     position.direction = 0;
-
     Games.update(user.game, { $set: position });
   },
   setDirection: function (direction, startTime) {
-    var user = Meteor.user();
-
-    if (!user)
-      throw new Meteor.Error('logged-out', i18n.t('please_login'));
-
     check(direction, Number);
     check(startTime, Date);
+
+    var user = Meteor.user();
+    if (!user)
+      throw new Meteor.Error('logged-out', i18n.t('please_login'));
 
     Games.update(user.game, {
       $set: {

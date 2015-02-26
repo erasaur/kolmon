@@ -1,4 +1,11 @@
 Schemas.Bag = new SimpleSchema({
+  _id: {
+    type: String,
+    optional: true
+  },
+  userId: {
+    type: String
+  },
   pokedollars: {
     type: Number,
     defaultValue: 0

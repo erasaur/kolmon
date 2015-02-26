@@ -45,3 +45,4 @@ Schemas.Pokemon = new SimpleSchema({
 
 Pokemon = new Mongo.Collection('pokemon');
 Pokemon.attachSchema(Schemas.Pokemon);
+

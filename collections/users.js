@@ -37,27 +37,33 @@ Schema.User = new SimpleSchema({
     type: Schema.UserProfile,
     optional: true
   },
-  services: {
-    type: Object,
-    blackbox: true
-  },
-  bag: {
+
+  // game
+  bagId: {
     type: String
   },
-  pokemon: { // all pokemon (PC)
-    type: [String]
-  },
-  team: {
+  pokemonIds: { // all pokemon (PC)
     type: [String],
+    defaultValue: []
+  },
+  teamIds: {
+    type: [String],
+    defaultValue: [],
     max: 4
   },
-  game: {
+  gameId: {
     type: String
   },
+
+  // other
   status: { // for user-status
     type: Object,
     blackbox: true,
     optional: true
+  },
+  services: {
+    type: Object,
+    blackbox: true
   }
 });
 
@@ -70,3 +76,4 @@ Meteor.users.deny({
     return true;
   }
 });
+
