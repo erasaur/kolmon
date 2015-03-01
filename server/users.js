@@ -1,12 +1,20 @@
 Accounts.onCreateUser(function (options, user) {
+  // bag
+  var bag = { userId: user._id };
+  Schemas.Bag.clean(bag);
+  user.bagId = Bags.insert(bag);
+
+  // game
+  var game = { userId: user._id };
+  Schemas.Game.clean(game);
+  user.gameId = Games.insert(game);
+
+  // general
   var defaults = {
-    position: { x: CENTER_X, y: CENTER_Y },
-    roomId: 'rooms',
-    direction: 0
+    createdAt: new Date()
   };
 
-  user.game = defaults;
-
+  _.extend(user, defaults);
   return user;
 });
 
@@ -19,13 +27,16 @@ UserStatus.events.on('connectionLogout', function (fields) {
 });
 
 var cleanupUser = function (userId) {
-  Meteor.users.update(userId, { $set: {
-    'game.roomId': 'rooms',
-    'game.inBattle': false
-  } });
-  Challenges.remove({ $or: [
-    { 'sender.id': userId },
-    { 'receiver.id': userId }
+  Games.update({ 'userId': userId }, {
+    $set: {
+      roomId: 'rooms',
+      inBattle: false
+    }
+  });
+  
+  Battles.remove({ $or: [
+    { 'senderId': userId },
+    { 'receiverId': userId }
   ]}, function (error, result) {
     if (error) throw error;
   });
@@ -33,33 +44,42 @@ var cleanupUser = function (userId) {
 
 Meteor.methods({
   enterRoom: function (roomId) {
-    check(roomId, Match.OneOf(String, Number));
+    check(roomId, String);
 
-    var userId = Meteor.userId();
-    if (!userId) return;
+    var user = Meteor.user();
+    if (!user) return;
 
     var room = Rooms.findOne(roomId);
     if (!room || !room.slots)
       throw new Meteor.Error('room-error', 'Room does not exist or has no slots.');
 
-    // XXX restore previous position?
+    // XXX restore position based on map data
     var defaults = {
-      'position': { 'x': CENTER_X, 'y': CENTER_Y },
+      'x': CENTER_X, 
+      'y': CENTER_Y,
       'roomId': roomId,
       'direction': 0
     };
 
-    Meteor.users.update(userId, { $set: { 'game': defaults } });
-    Rooms.update(roomId, { $addToSet: { 'userIds': userId }, $inc: { 'slots': -1 } });
+    Games.update(user.gameId, { $set: defaults });
+    Rooms.update(roomId, { 
+      $addToSet: { 'userIds': userId }, 
+      $inc: { 'slots': -1 } 
+    });
   },
-  leaveRoom: function (userId, roomId) {
+  leaveRoom: function (userId) {
     check(userId, String);
-    check(roomId, Match.OneOf(String, Number));
 
     var user = Meteor.user();
-    if (!user || user._id !== userId && !isAdmin(user)) return;
+    if (!user || user._id !== userId && !isAdmin(user))
+      throw new Meteor.Error('no-permission', i18n.t('no_permission'));
 
-    Rooms.update(roomId, { $pull: { 'userIds': userId }, $inc: { 'slots': 1 } });
+    var game = Games.findOne({ 'userId': userId });
+    var room = game && Rooms.findOne(game.roomId);
+    if (!room)
+      throw new Meteor.Error('invalid-user', i18n.t('invalid_user'));
+
+    Rooms.update(room._id, { $pull: { 'userIds': userId }, $inc: { 'slots': 1 } });
     cleanupUser(userId);
   }
 });
