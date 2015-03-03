@@ -12,7 +12,10 @@ Schemas.Room = new SimpleSchema({
   userId: { // creator
     type: String
   },
-  capacity: {
+  userIds: { // users currently in room
+    type: [String]
+  },
+  slots: {
     type: Number,
     defaultValue: 30
   }

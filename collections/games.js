@@ -1,3 +1,4 @@
+// XXX rename Game to Player
 Schemas.Game = new SimpleSchema({
   _id: {
     type: String,
@@ -10,6 +11,10 @@ Schemas.Game = new SimpleSchema({
     type: String,
     optional: true
   },
+  // mapId: { // which map user is currently in
+  //   type: String,
+  //   optional: true
+  // },
   x: {
     type: Number,
     optional: true,
