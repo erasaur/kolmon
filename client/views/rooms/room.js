@@ -41,11 +41,9 @@ function Player (options) {
   };
   image.src = options.image;
 
-  this.context = options.context;
-  this.width = options.width;
-  this.height = options.height;
-  this.position = options.position;
-  this.direction = options.direction;
+  _.extend(self, _.pick(options, [
+    'context', 'width', 'height', 'position', 'direction'
+  ]));
 
   this.frameIndex = 0; // current frame in spritesheet
   this.stepsSinceLast = 0; // steps since last frame change
@@ -56,7 +54,6 @@ function Player (options) {
 Player.prototype.move = function (dir, offset) {
   this.direction = dir;
   this.moving = true;
-
   this.position = nextPosition(this.position, dir, offset);
 };
 
@@ -110,6 +107,7 @@ function Map (options, callback) {
   var imageSrcs = _.union(bgSrcs, fgSrcs);
   var loaded = 0;
 
+  // preload all bg/fg images
   _.each(imageSrcs, function (src) {
     self.images[src] = new Image();
     self.images[src].onload = function () {
@@ -188,22 +186,30 @@ Template.map.rendered = function () {
 
   start();
 
+  // as soon as new challenge is accepted, show countdown
   Tracker.autorun(function () {
-    var challenge = Challenges.findOne({ $or: [ // XXX separate package and class
-      { 'sender.id': user._id },
-      { 'receiver.id': user._id }
-    ], status: STATUS_ACCEPTED });
+    // XXX separate package and class
+    var selector = { $or: [
+      { 'senderId': user._id },
+      { 'receiverId': user._id }
+    ], status: STATUS_ACCEPTED };
+    var challenge = Battles.findOne(selector, { fields: { 'status': 1 } });
     var $message = $('#modal-challenge');
     if (challenge && (!$message || !$message.length)) {
       (function (s, r) {
-        var isSender = s.id === user._id;
+        var opponentId = s === user._id ? r : s;
+        var opponent = Meteor.users.findOne(opponentId, { fields: {
+          'username': 1
+        }});
+
         var modal = Blaze.renderWithData(Template.modalChallenge, {
-          username: isSender ? r.username : s.username
-        }, $('body')[0]);
+          username: opponent.username
+        }, document.body);
+
         $('#modal-challenge').modal('show').on('hidden.bs.modal', function () {
           Blaze.remove(modal);
-        })
-      })(challenge.sender, challenge.receiver);
+        });
+      })(challenge.senderId, challenge.receiverId);
     }
   });
 };
