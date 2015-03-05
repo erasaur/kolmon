@@ -7,6 +7,9 @@ Schemas.Game = new SimpleSchema({
   userId: {
     type: String
   },
+  username: {
+    type: String
+  },
   roomId: {
     type: String,
     optional: true
