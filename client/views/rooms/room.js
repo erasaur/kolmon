@@ -239,13 +239,18 @@ Template.modalChallenge.helpers({
 
 Template.room.helpers({
   opponent: function () {
-    var challenge = Challenges.findOne({ $or: [
+    var selector = { $or: [
       { 'sender.id': user._id },
       { 'receiver.id': user._id }
-    ], status: STATUS_ACCEPTED });
-    var isSender = challenge.sender.id === user._id;
-    var userId = isSender ? receiver.id : sender.id;
-    return Meteor.users.findOne(userId);
+    ], status: STATUS_ACCEPTED };
+    var options = { fields: { 'status': 1 } };
+    var challenge = Battles.findOne(selector, options);
+
+    if (challenge) {
+      var isSender = challenge.senderId === user._id;
+      var userId = isSender ? receiverId : senderId;
+      return Meteor.users.findOne(userId);
+    }
   }
 });
 
@@ -253,39 +258,34 @@ Template.map.helpers({
   canvasWidth: CANVAS_WIDTH,
   canvasHeight: CANVAS_HEIGHT,
   challengesSent: function () {
-    var user = Meteor.user();
-    return user && Challenges.find({
-      'roomId': user.game.roomId,
-      'sender.id': user._id
+    return Battles.find({
+      'roomId': this.player.roomId,
+      'senderId': this.player.userId
     });
   },
   challengesReceived: function () {
-    var user = Meteor.user();
-    return user && Challenges.find({
-      'roomId': user.game.roomId,
-      'receiver.id': user._id
+    return Battles.find({
+      'roomId': this.player.roomId,
+      'receiverId': this.player.userId
     });
   },
   nearbyPlayers: function () {
-    var user = Meteor.user();
-    if (!user) return;
-
     // retrieve players in vicinity
-    return (function (u) {
-      var minX = u.position.x - PX_PER_CELL;
-      var maxX = u.position.x + PX_PER_CELL;
-      var minY = u.position.y - PX_PER_CELL;
-      var maxY = u.position.y + PX_PER_CELL;
+    return (function (p) {
+      var minX = p.x - PX_PER_CELL;
+      var maxX = p.x + PX_PER_CELL;
+      var minY = p.y - PX_PER_CELL;
+      var maxY = p.y + PX_PER_CELL;
 
-      var res = Meteor.users.find({ 'game.roomId': u.roomId, $and: [
-        { 'game.position.x': { $gte: minX } },
-        { 'game.position.x': { $lte: maxX } },
-        { 'game.position.y': { $gte: minY } },
-        { 'game.position.y': { $lte: maxY } }
-      ]}, { fields: { '_id': 1, 'username': 1 } });
+      var res = Games.find({ 'roomId': p.roomId, $and: [
+        { 'x': { $gte: minX } },
+        { 'x': { $lte: maxX } },
+        { 'y': { $gte: minY } },
+        { 'y': { $lte: maxY } }
+      ]}, { fields: { 'userId': 1, 'username': 1 } });
 
       return res;
-    })(user.game);
+    })(this.player);
   }
 });
 

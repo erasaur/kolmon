@@ -1,7 +1,7 @@
 <template name="room">
   {{> contentFor region="nav" template="nav"}}
 
-  {{#if currentUser.game.inBattle}}
+  {{#if player.inBattle}}
     {{> battle opponent}}
   {{else}}
     {{> map}}
