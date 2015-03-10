@@ -1,3 +1,6 @@
+- switch instances of userId to playerId where applicable. game-related things should deal with player document instead of user document.
+- rename Games to Players
+
 - Add a TTL to player challenges (either separate doc or some long-running interval)
 - Change challenges to Games collection
 -- add index on subdoc (sender, receiver) -- can only be one game where sender and receiver are same

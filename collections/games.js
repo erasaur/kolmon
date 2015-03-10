@@ -48,15 +48,14 @@ Games = new Mongo.Collection('games');
 Games.attachSchema(Schemas.Game);
 
 Meteor.methods({
-  setPosition: function (position) {
-    check(position, { x: Number, y: Number });
+  setPosition: function (x, y) {
+    check([x, y], [Number]);
 
     var user = Meteor.user();
     if (!user)
       throw new Meteor.Error('logged-out', i18n.t('please_login'));
 
-    position.direction = 0;
-    Games.update(user.game, { $set: position });
+    Games.update(user.playerId, { $set: { x: x, y: y } });
   },
   setDirection: function (direction, startTime) {
     check(direction, Number);
@@ -66,7 +65,7 @@ Meteor.methods({
     if (!user)
       throw new Meteor.Error('logged-out', i18n.t('please_login'));
 
-    Games.update(user.game, {
+    Games.update(user.playerId, {
       $set: {
         'direction': direction,
         'startTime': startTime

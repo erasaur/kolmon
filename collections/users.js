@@ -51,7 +51,7 @@ Schema.User = new SimpleSchema({
     defaultValue: [],
     max: 4
   },
-  gameId: {
+  playerId: {
     type: String
   },
 
