@@ -9,7 +9,13 @@ Schemas.Battle = new SimpleSchema({
   createdAt: {
     type: String
   },
+  sender: {
+    type: String
+  },
   senderId: {
+    type: String
+  },
+  receiver: {
     type: String
   },
   receiverId: {

@@ -9,10 +9,10 @@ Schemas.Room = new SimpleSchema({
   name: {
     type: String
   },
-  userId: { // creator
+  playerId: { // creator
     type: String
   },
-  userIds: { // users currently in room
+  playerIds: { // users currently in room
     type: [String]
   },
   slots: {
