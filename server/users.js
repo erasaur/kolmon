@@ -1,85 +1,81 @@
-Accounts.onCreateUser(function (options, user) {
-  // bag
-  var bag = { userId: user._id };
-  Schemas.Bag.clean(bag);
-  user.bagId = Bags.insert(bag);
+var Bags = KOL.Bags;
+var Worlds = KOL.Worlds;
+var Players = KOL.Players;
+var constants = KOL.constants;
 
-  // game
-  var game = { userId: user._id };
-  Schemas.Game.clean(game);
-  user.gameId = Games.insert(game);
+Accounts.onCreateUser(function (options, user) {
+  var bagId = Bags.insert({ userId: user._id });
+  var playerId = Players.insert({
+    userId: user._id,
+    username: user.username
+  });
 
   // general
   var defaults = {
-    createdAt: new Date()
+    createdAt: new Date(),
+    bagId: bagId,
+    playerId: playerId
   };
-
   _.extend(user, defaults);
   return user;
 });
 
-UserStatus.events.on('connectionIdle', function (fields) {
-  var user = Meteor.user();
-  Meteor.call('leaveRoom', user._id, user.game.roomId);
-});
-UserStatus.events.on('connectionLogout', function (fields) {
-  cleanupUser(fields.userId);
-});
+// user status ---------------------------------------
 
-var cleanupUser = function (userId) {
-  Games.update({ 'userId': userId }, {
-    $set: {
-      roomId: 'rooms',
-      inBattle: false
-    }
-  });
-  
-  Battles.remove({ $or: [
-    { 'senderId': userId },
-    { 'receiverId': userId }
-  ]}, function (error, result) {
-    if (error) throw error;
-  });
+var onPlayerDisconnect = function onPlayerDisconnect (fields) {
+  if (fields.userId) {
+    Meteor.call('leaveWorld');
+  }
 };
+UserStatus.events.on('connectionIdle', onPlayerDisconnect);
+UserStatus.events.on('connectionLogout', onPlayerDisconnect);
+
+// methods -------------------------------------------
 
 Meteor.methods({
-  enterRoom: function (roomId) {
-    check(roomId, String);
+  enterWorld: function (worldId) {
+    check(worldId, String);
 
     var user = Meteor.user();
-    if (!user) return;
+    if (!user)
+      throw new Meteor.Error('no-permission', i18n.t('please_login'));
 
-    var room = Rooms.findOne(roomId);
-    if (!room || !room.slots)
-      throw new Meteor.Error('room-error', 'Room does not exist or has no slots.');
+    var world = Worlds.findOne(worldId);
+    if (!world || !world.slots)
+      throw new Meteor.Error('invalid-world', i18n.t('invalid_world'));
 
     // XXX restore position based on map data
     var defaults = {
-      'x': CENTER_X, 
-      'y': CENTER_Y,
-      'roomId': roomId,
+      'x': constants.CENTER_X,
+      'y': constants.CENTER_Y,
+      'worldId': worldId,
       'direction': 0
     };
 
-    Games.update(user.gameId, { $set: defaults });
-    Rooms.update(roomId, { 
-      $addToSet: { 'userIds': userId }, 
-      $inc: { 'slots': -1 } 
+    Players.update(user.playerId, { $set: defaults });
+    Worlds.update(worldId, {
+      $addToSet: { 'playerIds': user.playerId },
+      $inc: { 'slots': -1 }
     });
   },
-  leaveRoom: function (userId) {
-    check(userId, String);
+  leaveWorld: function () {
+    if (!this.userId) return;
+      // throw new Meteor.Error('no-permission', i18n.t('please_login'));
 
     var user = Meteor.user();
-    if (!user || user._id !== userId && !isAdmin(user))
-      throw new Meteor.Error('no-permission', i18n.t('no_permission'));
+    var player = Players.findOne(user.playerId);
+    var world = player && Worlds.findOne(player.worldId);
 
-    var game = Games.findOne({ 'userId': userId });
-    var room = game && Rooms.findOne(game.roomId);
-    if (!room)
-      throw new Meteor.Error('invalid-user', i18n.t('invalid_user'));
+    if (world) {
+      Worlds.update(world._id, { $pull: { 'playerIds': playerId }, $inc: { 'slots': 1 } });
+    }
 
-    Rooms.update(room._id, { $pull: { 'userIds': userId }, $inc: { 'slots': 1 } });
-    cleanupUser(userId);
+    Players.update(playerId, { $unset: { worldId: '', inBattle: '' } });
+    // Battles.remove({ $or: [
+    //   { 'senderId': playerId },
+    //   { 'receiverId': playerId }
+    // ]}, function (error, result) {
+    //   if (error) throw error;
+    // });
   }
 });
