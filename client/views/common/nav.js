@@ -1,5 +1,5 @@
 Template.nav.helpers({
-  currentPage: function (page) {
-    return getCurrentRoute() === page ? 'active' : '';
+  currentRoute: function (route) {
+    return KOL.helpers.get.currentRoute() === route ? 'active' : '';
   }
 });

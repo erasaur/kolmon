@@ -3,25 +3,20 @@
     <div class="container-fluid">
       <div class="navbar-header">
         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-nav">
-          <span class="sr-only">Toggle navigation</span>
+          <span class="sr-only">{{_ "toggle_navigation"}}</span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="{{pathFor 'landing'}}">Kolmon</a>
+        <a class="navbar-brand" href="{{pathFor route='landing'}}">Kolmon</a>
       </div>
 
-      <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse" id="main-nav">
-        <ul class="nav navbar-nav">
-	  <li class="{{currentPage 'rooms'}}"><a href="{{pathFor 'rooms'}}">Rooms</a></li>
-	  <li class="{{currentPage 'guide'}}"><a href="{{pathFor 'guide'}}">Guide</a></li>
-	  <li class="{{currentPage 'rankings'}}"><a href="{{pathFor 'rankings'}}">Rankings</a></li>
-	  <li class="{{currentPage 'community'}}"><a href="{{pathFor 'community'}}">Community</a></li>
-	  <li class="{{currentPage 'shop'}}"><a href="{{pathFor 'shop'}}">Shop</a></li>
-	  <li class="{{currentPage 'support'}}"><a href="{{pathFor 'support'}}">Support</a></li>
-        
-	</ul>
+        {{#if currentUser}}
+          <ul class="nav navbar-nav">
+        	  <li class="{{currentRoute 'worlds'}}"><a href="{{pathFor route='worlds'}}">{{_ "worlds"}}</a></li>
+        	</ul>
+        {{/if}}
 
         <ul class="nav navbar-nav navbar-right">
           <li class="navbar-text">{{> loginButtons align="right"}}</li>
