@@ -14,5 +14,5 @@ aldeed:collection2
 chrismbeckett:fontawesome4
 twbs:bootstrap
 reactive-var
-xolvio:cucumber
-sanjo:jasmine
+tap:i18n
+kolmon-lib
