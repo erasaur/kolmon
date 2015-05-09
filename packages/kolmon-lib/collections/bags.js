@@ -1,4 +1,6 @@
-Schemas.Bag = new SimpleSchema({
+var schemas = KOL.schemas;
+
+schemas.Bag = new SimpleSchema({
   _id: {
     type: String,
     optional: true
@@ -28,5 +30,5 @@ Schemas.Bag = new SimpleSchema({
   }
 });
 
-Bags = new Mongo.Collection('bags');
-Bags.attachSchema(Schemas.Bag);
+var Bags = KOL.Bags = new Mongo.Collection('bags');
+Bags.attachSchema(schemas.Bag);

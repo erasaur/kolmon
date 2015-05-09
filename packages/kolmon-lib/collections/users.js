@@ -1,4 +1,7 @@
-Schema.UserProfile = new SimpleSchema({
+var schemas = KOL.schemas;
+var helpers = KOL.helpers;
+
+schemas.UserProfile = new SimpleSchema({
   name: {
     type: String,
     optional: true
@@ -9,7 +12,7 @@ Schema.UserProfile = new SimpleSchema({
   }
 });
 
-Schema.User = new SimpleSchema({
+schemas.User = new SimpleSchema({
   _id: {
     type: String,
     optional: true
@@ -34,7 +37,7 @@ Schema.User = new SimpleSchema({
     type: Boolean
   },
   profile: { // public and editable
-    type: Schema.UserProfile,
+    type: schemas.UserProfile,
     optional: true
   },
 
@@ -56,6 +59,10 @@ Schema.User = new SimpleSchema({
   },
 
   // other
+  roles: {
+    type: [String],
+    defaultValue: []
+  },
   status: { // for user-status
     type: Object,
     blackbox: true,
@@ -67,13 +74,6 @@ Schema.User = new SimpleSchema({
   }
 });
 
-Meteor.users.attachSchema(Schema.User);
-Meteor.users.deny({
-  update: function () {
-    return true;
-  },
-  remove: function () {
-    return true;
-  }
-});
-
+var Users = KOL.Users = Meteor.users;
+Users.attachSchema(schemas.User);
+Users.deny(helpers.denyAll);

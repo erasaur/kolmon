@@ -1,4 +1,6 @@
-Schemas.Move = new SimpleSchema({
+var schemas = KOL.schemas;
+
+schemas.Move = new SimpleSchema({
   id: {
     type: String // id of the move
   },
@@ -9,20 +11,20 @@ Schemas.Move = new SimpleSchema({
   },
 });
 
-Schemas.Pokemon = new SimpleSchema({
+schemas.Pokemon = new SimpleSchema({
   _id: {
     type: String,
     optional: true
   },
-  name: {
+  name: { // nickname of pokemon
     type: String,
     optional: true,
     // regEx: SimpleSchema.RegEx.Name
   },
-  id: {
-    type: String // _id of pokemon
+  id: { // id of pokemon
+    type: String
   },
-  trainerId: { // owner of pokemon
+  userId: { // owner of pokemon
     type: String
   },
   level: {
@@ -34,15 +36,14 @@ Schemas.Pokemon = new SimpleSchema({
     min: 0
   },
   moves: { // XXX limit what moves based on poke
-    type: [Schemas.Move]
+    type: [schemas.Move]
   },
   status: {
     type: String,
-    // allowedValues: STATUS_TYPES // paralysis, burn, confusion, etc.
+    // allowedValues: STATUS_TYPES // faint, paralysis, burn, confusion, etc.
   }
   // XXX nature, gender, item, color, etc.
 });
 
-Pokemon = new Mongo.Collection('pokemon');
-Pokemon.attachSchema(Schemas.Pokemon);
-
+var Pokemon = KOL.Pokemon = new Mongo.Collection('pokemon');
+Pokemon.attachSchema(schemas.Pokemon);
