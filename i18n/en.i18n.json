@@ -1,4 +1,11 @@
 {
+  "toggle_navigation": "Toggle Navigation",
+  "players_nearby": "Players Nearby",
+  "lobby": "Lobby",
+  "worlds": "Worlds",
+  "subscribe": "Subscribe",
+
+  "invalid_world": "World does not exist or has no slots.",
   "invalid_challenge": "Invalid challenge",
   "one_challenge_limit": "You can only send one challenge at a time",
   "already_battling": "The other user is already in battle. Try challenging another!"
