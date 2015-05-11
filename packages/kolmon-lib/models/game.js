@@ -56,10 +56,11 @@ KOL.Game = (function () {
 
     // handle window events with jQuery since template events
     // don't seem to work well with global events
-    $(window).off('keydown').on('keydown', this.keydown.bind(this));
+    $(window).off('keydown.move').on('keydown.move', this.keydown.bind(this));
   };
 
   Game.prototype.stop = function stopGame (id) {
+    $(window).off('keydown.move');
     (this.timer || Timer).stop(id);
 
     if (!id) {
