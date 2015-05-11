@@ -36,25 +36,27 @@ Meteor.methods({
   enterWorld: function (worldId) {
     check(worldId, String);
 
-    var user = Meteor.user();
-    if (!user)
+    var player = this.userId && Players.findOne({ 'userId': this.userId });
+    if (!player)
       throw new Meteor.Error('no-permission', i18n.t('please_login'));
 
     var world = Worlds.findOne(worldId);
     if (!world || !world.slots)
       throw new Meteor.Error('invalid-world', i18n.t('invalid_world'));
 
-    // XXX restore position based on map data
-    var defaults = {
-      'x': constants.CENTER_X,
-      'y': constants.CENTER_Y,
-      'worldId': worldId,
-      'direction': 0
-    };
+    // entering a new world, use world defaults
+    if (player.worldId !== worldId) {
+      var defaults = {
+        'worldId': worldId,
+        'x': world.defaultX || constants.CENTER_X,
+        'y': world.defaultY || constants.CENTER_Y,
+        'direction': 0
+      };
+      Players.update(player._id, { $set: defaults });
+    }
 
-    Players.update(user.playerId, { $set: defaults });
     Worlds.update(worldId, {
-      $addToSet: { 'playerIds': user.playerId },
+      $addToSet: { 'playerIds': player._id },
       $inc: { 'slots': -1 }
     });
   },
@@ -62,15 +64,14 @@ Meteor.methods({
     if (!this.userId) return;
       // throw new Meteor.Error('no-permission', i18n.t('please_login'));
 
-    var user = Meteor.user();
-    var player = Players.findOne(user.playerId);
+    var player = Players.findOne({ 'userId': this.userId });
     var world = player && Worlds.findOne(player.worldId);
 
     if (world) {
-      Worlds.update(world._id, { $pull: { 'playerIds': playerId }, $inc: { 'slots': 1 } });
+      Worlds.update(world._id, { $pull: { 'playerIds': player._id }, $inc: { 'slots': 1 } });
     }
 
-    Players.update(playerId, { $unset: { worldId: '', inBattle: '' } });
+    Players.update(player._id, { $unset: { worldId: '', inBattle: '' } });
     // Battles.remove({ $or: [
     //   { 'senderId': playerId },
     //   { 'receiverId': playerId }

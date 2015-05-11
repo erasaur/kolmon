@@ -1,10 +1,11 @@
+var constants = KOL.constants;
 var Worlds = KOL.Worlds;
 
 Meteor.startup(function () {
 
-  KOL.constants.MOVES = JSON.parse(Assets.getText('moves.json'));
-  KOL.constants.POKEMON = JSON.parse(Assets.getText('pokemon.json'));
-  KOL.constants.TYPES = JSON.parse(Assets.getText('types.json'));
+  constants.MOVES = JSON.parse(Assets.getText('moves.json'));
+  constants.POKEMON = JSON.parse(Assets.getText('pokemon.json'));
+  constants.TYPES = JSON.parse(Assets.getText('types.json'));
 
   // if (Challenges.find().count() === 0) {
   //   Challenges._ensureIndex({ createdAt: 1 }, { expireAfterSeconds: 300 });
@@ -18,6 +19,8 @@ Meteor.startup(function () {
       username: 'test',
       userIds: [],
       slots: 9001,
+      defaultX: constants.centerX,
+      defaultX: constants.centerY,
       background: {
         'map0': { x: 0, y: 0 }
       },
