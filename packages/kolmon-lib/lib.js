@@ -42,7 +42,7 @@ KOL.constants = {
 KOL.helpers = {
   get: (function () {
     var currentController = function getCurrentController () {
-      return Router.current();
+      return Router && Router.current();
     };
 
     var currentRoute = function getCurrentRoute () {
@@ -50,9 +50,15 @@ KOL.helpers = {
       return controller && controller.route && controller.route.getName();
     };
 
+    var currentParams = function getCurrentParams () {
+      var controller = currentController();
+      return controller && controller.params;
+    };
+
     return {
       currentController: currentController,
-      currentRoute: currentRoute
+      currentRoute: currentRoute,
+      currentParams: currentParams
     };
   })(),
   can: {
