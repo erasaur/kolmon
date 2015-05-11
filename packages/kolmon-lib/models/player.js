@@ -22,22 +22,25 @@ KOL.Player = (function () {
       direction: 0
     };
 
-    _.extend(self, defaultOptions, _.pick(options, [
+    options = _.defaults(_.pick(options, [
       'id', 'username', 'context', 'width', 'height', 'x', 'y', 'direction'
-    ]));
+    ]), defaultOptions);
+    _.extend(self, options);
 
     self.frameIndex = 0; // current frame in spritesheet
     self.stepsSinceLast = 0; // steps since last frame change
     self.stepsPerFrame = 2; // how many steps before frame change
 
-    self.startTime; // time of last 'begin move'
+    self.attempts = 0; // track how many times setPosition is being called per move
+    // self.startTime; // time of last 'begin move'
   }
 
-  Player.prototype.move = function (dir, offset) {
-    this.direction = dir;
+  Player.prototype.move = function (direction, offset) {
     this.moving = true;
-    this.x = this.nextX(dir, offset);
-    this.y = this.nextY(dir, offset);
+    this.direction = direction;
+
+    this.x = this.nextX(this.x, direction, offset);
+    this.y = this.nextY(this.y, direction, offset);
   };
 
   Player.prototype.render = function () {
@@ -72,56 +75,67 @@ KOL.Player = (function () {
     );
   };
 
-  Player.prototype.update = function (now) {
-    // make sure previous move completed before updating position
-    var startTime = this.startTime;
-    var moveDone = now >= startTime + constants.MOVE_TIME;
+  Player.prototype.update = function (dt, now, playerDoc, local) {
+    if (playerDoc.moving) {
+      var startTime = playerDoc.startTime;
+      var dir = playerDoc.direction;
 
-    // previous move has completed, update position
-    if (!!startTime && moveDone) {
-      var newX = this.nextX(this.direction);
-      var newY = this.nextY(this.direction);
+      // previous move has completed, update position
+      if (startTime && (now >= startTime + constants.MOVE_TIME)) {
+        if (++this.attempts < 5) {
+          this.setPosition(
+            this.nextX(playerDoc.x, dir),
+            this.nextY(playerDoc.y, dir),
+            local
+          );
+        }
+      } else {
+        this.attempts = 0;
+        var offset = (dt / constants.MOVE_TIME) * constants.PX_PER_CELL; // fraction of time * total dist
+        this.move(dir, offset);
+      }
+    }
 
-      Meteor.call('setPosition', newX, newY);
-      this.startTime = null;
-      // this.direction = 0;
-      this.moving = false;
+    this.render();
+  };
+
+  Player.prototype.setPosition = function (x, y, local) {
+    this.x = x;
+    this.y = y;
+    this.moving = false;
+
+    // if it is a local change, propagate to global
+    if (local) {
+      Meteor.call('setPosition', x, y);
     }
   };
 
-  Player.prototype.setPosition = function (x, y) {
-    Meteor.call('setPosition', x, y);
-  };
-
   Player.prototype.setDirection = function (direction, startTime) {
-    this.direction = direction;
-    this.startTime = startTime;
-
     Meteor.call('setDirection', direction, startTime);
   };
 
-  Player.prototype.nextX = function (dir, offset) {
+  Player.prototype.nextX = function (currX, dir, offset) {
     offset = offset || constants.PX_PER_CELL;
 
     if (dir === constants.DIR_LEFT) // move left
-      return this.x - offset;
+      return currX - offset;
 
     if (dir === constants.DIR_RIGHT) // move right
-      return this.x + offset;
+      return currX + offset;
 
-    return this.x;
+    return currX;
   };
 
-  Player.prototype.nextY = function (dir, offset) {
+  Player.prototype.nextY = function (currY, dir, offset) {
     offset = offset || constants.PX_PER_CELL;
 
     if (dir === constants.DIR_UP) // move up
-      return this.y - offset;
+      return currY - offset;
 
     if (dir === constants.DIR_DOWN) // move down
-      return this.y + offset;
+      return currY + offset;
 
-    return this.y;
+    return currY;
   };
 
   return Player;
