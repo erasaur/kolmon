@@ -42,6 +42,10 @@ schemas.Player = new SimpleSchema({
     type: Number,
     optional: true
   },
+  moving: {
+    type: Boolean,
+    defaultValue: false
+  },
   inBattle: {
     type: Boolean,
     defaultValue: false
@@ -60,33 +64,33 @@ Meteor.methods({
   setPosition: function (x, y) {
     check([x, y], [Number]);
 
-    var user = Meteor.user();
-    if (!user)
-      throw new Meteor.Error('logged-out', i18n.t('please_login'));
-
     // manually validate x and y, so we don't have to validate entire doc with ss
     if (x < 0 || x > constants.CANVAS_WIDTH || y < 0 || y > constants.CANVAS_HEIGHT) {
       return;
     }
 
-    Players.update(user.playerId, { $set: { x: x, y: y } }, { validate: false });
+    Players.update({ 'userId': this.userId }, {
+      $set: {
+        'x': x,
+        'y': y,
+        'moving': false,
+        'startTime': null
+      }
+    }, { validate: false });
   },
   setDirection: function (direction, startTime) {
     check([direction, startTime], [Number]);
-
-    var user = Meteor.user();
-    if (!user)
-      throw new Meteor.Error('logged-out', i18n.t('please_login'));
 
     // manually validate direction, so we don't have to validate entire doc with ss
     if (direction < 0 || direction > 4) {
       return;
     }
 
-    Players.update(user.playerId, {
+    Players.update({ 'userId': this.userId }, {
       $set: {
         'direction': direction,
-        'startTime': startTime
+        'startTime': startTime,
+        'moving': true
       }
     }, { validate: false });
   }
