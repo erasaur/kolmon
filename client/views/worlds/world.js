@@ -1,21 +1,18 @@
 var helpers = KOL.helpers;
 var constants = KOL.constants;
 
-var Map = KOL.Map;
 var Game = KOL.Game;
-var Player = KOL.Player;
-
+var Worlds = KOL.Worlds;
 var Players = KOL.Players;
 
 // world ---------------------------------------------
 
 Template.world.onRendered(function () {
-  var controller = helpers.get.currentController();
-  Meteor.call('enterWorld', controller.state.get('currentWorld'));
+  var params = helpers.get.currentParams();
+  Meteor.call('enterWorld', params._id);
 });
 
 Template.world.onDestroyed(function () {
-  this.game.stop();
   Meteor.call('leaveWorld');
 });
 
@@ -26,7 +23,7 @@ Template.map.onCreated(function () {
 });
 
 Template.map.onRendered(function () {
-  var data = this.data;
+  var self = this;
   var fgCanvas = this.find('#canvas-foreground');
   var bgCanvas = this.find('#canvas-background');
   var playerCanvas = this.find('#canvas-players');
@@ -35,27 +32,26 @@ Template.map.onRendered(function () {
   var bgContext = bgCanvas.getContext('2d');
   var playerContext = playerCanvas.getContext('2d');
 
-  // init map
-  var mapOptions = {
-    bgContext: bgContext,
-    fgContext: fgContext,
-    playerContext: playerContext,
-    background: data.world.background,
-    foreground: data.world.foreground,
-    walls: data.world.walls
-  };
+  var userId = Meteor.userId();
+  var params = helpers.get.currentParams();
 
-  // init player
-  var playerOptions = {
-    id: data.player._id,
-    username: data.player.username,
-    context: playerContext
-  };
+  this.autorun(function (computation) {
+    var world = Worlds.findOne(params._id);
+    var player = Players.findOne({ userId: userId });
 
-  this.game.load({
-    worldId: data.world._id,
-    map: new Map(mapOptions, function () { this.renderBg().renderFg(); }),
-    player: new Player(playerOptions)
+    if (player && world) {
+      var map = {
+        bgContext: bgContext,
+        fgContext: fgContext,
+        playerContext: playerContext,
+        background: world.background,
+        foreground: world.foreground,
+        walls: world.walls
+      };
+
+      self.game.load({ worldId: world._id, map: map, player: player });
+      computation.stop();
+    }
   });
 });
 
@@ -69,5 +65,5 @@ Template.map.helpers({
 });
 
 Template.map.onDestroyed(function () {
-  this.game.stop('main');
+  this.game.stop();
 });
