@@ -1,6 +1,7 @@
 var constants = KOL.constants;
 var Timer = KOL.Timer;
 var Player = KOL.Player;
+var Map = KOL.Map;
 var Players = KOL.Players;
 
 KOL.Game = (function () {
@@ -9,16 +10,38 @@ KOL.Game = (function () {
   }
 
   Game.prototype.load = function loadGame (options) {
+    // init internal
     this.players = {}; // TODO: clear out players that disconnect
-
     this.worldId = options.worldId;
-    this.map = options.map;
-    this.player = this.players[options.player.id] = options.player;
-
     this.lastUpdate;
     this.timer = Timer;
 
-    this.start(); // start the update loop
+    // init map
+    this.map = new Map(options.map, function () {
+      this.renderBg().renderFg();
+    });
+
+    // init player
+    this.player = this.loadPlayer(options.player);
+
+    // start the update loop
+    this.start();
+  };
+
+  Game.prototype.loadPlayer = function loadPlayer (player, options) {
+    var defaults;
+    var playerObj;
+
+    defaults = {
+      id: player._id,
+      username: player.username,
+      context: this.map.playerContext,
+      x: player.x || this.map.defaultX,
+      y: player.y || this.map.defaultY
+    };
+    playerObj = new Player(_.defaults(options || {}, defaults));
+    this.players[playerObj.id] = playerObj;
+    return playerObj;
   };
 
   Game.prototype.start = function startGame () {
@@ -37,10 +60,11 @@ KOL.Game = (function () {
   };
 
   Game.prototype.stop = function stopGame (id) {
+    (this.timer || Timer).stop(id);
+
     if (!id) {
       this.map = this.player = this.players = null;
     }
-    this.timer.stop(id);
   };
 
   Game.prototype.keydown = function onKeydown (event) {
@@ -58,8 +82,8 @@ KOL.Game = (function () {
     // if moving already or invalid key
     if (!player || player.moving || !newDir) return;
 
-    var newX = player.nextX(newDir);
-    var newY = player.nextY(newDir);
+    var newX = player.nextX(player.x, newDir);
+    var newY = player.nextY(player.y, newDir);
 
     if (_.some(this.map.walls, function (wall) {
       return (
@@ -73,50 +97,28 @@ KOL.Game = (function () {
     player.setDirection(newDir, this.lastUpdate);
   };
 
-  Game.prototype.update = function onUpdate (dt) {
+  Game.prototype.update = function onUpdate (dt, now) {
     var self = this;
+    var players;
+    var player;
+    var userId = Meteor.userId();
 
     // TODO let the player clearRect for itself only when it moves
     self.map.clearPlayers();
 
-    var players = Players.find({ 'worldId': self.worldId }, {
+    players = Players.find({ 'worldId': self.worldId }, {
       sort: { 'y': 1 }
     });
 
     // render each player to canvas
-    players.forEach(function (player) {
-      var playerId = player._id;
+    players.forEach(function (playerDoc) {
+      player = self.players[playerDoc._id];
 
-      if (!self.players[playerId]) {
-
-        var playerDefaults = {
-          id: player._id,
-          username: player.username,
-          context: self.map.playerContext,
-          x: self.map.defaultX,
-          y: self.map.defaultY
-        };
-        self.players[playerId] = new Player(playerDefaults);
+      if (!player) {
+        player = self.loadPlayer(playerDoc);
       }
 
-      (function (player, dir, start, x, y) {
-        var now = Date.now();
-        var moveDone = now > start + constants.MOVE_TIME;
-
-        if (dir && !moveDone) {
-          var offset = (dt / constants.MOVE_TIME) * constants.PX_PER_CELL; // fraction of time * total dist
-          player.move(dir, offset);
-        }
-        else if (moveDone) {
-          player.moving = false;
-          // player.x = x;
-          // player.y = y;
-        }
-
-        // TODO if in battle, render indicator above player
-        // TODO only render if position has changed
-        player.render();
-      })(self.players[playerId], player.direction, player.startTime, player.x, player.y);
+      player.update(dt, now, playerDoc, userId === playerDoc.userId);
     });
   };
 
@@ -124,8 +126,8 @@ KOL.Game = (function () {
     var now = Date.now();
     var dt = now - this.lastUpdate; // time since last update
 
-    this.player.update(now);
-    this.update(dt);
+    // this.player.update(dt, now);
+    this.update(dt, now);
     this.lastUpdate = now;
   };
 
