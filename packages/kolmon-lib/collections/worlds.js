@@ -23,6 +23,12 @@ schemas.World = new SimpleSchema({
     type: Number,
     defaultValue: 30
   },
+  defaultX: { // starting x position for new players
+    type: Number
+  },
+  defaultY: { // starting y position for new players
+    type: Number
+  },
 
   // XXX eventually we should move these to
   // a separate map schema, if we want to have
