@@ -23,7 +23,7 @@ KOL.Player = (function () {
     };
 
     options = _.defaults(_.pick(options, [
-      'id', 'username', 'context', 'width', 'height', 'x', 'y', 'direction'
+      'game', 'id', 'username', 'context', 'width', 'height', 'x', 'y', 'direction'
     ]), defaultOptions);
     _.extend(self, options);
 
@@ -106,6 +106,7 @@ KOL.Player = (function () {
 
     // if it is a local change, propagate to global
     if (local) {
+      this.game._updated.changed();
       Meteor.call('setPosition', x, y);
     }
   };

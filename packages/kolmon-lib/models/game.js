@@ -6,6 +6,7 @@ var Players = KOL.Players;
 
 KOL.Game = (function () {
   function Game (options) {
+    this._updated = new Tracker.Dependency();
     if (options) this.load(options);
   }
 
@@ -26,6 +27,7 @@ KOL.Game = (function () {
 
     // start the update loop
     this.start();
+    this._updated.changed();
   };
 
   Game.prototype.loadPlayer = function loadPlayer (player, options) {
@@ -33,14 +35,17 @@ KOL.Game = (function () {
     var playerObj;
 
     defaults = {
+      game: this,
       id: player._id,
       username: player.username,
       context: this.map.playerContext,
       x: player.x || this.map.defaultX,
-      y: player.y || this.map.defaultY
+      y: player.y || this.map.defaultY,
+      direction: player.direction
     };
     playerObj = new Player(_.defaults(options || {}, defaults));
     this.players[playerObj.id] = playerObj;
+
     return playerObj;
   };
 
@@ -133,18 +138,24 @@ KOL.Game = (function () {
   };
 
   Game.prototype.nearbyPlayers = function nearbyPlayers () {
-    if (!this.player) return;
+    this._updated.depend();
 
-    var player = this.player;
-    var players = this.players;
-    var minX = player.x - constants.PX_PER_CELL;
-    var maxX = player.x + constants.PX_PER_CELL;
-    var minY = player.y - constants.PX_PER_CELL;
-    var maxY = player.y + constants.PX_PER_CELL;
+    if (this.player) {
+      var player = this.player;
+      var playerIds = _.without(_.keys(this.players), player.id);
 
-    return _.filter(players, function (p) {
-      return player.id !== p.id && (p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY);
-    });
+      var minX = player.x - constants.PX_PER_CELL;
+      var maxX = player.x + constants.PX_PER_CELL;
+      var minY = player.y - constants.PX_PER_CELL;
+      var maxY = player.y + constants.PX_PER_CELL;
+
+      return Players.find({ '_id': { $in: playerIds }, $and: [
+        { 'x': { $gte: minX } },
+        { 'x': { $lte: maxX } },
+        { 'y': { $gte: minY } },
+        { 'y': { $lte: maxY } },
+      ]}, { fields: { 'username': 1 } });
+    }
   };
 
   return Game;
