@@ -142,19 +142,16 @@ KOL.Game = (function () {
 
     if (this.player) {
       var player = this.player;
-      var playerIds = _.without(_.keys(this.players), player.id);
+      var players = this.players;
 
       var minX = player.x - constants.PX_PER_CELL;
       var maxX = player.x + constants.PX_PER_CELL;
       var minY = player.y - constants.PX_PER_CELL;
       var maxY = player.y + constants.PX_PER_CELL;
 
-      return Players.find({ '_id': { $in: playerIds }, $and: [
-        { 'x': { $gte: minX } },
-        { 'x': { $lte: maxX } },
-        { 'y': { $gte: minY } },
-        { 'y': { $lte: maxY } },
-      ]}, { fields: { 'username': 1 } });
+      return _.filter(players, function (p) {
+        return player.id !== p.id && (p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY);
+      });
     }
   };
 
