@@ -6,7 +6,8 @@ KOL.Player = (function () {
     var image;
     var defaultOptions;
 
-    // load image
+    // rendering -------------------------------------
+
     image = new Image();
     image.onload = function () {
       self.image = this;
@@ -27,12 +28,24 @@ KOL.Player = (function () {
     ]), defaultOptions);
     _.extend(self, options);
 
+    // style text rendering
+    this.context.lineWidth = 1;
+    this.context.font = '12px sans-serif';
+    this.context.textAlign = 'center';
+
+    // movement/animation ----------------------------
+
     self.frameIndex = 0; // current frame in spritesheet
     self.stepsSinceLast = 0; // steps since last frame change
     self.stepsPerFrame = 2; // how many steps before frame change
 
     self.attempts = 0; // track how many times setPosition is being called per move
     // self.startTime; // time of last 'begin move'
+
+    // battle ----------------------------------------
+
+    self.challengeSent = false;
+    self.inBattle = false;
   }
 
   Player.prototype.move = function (direction, offset) {
@@ -62,6 +75,7 @@ KOL.Player = (function () {
     var width = Math.max(1, this.width);
     var height = Math.max(1, this.height / this.numFrames);
 
+    // render image
     this.context.drawImage(
       this.image,
       (this.direction % 4) * width, // source x in spritesheet
@@ -72,6 +86,14 @@ KOL.Player = (function () {
       this.y,
       width,
       height
+    );
+
+    // render username
+    this.context.fillText(
+      this.username,
+      this.x + width/2, // initial x
+      this.y + height + constants.PX_PER_CELL/2, // initial y
+      width*3 // max width
     );
   };
 
@@ -95,6 +117,8 @@ KOL.Player = (function () {
         this.move(dir, offset);
       }
     }
+    // update battle status
+    this.inBattle = playerDoc.inBattle;
 
     this.render();
   };
