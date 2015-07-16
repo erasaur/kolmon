@@ -1,7 +1,7 @@
 var helpers = KOL.helpers;
 var constants = KOL.constants;
 
-var Game = KOL.Game;
+var World = KOL.World;
 var Worlds = KOL.Worlds;
 var Players = KOL.Players;
 
@@ -19,14 +19,14 @@ Template.world.onDestroyed(function () {
 // map -----------------------------------------------
 
 Template.map.onCreated(function () {
-  this.game = new Game();
+  this.world = new World();
 });
 
 Template.map.onRendered(function () {
   var self = this;
-  var fgCanvas = this.find('#canvas-foreground');
-  var bgCanvas = this.find('#canvas-background');
-  var playerCanvas = this.find('#canvas-players');
+  var fgCanvas = self.find('#canvas-foreground');
+  var bgCanvas = self.find('#canvas-background');
+  var playerCanvas = self.find('#canvas-players');
 
   var fgContext = fgCanvas.getContext('2d');
   var bgContext = bgCanvas.getContext('2d');
@@ -35,7 +35,7 @@ Template.map.onRendered(function () {
   var userId = Meteor.userId();
   var params = helpers.get.currentParams();
 
-  this.autorun(function (computation) {
+  self.autorun(function (computation) {
     var world = Worlds.findOne(params._id);
     var player = Players.findOne({ userId: userId });
 
@@ -49,7 +49,8 @@ Template.map.onRendered(function () {
         walls: world.walls
       };
 
-      self.game.load({ worldId: world._id, map: map, player: player });
+      self.world.load({ worldId: world._id, map: map, player: player });
+      self.player = self.world.player();
       computation.stop();
     }
   });
@@ -60,10 +61,20 @@ Template.map.helpers({
   canvasHeight: constants.CANVAS_HEIGHT,
   nearbyPlayers: function () {
     var template = Template.instance();
-    return template.game.nearbyPlayers();
+    return template.world.nearbyPlayers();
+  },
+  challenging: function () {
+    var template = Template.instance();
+    return template.player && template.player.challenging();
+  }
+});
+
+Template.map.events({
+  'click .js-challenge-send': function (event, template) {
+    template.player.sendChallenge(this._id);
   }
 });
 
 Template.map.onDestroyed(function () {
-  this.game.stop();
+  this.world.stop();
 });
