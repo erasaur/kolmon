@@ -37,10 +37,16 @@ KOL.Player = (function () {
 
     self.frameIndex = 0; // current frame in spritesheet
     self.stepsSinceLast = 0; // steps since last frame change
-    self.stepsPerFrame = 2; // how many steps before frame change
+    self.stepsPerFrame = constants.MOVE_TIME/(constants.UPDATE_STEP*this.numFrames); // how many steps before frame change
 
     self.attempts = 0; // track how many times setPosition is being called per move
-    // self.startTime; // time of last 'begin move'
+    self.startTime; // time of last 'begin move'
+
+    // TODO:
+    // track the position before we start moving, so if we're
+    // not moving anymore but still animating, we know to exit
+    self.previousX;
+    self.previousY;
 
     // battle ----------------------------------------
 
@@ -49,9 +55,6 @@ KOL.Player = (function () {
   }
 
   Player.prototype.move = function movePlayer (direction, offset) {
-    this.moving = true;
-    this.direction = direction;
-
     this.x = this.nextX(this.x, direction, offset);
     this.y = this.nextY(this.y, direction, offset);
   };
@@ -64,7 +67,7 @@ KOL.Player = (function () {
 
       if (this.stepsSinceLast > this.stepsPerFrame) {
         // loop back to first frame
-        this.frameIndex = this.frameIndex >= this.numFrames - 1 ? 0 : this.frameIndex + 1;
+        this.frameIndex = (this.frameIndex + 1) % this.numFrames;
         this.stepsSinceLast = 0;
       }
     } else {
@@ -98,27 +101,48 @@ KOL.Player = (function () {
   };
 
   Player.prototype.update = function updatePlayer (dt, now, playerDoc, local) {
-    if (playerDoc.moving) {
-      var startTime = playerDoc.startTime;
-      var dir = playerDoc.direction;
+    // if not local, update player properties
+    if (!local) {
+      if (!this.moving) {
+        // just initiated a move. let the database values take precedence immediately
+        // because we don't want a delay between keypress and movement.
+        if (playerDoc.moving) {
+          // store previous location so we know exactly where we should be after the animation
+          this.previousX = playerDoc.x;
+          this.previousY = playerDoc.y;
 
+          this.direction = playerDoc.direction;
+          this.startTime = playerDoc.startTime;
+          this.moving = true;
+        }
+
+        // if we're not moving, we don't have to wait on any animation to finish. so let's just
+        // transition to a battle scene if there is one, since we're idle anyway.
+        this.inBattle = playerDoc.inBattle;
+      }
+
+      // if (this.moving && !playerDoc.moving), we don't care -- we'll update
+      // our local value to match eventually, once we've finished our animation.
+      // this is so that we can preserve the consistency & fluidness of movement.
+    }
+
+    if (this.moving) {
       // previous move has completed, update position
-      if (startTime && (now >= startTime + constants.MOVE_TIME)) {
+      // TODO: delay setting the position until after the animation cycle has completed
+      if (this.startTime && (now >= this.startTime + constants.MOVE_TIME)) {
         if (++this.attempts < 5) {
           this.setPosition(
-            this.nextX(playerDoc.x, dir),
-            this.nextY(playerDoc.y, dir),
+            this.nextX(this.previousX, this.direction),
+            this.nextY(this.previousY, this.direction),
             local
           );
         }
-      } else {
+      } else if (this.moving) {
         this.attempts = 0;
         var offset = (dt / constants.MOVE_TIME) * constants.PX_PER_CELL; // fraction of time * total dist
-        this.move(dir, offset);
+        this.move(this.direction, offset);
       }
     }
-    // update battle status
-    this.inBattle = playerDoc.inBattle;
 
     this.render();
   };
@@ -127,6 +151,7 @@ KOL.Player = (function () {
     this.x = x;
     this.y = y;
     this.moving = false;
+    this.startTime = null;
 
     // if it is a local change, propagate to global
     if (local) {
@@ -136,7 +161,14 @@ KOL.Player = (function () {
   };
 
   Player.prototype.setDirection = function setDirection (direction, startTime) {
-    Meteor.call('setDirection', direction, startTime);
+    this.moving = true;
+    this.direction = direction;
+    this.startTime = startTime;
+
+    this.previousX = this.x;
+    this.previousY = this.y;
+
+    Meteor.call('setDirection', direction);
   };
 
   Player.prototype.nextX = function nextX (currX, dir, offset) {
