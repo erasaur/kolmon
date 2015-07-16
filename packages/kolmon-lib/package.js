@@ -24,11 +24,11 @@ Package.onUse(function (api) {
   api.addFiles('collections/users.js');
   api.addFiles('collections/worlds.js');
 
-  // must load before game
+  // must load before world
   api.addFiles('models/player.js');
   api.addFiles('models/map.js');
 
-  api.addFiles('models/game.js');
+  api.addFiles('models/world.js');
 
   api.export('KOL');
 });

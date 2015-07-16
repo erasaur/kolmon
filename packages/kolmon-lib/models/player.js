@@ -24,7 +24,7 @@ KOL.Player = (function () {
     };
 
     options = _.defaults(_.pick(options, [
-      'game', 'id', 'username', 'context', 'width', 'height', 'x', 'y', 'direction'
+      'world', 'id', 'username', 'context', 'width', 'height', 'x', 'y', 'direction'
     ]), defaultOptions);
     _.extend(self, options);
 
@@ -44,11 +44,11 @@ KOL.Player = (function () {
 
     // battle ----------------------------------------
 
-    self.challengeSent = false;
+    self.challenging = new ReactiveVar();
     self.inBattle = false;
   }
 
-  Player.prototype.move = function (direction, offset) {
+  Player.prototype.move = function movePlayer (direction, offset) {
     this.moving = true;
     this.direction = direction;
 
@@ -56,7 +56,7 @@ KOL.Player = (function () {
     this.y = this.nextY(this.y, direction, offset);
   };
 
-  Player.prototype.render = function () {
+  Player.prototype.render = function renderPlayer () {
     if (!this.image) return;
 
     if (this.moving) {
@@ -97,7 +97,7 @@ KOL.Player = (function () {
     );
   };
 
-  Player.prototype.update = function (dt, now, playerDoc, local) {
+  Player.prototype.update = function updatePlayer (dt, now, playerDoc, local) {
     if (playerDoc.moving) {
       var startTime = playerDoc.startTime;
       var dir = playerDoc.direction;
@@ -123,23 +123,23 @@ KOL.Player = (function () {
     this.render();
   };
 
-  Player.prototype.setPosition = function (x, y, local) {
+  Player.prototype.setPosition = function setPosition (x, y, local) {
     this.x = x;
     this.y = y;
     this.moving = false;
 
     // if it is a local change, propagate to global
     if (local) {
-      this.game._updated.changed();
+      this.world._updated.changed();
       Meteor.call('setPosition', x, y);
     }
   };
 
-  Player.prototype.setDirection = function (direction, startTime) {
+  Player.prototype.setDirection = function setDirection (direction, startTime) {
     Meteor.call('setDirection', direction, startTime);
   };
 
-  Player.prototype.nextX = function (currX, dir, offset) {
+  Player.prototype.nextX = function nextX (currX, dir, offset) {
     offset = offset || constants.PX_PER_CELL;
 
     if (dir === constants.DIR_LEFT) // move left
@@ -151,7 +151,7 @@ KOL.Player = (function () {
     return currX;
   };
 
-  Player.prototype.nextY = function (currY, dir, offset) {
+  Player.prototype.nextY = function nextY (currY, dir, offset) {
     offset = offset || constants.PX_PER_CELL;
 
     if (dir === constants.DIR_UP) // move up
@@ -161,6 +161,26 @@ KOL.Player = (function () {
       return currY + offset;
 
     return currY;
+  };
+
+  Player.prototype.challenging = function challenging () {
+    return this.challenging.get();
+  },
+
+  Player.prototype.sendChallenge = function sendChallenge (playerId) {
+    if (this.challenging.get()) {
+      alert(i18n.t('one_challenge_limit'));
+      return;
+    }
+    this.challenging.set(playerId);
+
+    // TODO
+
+    alert(i18n.t('challenge_sent'));
+  };
+
+  Player.prototype.retractChallenge = function retractChallenge () {
+    this.challenging.set();
   };
 
   return Player;
