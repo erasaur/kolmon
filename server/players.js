@@ -19,8 +19,8 @@ Meteor.methods({
       }
     }, { validate: false });
   },
-  setDirection: function (direction, startTime) {
-    check([direction, startTime], [Number]);
+  setDirection: function (direction) {
+    check(direction, Number);
 
     // manually validate direction, so we don't have to validate entire doc with ss
     if (direction < 0 || direction > 4) {
@@ -30,7 +30,7 @@ Meteor.methods({
     Players.update({ 'userId': this.userId }, {
       $set: {
         'direction': direction,
-        'startTime': startTime,
+        'startTime': Date.now(),
         'moving': true
       }
     }, { validate: false });
