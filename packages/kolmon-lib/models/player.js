@@ -129,15 +129,15 @@ KOL.Player = (function () {
     if (this.moving) {
       // previous move has completed, update position
       // TODO: delay setting the position until after the animation cycle has completed
-      if (this.startTime && (now >= this.startTime + constants.MOVE_TIME)) {
-        if (++this.attempts < 5) {
+      if (this.startTime && (now >= this.startTime + 30 + constants.MOVE_TIME)) {
+        if (!local || ++this.attempts < 5) {
           this.setPosition(
             this.nextX(this.previousX, this.direction),
             this.nextY(this.previousY, this.direction),
             local
           );
         }
-      } else if (this.moving) {
+      } else {
         this.attempts = 0;
         var offset = (dt / constants.MOVE_TIME) * constants.PX_PER_CELL; // fraction of time * total dist
         this.move(this.direction, offset);
