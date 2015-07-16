@@ -11,8 +11,6 @@ Meteor.startup(function () {
   //   Challenges._ensureIndex({ createdAt: 1 }, { expireAfterSeconds: 300 });
   // }
 
-  console.log(constants.CENTER_X);
-
   if (Worlds.find().count() === 0) {
     var world = {
       createdAt: new Date(),
@@ -22,7 +20,7 @@ Meteor.startup(function () {
       userIds: [],
       slots: 9001,
       defaultX: constants.CENTER_X,
-      defaultX: constants.CENTER_Y,
+      defaultY: constants.CENTER_Y,
       background: {
         'map0': { x: 0, y: 0 }
       },
