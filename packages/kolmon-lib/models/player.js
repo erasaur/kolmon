@@ -39,14 +39,11 @@ KOL.Player = (function () {
     self.stepsSinceLast = 0; // steps since last frame change
     self.stepsPerFrame = constants.MOVE_TIME/(constants.UPDATE_STEP*this.numFrames); // how many steps before frame change
 
-    self.attempts = 0; // track how many times setPosition is being called per move
-    self.startTime; // time of last 'begin move'
+    self.updateCount = 0; // track how many updates have passed since our last attempt to setPosition
 
-    // TODO:
-    // track the position before we start moving, so if we're
-    // not moving anymore but still animating, we know to exit
-    self.previousX;
-    self.previousY;
+    self.startTime; // time of last 'begin move'
+    self.destination; // object containing the x and y coordinates of our current move destination
+    self.movementQueue = []; // queue of moves to be executed
 
     // battle ----------------------------------------
 
@@ -54,11 +51,52 @@ KOL.Player = (function () {
     self.inBattle = false;
   }
 
+  /**
+   * Method that gets called on every update step to update the player's
+   * position in the specified direction and by the specified offset.
+   * @param  {Number} direction Direction of movement (as defined in KOL.constants)
+   * @param  {Number} offset    The amount to move in said direction
+   */
   Player.prototype.move = function movePlayer (direction, offset) {
-    this.x = this.nextX(this.x, direction, offset);
-    this.y = this.nextY(this.y, direction, offset);
+    var nextX = this.nextX(this.x, direction, offset);
+    var nextY = this.nextY(this.y, direction, offset);
+
+    // if we haven't already arrived at our destination, keep
+    // moving incrementally towards it
+    if (!this.alreadyArrived(nextX, nextY)) {
+      this.x = nextX;
+      this.y = nextY;
+    }
+    // otherwise, fix our position at the destination
+    else {
+      this.x = this.destination.x;
+      this.y = this.destination.y;
+    }
   };
 
+  /**
+   * Helper method for determining whether the player's next move would
+   * cause it to overshoot its destination.
+   * @return {Boolean} True if player's next move overshoots destination, False otherwise
+   */
+  Player.prototype.alreadyArrived = function (nextX, nextY) {
+    if (direction === constants.DIR_UP) {
+      return nextY < this.destination.y;
+    }
+    else if (direction === constants.DIR_DOWN) {
+      return nextY > this.destination.y;
+    }
+    else if (direction === constants.DIR_LEFT) {
+      return nextX < this.destination.x;
+    }
+    else if (direction === constants.DIR_RIGHT) {
+      return nextX > this.destination.x;
+    }
+  };
+
+  /**
+   * Renders the player's avatar and username onto the player canvas.
+   */
   Player.prototype.render = function renderPlayer () {
     if (!this.image) return;
 
@@ -100,63 +138,85 @@ KOL.Player = (function () {
     );
   };
 
+  /**
+   * A single update step for player. Called from World update step.
+   * @param  {Number} dt        Time in ms that has elapsed since last update step.
+   * @param  {Number} now       Current time in ms (Date.now())
+   * @param  {Object} playerDoc Document fetched from KOL.Players collection representing this player
+   * @param  {Boolean} local    True if this is our player, False if this is another player in the map
+   */
   Player.prototype.update = function updatePlayer (dt, now, playerDoc, local) {
-    // if not local, update player properties
+    // if not local, check the newly fetched player document to see
+    // if the player initiated a move that we don't yet know about
     if (!local) {
-      if (!this.moving) {
-        // just initiated a move. let the database values take precedence immediately
-        // because we don't want a delay between keypress and movement.
-        if (playerDoc.moving) {
-          // store previous location so we know exactly where we should be after the animation
-          this.previousX = playerDoc.x;
-          this.previousY = playerDoc.y;
+      if (playerDoc.moving) {
+        var previous = this.movementQueue.length && this.movementQueue.pop();
 
-          this.direction = playerDoc.direction;
-          this.startTime = playerDoc.startTime;
-          this.moving = true;
+        // we've initiated a new move, enqueue it
+        if (!previous || !previous.startTime !== playerDoc.startTime) {
+          this.movementQueue.push({
+            destination: {
+              x: this.nextX(playerDoc.x, playerDoc.direction),
+              y: this.nextY(playerDoc.y, playerDoc.direction)
+            },
+            direction: playerDoc.direction
+          });
         }
-
-        // if we're not moving, we don't have to wait on any animation to finish. so let's just
-        // transition to a battle scene if there is one, since we're idle anyway.
-        this.inBattle = playerDoc.inBattle;
       }
-
-      // if (this.moving && !playerDoc.moving), we don't care -- we'll update
-      // our local value to match eventually, once we've finished our animation.
-      // this is so that we can preserve the consistency & fluidness of movement.
     }
 
     if (this.moving) {
       // previous move has completed, update position
-      // TODO: delay setting the position until after the animation cycle has completed
-      if (this.startTime && (now >= this.startTime + 30 + constants.MOVE_TIME)) {
-        if (!local || ++this.attempts < 5) {
-          this.setPosition(
-            this.nextX(this.previousX, this.direction),
-            this.nextY(this.previousY, this.direction),
-            local
-          );
+      if (now >= this.startTime + constants.MOVE_TIME) {
+        // if we're not locally emulating a move, i.e on setPosition we make a method call,
+        // we want to guard against the case where the method call fails and we keep trying
+        // on every update, in which case the method calls will get backlogged and freeze up.
+        // so we 'throttle' it by calling the method only after every X amount of updates
+        if (!local || ++this.updateCount % constants.UPDATES_PER_CALL === 0) {
+          this.setPosition(local);
         }
       } else {
-        this.attempts = 0;
+        this.updateCount = 0;
         var offset = (dt / constants.MOVE_TIME) * constants.PX_PER_CELL; // fraction of time * total dist
         this.move(this.direction, offset);
       }
     }
 
+    // we're either idle or just finished a move, so let's move onto the next move in the queue, if there is one
+    if (!local && !this.moving && this.movementQueue.length) {
+      var next = this.movementQueue[0];
+      this.destination.x = next.destination.x;
+      this.destination.y = next.destination.y;
+      this.direction = next.direction;
+      this.startTime = now;
+      this.moving = true;
+    }
+
     this.render();
   };
 
-  Player.prototype.setPosition = function setPosition (x, y, local) {
-    this.x = x;
-    this.y = y;
+  /**
+   * Set the position of the player and end the current move.
+   * @param {Boolean} local True if this is our player, False if this is another player in the map
+   */
+  Player.prototype.setPosition = function setPosition (local) {
+    this.x = this.destination.x;
+    this.y = this.destination.y;
     this.moving = false;
     this.startTime = null;
 
+    // if we've just finished a 'non-local' move, remove it from queue.
+    // we remove the movement after the move has completed (as opposed
+    // to right when we begin) because we might end up enqueuing the same
+    // move midway through the move if we see that playerDoc.moving is
+    // still true (which it likely)
+    if (!local) {
+      this.movementQueue.shift();
+    }
     // if it is a local change, propagate to global
-    if (local) {
+    else {
       this.world._updated.changed();
-      Meteor.call('setPosition', x, y);
+      Meteor.call('setPosition', this.x, this.y);
     }
   };
 
@@ -165,8 +225,8 @@ KOL.Player = (function () {
     this.direction = direction;
     this.startTime = startTime;
 
-    this.previousX = this.x;
-    this.previousY = this.y;
+    this.destination.x = this.nextX(this.x, direction);
+    this.destination.y = this.nextY(this.y, direction);
 
     Meteor.call('setDirection', direction);
   };
