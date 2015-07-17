@@ -42,7 +42,7 @@ KOL.Player = (function () {
     self.updateCount = 0; // track how many updates have passed since our last attempt to setPosition
 
     self.startTime; // time of last 'begin move'
-    self.destination; // object containing the x and y coordinates of our current move destination
+    self.destination = {}; // object containing the x and y coordinates of our current move destination
     self.movementQueue = []; // queue of moves to be executed
 
     // battle ----------------------------------------
@@ -60,10 +60,24 @@ KOL.Player = (function () {
   Player.prototype.move = function movePlayer (direction, offset) {
     var nextX = this.nextX(this.x, direction, offset);
     var nextY = this.nextY(this.y, direction, offset);
+    var alreadyArrived = false;
+
+    if (direction === constants.DIR_UP) {
+      alreadyArrived = nextY < this.destination.y;
+    }
+    else if (direction === constants.DIR_DOWN) {
+      alreadyArrived = nextY > this.destination.y;
+    }
+    else if (direction === constants.DIR_LEFT) {
+      alreadyArrived = nextX < this.destination.x;
+    }
+    else if (direction === constants.DIR_RIGHT) {
+      alreadyArrived = nextX > this.destination.x;
+    }
 
     // if we haven't already arrived at our destination, keep
     // moving incrementally towards it
-    if (!this.alreadyArrived(nextX, nextY)) {
+    if (!alreadyArrived) {
       this.x = nextX;
       this.y = nextY;
     }
@@ -71,26 +85,6 @@ KOL.Player = (function () {
     else {
       this.x = this.destination.x;
       this.y = this.destination.y;
-    }
-  };
-
-  /**
-   * Helper method for determining whether the player's next move would
-   * cause it to overshoot its destination.
-   * @return {Boolean} True if player's next move overshoots destination, False otherwise
-   */
-  Player.prototype.alreadyArrived = function (nextX, nextY) {
-    if (direction === constants.DIR_UP) {
-      return nextY < this.destination.y;
-    }
-    else if (direction === constants.DIR_DOWN) {
-      return nextY > this.destination.y;
-    }
-    else if (direction === constants.DIR_LEFT) {
-      return nextX < this.destination.x;
-    }
-    else if (direction === constants.DIR_RIGHT) {
-      return nextX > this.destination.x;
     }
   };
 
@@ -150,16 +144,22 @@ KOL.Player = (function () {
     // if the player initiated a move that we don't yet know about
     if (!local) {
       if (playerDoc.moving) {
-        var previous = this.movementQueue.length && this.movementQueue.pop();
+        var previous = this.movementQueue.length && this.movementQueue[this.movementQueue.length - 1];
 
-        // we've initiated a new move, enqueue it
-        if (!previous || !previous.startTime !== playerDoc.startTime) {
+        // we've initiated a new move that we haven't seen yet (startTimes are different), enqueue it
+        if (!previous || previous.startTime !== playerDoc.startTime) {
           this.movementQueue.push({
             destination: {
               x: this.nextX(playerDoc.x, playerDoc.direction),
               y: this.nextY(playerDoc.y, playerDoc.direction)
             },
-            direction: playerDoc.direction
+            direction: playerDoc.direction,
+
+            // we only really store the startTime to check the uniqueness of the move.
+            // in reality, when coordinating the actual move and animations, we rely
+            // on the client's startTime (to be in sync with our update steps), which
+            // is different from this startTime that came from the server.
+            startTime: playerDoc.startTime
           });
         }
       }
@@ -172,7 +172,7 @@ KOL.Player = (function () {
         // we want to guard against the case where the method call fails and we keep trying
         // on every update, in which case the method calls will get backlogged and freeze up.
         // so we 'throttle' it by calling the method only after every X amount of updates
-        if (!local || ++this.updateCount % constants.UPDATES_PER_CALL === 0) {
+        if (!local || this.updateCount++ % constants.UPDATES_PER_CALL === 0) {
           this.setPosition(local);
         }
       } else {
@@ -200,6 +200,7 @@ KOL.Player = (function () {
    * @param {Boolean} local True if this is our player, False if this is another player in the map
    */
   Player.prototype.setPosition = function setPosition (local) {
+    this.updateCount = 0;
     this.x = this.destination.x;
     this.y = this.destination.y;
     this.moving = false;
