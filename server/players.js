@@ -12,10 +12,10 @@ Meteor.methods({
 
     Players.update({ 'userId': this.userId }, {
       $set: {
+        'moving': false,
+        'startTime': null,
         'x': x,
         'y': y,
-        'moving': false,
-        'startTime': null
       }
     }, { validate: false });
   },
