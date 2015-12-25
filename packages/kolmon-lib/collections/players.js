@@ -18,14 +18,19 @@ schemas.Player = new SimpleSchema({
   username: {
     type: String
   },
+  image: {
+    type: String,
+    optional: true,
+    defaultValue: constants.DEFAULT_PLAYER_SRC
+  },
   worldId: {
     type: String,
     optional: true
   },
-  // mapId: { // which map user is currently in
-  //   type: String,
-  //   optional: true
-  // },
+  mapId: { // which map user is currently in
+    type: String,
+    optional: true
+  },
   x: {
     type: Number,
     optional: true,
@@ -40,7 +45,8 @@ schemas.Player = new SimpleSchema({
   },
   direction: { // 0 - static, 1 - up, 2 - left, 3 - right, 4 - bottom
     type: Number,
-    optional: true
+    optional: true,
+    defaultValue: constants.DIR_STATIC
   },
   moving: {
     type: Boolean,

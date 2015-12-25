@@ -16,19 +16,18 @@ Package.onUse(function (api) {
   api.use('aldeed:collection2');
 
   api.addFiles('lib.js');
+  api.addFiles('lib/constants.js');
+  api.addFiles('lib/helpers.js');
+  api.addFiles('lib/utils.js');
+  api.addFiles('lib/wrappers.js');
 
   api.addFiles('collections/bags.js');
   api.addFiles('collections/battles.js');
+  api.addFiles('collections/maps.js');
   api.addFiles('collections/players.js');
   api.addFiles('collections/pokemon.js');
   api.addFiles('collections/users.js');
   api.addFiles('collections/worlds.js');
-
-  // must load before world
-  api.addFiles('models/player.js');
-  api.addFiles('models/map.js');
-
-  api.addFiles('models/world.js');
 
   api.export('KOL');
 });
