@@ -20,7 +20,7 @@ schemas.Map = new SimpleSchema({
     blackbox: true
 
     // example:
-    // defaultPosition: {
+    // startingPosition: {
     //   north: { x: 123, y: 0 }, // if entering from north side
     //   west: { x: 0, y: 123 }, // if entering from west side
     //   // might not have an east or south entrance, for example
