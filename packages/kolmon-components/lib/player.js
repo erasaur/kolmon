@@ -33,14 +33,8 @@ KOL.Player = (function () {
     // setup initial position ------------------------
 
     // if returning to same map, use previous position
-    if (player.mapId === map._id) {
-      self.x = player.x;
-      self.y = player.y;
-    }
-    // otherwise, use map default position
-    else {
-      self.x = map.startingPosition.south.x;
-      self.y = map.startingPosition.south.y;
+    if (player.mapId !== map._id) {
+      self.changeMap(map._id);
     }
 
     // set values to defaults
@@ -70,7 +64,10 @@ KOL.Player = (function () {
 
   Player.prototype.changeMap = function changeMap (map) {
     self._player.mapId = map._id;
+    self._player.x = map.startingPosition.default.x;
+    self._player.y = map.startingPosition.default.y;
 
+    Meteor.call('enterMap', map._id);
   };
 
   /**
@@ -133,7 +130,7 @@ KOL.Player = (function () {
     var height = Math.max(1, this.height / this.numFrames);
 
     // render image
-    this.context.drawImage(
+    this._renderers.player.render(
       this.image,
       (this.direction % 4) * width, // source x in spritesheet
       this.frameIndex * height + 1, // source y in spritesheet
@@ -146,7 +143,7 @@ KOL.Player = (function () {
     );
 
     // render username
-    this.context.fillText(
+    this._renderers.player.renderText(
       this.username,
       this.x + width/2, // initial x
       this.y + height + constants.PX_PER_CELL/2, // initial y
