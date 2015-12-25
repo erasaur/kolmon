@@ -72,6 +72,7 @@ KOL.Renderer = (function () {
     }
 
     self._context.fillText(options.text, options.x, options.y, options.width);
+    return self;
   };
 
   Renderer.prototype.clear = function () {

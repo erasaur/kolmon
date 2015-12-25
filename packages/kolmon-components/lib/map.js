@@ -66,6 +66,8 @@ KOL.Map = (function () {
     this._renderers.player.clear();
   };
 
+  // game functionality -------------------------------
+
   Map.prototype.startingPosition = function (fromDirection) {
     if (fromDirection === constants.DIR_UP) {
       return this.startingPosition.south;
@@ -81,8 +83,6 @@ KOL.Map = (function () {
     }
     return this.startingPosition.default;
   };
-
-  // game elements -----------------------------------
 
   Map.prototype.intersects = function (rects, x, y) {
     return _.some(rects, function (rect) {
