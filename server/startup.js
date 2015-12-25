@@ -1,4 +1,5 @@
 var constants = KOL.constants;
+var Maps = KOL.Maps;
 var Worlds = KOL.Worlds;
 
 Meteor.startup(function () {
@@ -7,40 +8,113 @@ Meteor.startup(function () {
   constants.POKEMON = JSON.parse(Assets.getText('pokemon.json'));
   constants.TYPES = JSON.parse(Assets.getText('types.json'));
 
+  constants.TRANSITIONS = JSON.parse(Assets.getText('transitions.json'));
+
+  // clear all players
+
   // if (Challenges.find().count() === 0) {
   //   Challenges._ensureIndex({ createdAt: 1 }, { expireAfterSeconds: 300 });
   // }
 
   if (Worlds.find().count() === 0) {
-    var world = {
+    var map = {
       createdAt: new Date(),
-      name: 'Main World',
-      userId: 'test',
-      username: 'test',
-      userIds: [],
-      slots: 9001,
-      defaultX: constants.CENTER_X,
-      defaultY: constants.CENTER_Y,
+      name: 'Some other town',
+      startingPosition: {
+        'default': { x: 240, y: 48 }
+      },
       background: {
         'map0': { x: 0, y: 0 }
       },
       foreground: {
-        'roof0': { x: 112, y: 88 }
+        'roof0': { x: 64, y: 49 },
+        'roof0': { x: 240, y: 49 },
+        'roof1': { x: 80, y: 177 }
       },
-      walls: [
-        { x: 0, y: 0, w: 80, h: 56 },
-        { x: 0, y: 57, w: 80, h: 288 },
-        { x: 0, y: 305, w: 80, h: 104 },
-        { x: 112, y: 120, w: 80, h: 48 }
+      portals: [
+        { x: 192, y: 0, w: 32, h: 16 }
       ],
-      wild: [{
-        x: 416, y: 352, w: 64, h: 64,
-        pokemon: [
-          { id: 1, rate: 0.3 }
-        ]
-      }]
+      walls: [
+        // top left
+        { x: 0, y: 0, w: 64, h: 48 },
+
+        // left edge
+        { x: 0, y: 48, w: 32, h: 224 },
+
+        // bottom left
+        { x: 0, y: 272, w: 64, h: 40 },
+
+        // bottom edge
+        { x: 64, y: 312, w: 224, h: 8 },
+
+        // bottom right
+        { x: 288, y: 272, w: 96, h: 40 },
+        { x: 320, y: 280, w: 64, h: 32 },
+
+        // right edge
+        { x: 352, y: 48, w: 32, h: 192 },
+
+        // top right
+        { x: 320, y: 0, w: 64, h: 48 },
+
+        // top edge
+        { x: 224, y: 0, w: 96, h: 16 },
+        { x: 64, y: 0, w: 128, h: 16 },
+
+        // house 0
+        { x: 64, y: 80, w: 80, h: 48 },
+        // house 0 sign
+        { x: 104, y: 112, w: 16, h: 16 },
+
+        // house 1
+        { x: 240, y: 80, w: 80, h: 48 },
+        // house 1 sign
+        { x: 224, y: 112, w: 16, h: 16 },
+
+        // house 2
+        { x: 80, y: 192, w: 110, h: 65 },
+        // house 2 sign
+        { x: 128, y: 256, w: 16, h: 16 },
+
+        // sign 3
+        { x: 272, y: 192, w: 16, h: 16 }
+      ]
     };
 
-    Worlds.insert(world);
+    var mapId = Maps.insert(map);
+
+    var world = {
+      createdAt: new Date(),
+      name: 'Main World',
+      userId: 'test',
+      userIds: [],
+      slots: 9001,
+      maps: [{
+        id: mapId
+      }],
+      defaultMapId: mapId
+    };
+
+    var worldId = Worlds.insert(world);
+
+    // create user & player
+    var userId = Accounts.createUser({
+      username: 'test',
+      password: 'asdfasdf'
+    });
+
+    var player = {
+      userId: userId,
+      username: 'test',
+      worldId: worldId,
+      // mapId: { // which map user is currently in
+      //   type: String,
+      //   optional: true
+      // },
+      x: map.startingPosition.default.x,
+      y: map.startingPosition.default.y
+    };
+
+    Players.insert(player);
   }
 });

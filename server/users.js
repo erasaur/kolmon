@@ -20,15 +20,16 @@ Accounts.onCreateUser(function (options, user) {
   return user;
 });
 
-// user status ---------------------------------------
+// user disconnect -----------------------------------
 
-var onPlayerDisconnect = function onPlayerDisconnect (fields) {
-  if (fields.userId) {
-    Meteor.call('leaveWorld');
-  }
-};
-UserStatus.events.on('connectionIdle', onPlayerDisconnect);
-UserStatus.events.on('connectionLogout', onPlayerDisconnect);
+// Meteor.onConnection(function (connection) {
+//   connection.onClose(function () {
+//     var userId = Meteor.userId();
+//     if (userId) {
+//       Meteor.call('leaveWorld');
+//     }
+//   });
+// });
 
 // methods -------------------------------------------
 
@@ -36,24 +37,15 @@ Meteor.methods({
   enterWorld: function (worldId) {
     check(worldId, String);
 
-    var player = this.userId && Players.findOne({ 'userId': this.userId });
+    if (!this.userId) return;
+
+    var player = Players.findOne({ 'userId': this.userId });
     if (!player)
       throw new Meteor.Error('no-permission', i18n.t('please_login'));
 
     var world = Worlds.findOne(worldId);
     if (!world || !world.slots)
       throw new Meteor.Error('invalid-world', i18n.t('invalid_world'));
-
-    // entering a new world, use world defaults
-    if (player.worldId !== worldId) {
-      var defaults = {
-        'worldId': worldId,
-        'x': world.defaultX || constants.CENTER_X,
-        'y': world.defaultY || constants.CENTER_Y,
-        'direction': 0
-      };
-      Players.update(player._id, { $set: defaults });
-    }
 
     Worlds.update(worldId, {
       $addToSet: { 'playerIds': player._id },
@@ -62,13 +54,15 @@ Meteor.methods({
   },
   leaveWorld: function () {
     if (!this.userId) return;
-      // throw new Meteor.Error('no-permission', i18n.t('please_login'));
 
     var player = Players.findOne({ 'userId': this.userId });
     var world = player && Worlds.findOne(player.worldId);
 
     if (world) {
-      Worlds.update(world._id, { $pull: { 'playerIds': player._id }, $inc: { 'slots': 1 } });
+      Worlds.update(world._id, {
+        $pull: { 'playerIds': player._id },
+        $inc: { 'slots': 1 }
+      });
     }
 
     Players.update(player._id, { $unset: { worldId: '', inBattle: '' } });
@@ -78,5 +72,29 @@ Meteor.methods({
     // ]}, function (error, result) {
     //   if (error) throw error;
     // });
+  },
+  enterMap: function (mapId) {
+    check(mapId, String);
+
+    if (!this.userId) return;
+
+    var map = Maps.findOne(mapId);
+    if (!map) {
+      throw new Meteor.Error('invalid-map', i18n.t('invalid_map'));
+    }
+
+    //TODO disallow changing to non-adjacent maps
+
+    // entering a new map, update player
+    if (player.mapId !== mapId) {
+      var defaults = {
+        'worldId': map.worldId,
+        'mapId': mapId,
+        'x': map.startingPosition.south.x || constants.CENTER_X,
+        'y': map.startingPosition.south.y || constants.CENTER_Y,
+        'direction': 0
+      };
+      Players.update(player._id, { $set: defaults });
+    }
   }
 });
