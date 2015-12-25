@@ -1,0 +1,18 @@
+<template name="mapEdit">
+    {{> contentFor region="nav" template="nav"}}
+    {{> mapClickable}}
+</template>
+
+
+
+
+<template name="mapClickable">
+    <div class="col-sm-2">
+        <a href="{{pathFor route='worlds'}}">{{_ "lobby"}}</a>
+    </div>
+    <div class="col-sm-10">
+        <canvas id="canvas" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+        <canvas id="canvasRect" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+        <canvas id="canvasRectSaved" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+    </div>
+</template>
