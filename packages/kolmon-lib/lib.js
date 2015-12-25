@@ -34,7 +34,7 @@ KOL.constants = {
   DIR_DOWN: 4,
 
   MOVE_TIME: 500, // time in ms to travel one cell
-  UPDATE_STEP: 20, // ms per update
+  UPDATE_STEP: 20 // ms per update
 };
 
 // helpers -------------------------------------------
