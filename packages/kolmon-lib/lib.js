@@ -44,6 +44,13 @@ KOL.constants = {
   UNIT_Y_DEN: 27
 };
 
+KOL.types = {       // not sure how I'm going to use this yet
+  'NONE': 'NONE',
+  'WILD': 'WILD',
+  'COLLISION': 'COLLISION',
+  'PORTAL': 'PORTAL'
+}
+
 // helpers -------------------------------------------
 
 KOL.helpers = {

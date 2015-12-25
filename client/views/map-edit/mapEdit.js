@@ -1,5 +1,34 @@
 var constants = KOL.constants;
 
+
+
+Template.mapEdit.onCreated(function() {
+  this._chosenType = new ReactiveVar();
+});
+
+Template.mapEdit.helpers({
+  isChosen: function(type) {
+    var template = Template.instance();
+    if (type === template._chosenType.get()) {
+      return "active";
+    }
+    return "";
+  }
+});
+
+Template.mapEdit.events({
+  "click #type-list": function(e, template) {
+    var element = e.target;
+    var type = element.getAttribute('data-type');
+    console.log(type);
+    template._chosenType.set(type);
+  }
+});
+
+
+
+
+
 Template.mapClickable.onCreated(function () {
   this._dragging = false;
   this._drag_start_X = 0;
