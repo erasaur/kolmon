@@ -7,14 +7,19 @@ var Players = KOL.Players;
 
 // world ---------------------------------------------
 
-Template.world.onRendered(function () {
-  var params = helpers.get.currentParams();
-  Meteor.call('enterWorld', params._id);
-});
+// Template.world.onCreated(function () {
+//   this.world = new World();
+// });
 
-Template.world.onDestroyed(function () {
-  Meteor.call('leaveWorld');
-});
+// Template.world.onRendered(function () {
+//   // this.world.enterWorld();
+//   var params = helpers.get.currentParams();
+//   Meteor.call('enterWorld', params._id);
+// });
+
+// Template.world.onDestroyed(function () {
+//   Meteor.call('leaveWorld');
+// });
 
 // map -----------------------------------------------
 
@@ -35,21 +40,22 @@ Template.map.onRendered(function () {
   var userId = Meteor.userId();
   var params = helpers.get.currentParams();
 
+  console.log('rendered');
+
   self.autorun(function (computation) {
     var world = Worlds.findOne(params._id);
     var player = Players.findOne({ userId: userId });
 
+    console.log(world, player);
+
     if (player && world) {
-      var map = {
+      var contexts = {
         bgContext: bgContext,
         fgContext: fgContext,
-        playerContext: playerContext,
-        background: world.background,
-        foreground: world.foreground,
-        walls: world.walls
+        playerContext: playerContext
       };
 
-      self.world.load({ worldId: world._id, map: map, player: player });
+      self.world.load({ world: world, contexts: contexts, player: player });
       self.player = self.world.player();
       computation.stop();
     }
