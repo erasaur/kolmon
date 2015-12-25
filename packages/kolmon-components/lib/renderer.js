@@ -48,6 +48,10 @@ KOL.Renderer = (function () {
   };
 
   Renderer.prototype.render = function (images) {
+    if (arguments.length > 1) {
+      return self._context.drawImage.apply(self, arguments);
+    }
+
     if (!_.isArray(images)) {
       images = [images];
     }
@@ -60,6 +64,14 @@ KOL.Renderer = (function () {
     });
 
     return self;
+  };
+
+  Renderer.prototype.renderText = function (options) {
+    if (arguments.length > 1) {
+      return self._context.fillText.apply(self, arguments);
+    }
+
+    self._context.fillText(options.text, options.x, options.y, options.width);
   };
 
   Renderer.prototype.clear = function () {

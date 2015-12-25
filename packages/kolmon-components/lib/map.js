@@ -79,6 +79,7 @@ KOL.Map = (function () {
     else if (fromDirection === constants.DIR_RIGHT) {
       return this.startingPosition.west;
     }
+    return this.startingPosition.default;
   };
 
   // game elements -----------------------------------
