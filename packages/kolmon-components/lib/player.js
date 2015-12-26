@@ -9,8 +9,8 @@ KOL.Player = (function () {
     // setup document ---------------------------------
 
     _.extend(self, player, {
-      width: constants.PLAYER_WIDTH,
-      height: constants.PLAYER_HEIGHT,
+      _width: constants.PLAYER_WIDTH,
+      _height: constants.PLAYER_HEIGHT,
       direction: 0
     });
 
@@ -43,29 +43,37 @@ KOL.Player = (function () {
 
   Player.prototype.reset = function resetPlayer () {
     var self = this;
+    var timePerMove = constants.UPDATE_STEP * constants.PLAYER_NUM_FRAMES;
 
-    // movement/animation ----------------------------
+    // movement and animation -------------------------
 
-    self.frameIndex = 0; // current frame in spritesheet
-    self.stepsSinceLast = 0; // steps since last frame change
-    self.stepsPerFrame = constants.MOVE_TIME/(constants.UPDATE_STEP*constants.PLAYER_NUM_FRAMES); // how many steps before frame change
+    // current frame in spritesheet
+    self._frameIndex = 0;
+    // steps since last frame change
+    self._stepsSinceLast = 0;
+    // how many steps before frame change
+    self._stepsPerFrame = constants.MOVE_TIME / timePerMove;
 
-    self.updateCount = 0; // track how many updates have passed since our last attempt to setPosition
+    // number of updates that have passed since our last attempt to setPosition
+    self._updateCount = 0;
 
-    self.startTime; // time of last 'begin move'
-    self.destination = {}; // object containing the x and y coordinates of our current move destination
-    self.movementQueue = []; // queue of moves to be executed
+    // x and y coordinates of our current move destination
+    self._destination = {};
+    // queue of moves to be executed
+    self._movementQueue = [];
 
     // battle ----------------------------------------
 
-    self.challenging = new ReactiveVar();
-    self.inBattle = false;
+    self._challenging = new ReactiveVar();
+    self._inBattle = false;
   };
 
   Player.prototype.changeMap = function changeMap (map) {
+    var start = map.startingPosition();
+
     self._player.mapId = map._id;
-    self._player.x = map.startingPosition.default.x;
-    self._player.y = map.startingPosition.default.y;
+    self._player.x = start.x;
+    self._player.y = start.y;
 
     Meteor.call('enterMap', map._id);
   };
@@ -82,16 +90,16 @@ KOL.Player = (function () {
     var alreadyArrived = false;
 
     if (direction === constants.DIR_UP) {
-      alreadyArrived = nextY < this.destination.y;
+      alreadyArrived = nextY <= this._destination.y;
     }
     else if (direction === constants.DIR_DOWN) {
-      alreadyArrived = nextY > this.destination.y;
+      alreadyArrived = nextY >= this._destination.y;
     }
     else if (direction === constants.DIR_LEFT) {
-      alreadyArrived = nextX < this.destination.x;
+      alreadyArrived = nextX <= this._destination.x;
     }
     else if (direction === constants.DIR_RIGHT) {
-      alreadyArrived = nextX > this.destination.x;
+      alreadyArrived = nextX >= this._destination.x;
     }
 
     // if we haven't already arrived at our destination, keep
@@ -102,8 +110,8 @@ KOL.Player = (function () {
     }
     // otherwise, fix our position at the destination
     else {
-      this.x = this.destination.x;
-      this.y = this.destination.y;
+      this.x = this._destination.x;
+      this.y = this._destination.y;
     }
   };
 
@@ -111,29 +119,29 @@ KOL.Player = (function () {
    * Renders the player's avatar and username onto the player canvas.
    */
   Player.prototype.render = function renderPlayer () {
-    if (!this.image) return;
+    if (!this._image) return;
 
-    if (this.moving) {
-      this.stepsSinceLast++;
+    if (this._moving) {
+      this._stepsSinceLast++;
 
-      if (this.stepsSinceLast > this.stepsPerFrame) {
+      if (this._stepsSinceLast > this._stepsPerFrame) {
         // loop back to first frame
-        this.frameIndex = (this.frameIndex + 1) % this.numFrames;
-        this.stepsSinceLast = 0;
+        this._frameIndex = (this._frameIndex + 1) % constants.PLAYER_NUM_FRAMES;
+        this._stepsSinceLast = 0;
       }
     } else {
-      this.frameIndex = 0;
-      this.stepsSinceLast = 0;
+      this._frameIndex = 0;
+      this._stepsSinceLast = 0;
     }
 
-    var width = Math.max(1, this.width);
-    var height = Math.max(1, this.height / this.numFrames);
+    var width = Math.max(1, this._width);
+    var height = Math.max(1, this._height / constants.PLAYER_NUM_FRAMES);
 
     // render image
     this._renderers.player.render(
-      this.image,
-      (this.direction % 4) * width, // source x in spritesheet
-      this.frameIndex * height + 1, // source y in spritesheet
+      this._image,
+      (this._direction % 4) * width, // source x in spritesheet
+      this._frameIndex * height + 1, // source y in spritesheet
       width,
       height,
       ~~(0.5 + this.x), // round value to prevent anti aliasing by canvas
@@ -145,9 +153,9 @@ KOL.Player = (function () {
     // render username
     this._renderers.player.renderText(
       this.username,
-      this.x + width/2, // initial x
-      this.y + height + constants.PX_PER_CELL/2, // initial y
-      width*3 // max width
+      this.x + width / 2, // initial x
+      this.y + height + constants.PX_PER_CELL / 2, // initial y
+      width * 3 // max width
     );
   };
 
@@ -201,12 +209,13 @@ KOL.Player = (function () {
         // we want to guard against the case where the method call fails and we keep re-trying
         // on every update (in which case the method calls will get backlogged and freeze up).
         // so we 'throttle' it by calling the method only after every X amount of updates.
-        else if (this.updateCount++ % constants.UPDATES_PER_CALL === 0) {
+        else if (this._updateCount++ % constants.UPDATES_PER_CALL === 0) {
           this.setPosition(true);
         }
       } else {
-        this.updateCount = 0;
-        var offset = (dt / constants.MOVE_TIME) * constants.PX_PER_CELL; // fraction of time * total dist
+        this._updateCount = 0;
+        // fraction of time * total dist
+        var offset = (dt / constants.MOVE_TIME) * constants.PX_PER_CELL;
         this.move(this.direction, offset);
       }
     }
@@ -229,8 +238,8 @@ KOL.Player = (function () {
    * @param {Object} destination Coordinates of the destination (x,y)
    */
   Player.prototype.setDestination = function setDestination (destination) {
-    this.destination.x = destination.x;
-    this.destination.y = destination.y;
+    this._destination.x = destination.x;
+    this._destination.y = destination.y;
   };
 
   /**
@@ -238,9 +247,9 @@ KOL.Player = (function () {
    * @param {Boolean} local True if this is our player, False if this is another player in the map
    */
   Player.prototype.setPosition = function setPosition (local) {
-    this.updateCount = 0;
-    this.x = this.destination.x;
-    this.y = this.destination.y;
+    this._updateCount = 0;
+    this.x = this._destination.x;
+    this.y = this._destination.y;
     this.moving = false;
     this.startTime = null;
 
@@ -256,8 +265,8 @@ KOL.Player = (function () {
     this.direction = direction;
     this.startTime = startTime;
 
-    this.destination.x = this.nextX(this.x, direction);
-    this.destination.y = this.nextY(this.y, direction);
+    this._destination.x = this.nextX(this.x, direction);
+    this._destination.y = this.nextY(this.y, direction);
 
     Meteor.call('setDirection', direction);
   };
@@ -266,10 +275,10 @@ KOL.Player = (function () {
     offset = offset || constants.PX_PER_CELL;
 
     if (dir === constants.DIR_LEFT) // move left
-      return Math.max(currX - offset, this.destination.x);
+      return Math.max(currX - offset, this._destination.x);
 
     if (dir === constants.DIR_RIGHT) // move right
-      return Math.min(currX + offset, this.destination.x);
+      return Math.min(currX + offset, this._destination.x);
 
     return currX;
   };
@@ -278,24 +287,24 @@ KOL.Player = (function () {
     offset = offset || constants.PX_PER_CELL;
 
     if (dir === constants.DIR_UP) // move up
-      return Math.max(currY - offset, this.destination.y);
+      return Math.max(currY - offset, this._destination.y);
 
     if (dir === constants.DIR_DOWN) // move down
-      return Math.min(currY + offset, this.destination.y);
+      return Math.min(currY + offset, this._destination.y);
 
     return currY;
   };
 
   Player.prototype.challenging = function challenging () {
-    return this.challenging.get();
+    return this._challenging.get();
   },
 
   Player.prototype.sendChallenge = function sendChallenge (playerId) {
-    if (this.challenging.get()) {
+    if (this._challenging.get()) {
       alert(i18n.t('one_challenge_limit'));
       return;
     }
-    this.challenging.set(playerId);
+    this._challenging.set(playerId);
 
     // TODO
 
@@ -303,7 +312,7 @@ KOL.Player = (function () {
   };
 
   Player.prototype.retractChallenge = function retractChallenge () {
-    this.challenging.set();
+    this._challenging.set();
   };
 
   return Player;

@@ -9,6 +9,7 @@ KOL.Game = (function () {
       return new Game(options);
     }
 
+    this._state = new ReactiveVar();
     if (options) this.load(options);
   }
 
@@ -43,10 +44,18 @@ KOL.Game = (function () {
     // config ----------------------------------------
 
     self._timer = Timer;
-    self._state = constants.STATE_MAP;
     self._lastUpdate;
+    self._state.set(constants.STATE_MAP);
 
     self.start();
+  };
+
+  Game.prototype.world = function getWorld () {
+    return this._world;
+  };
+
+  Game.prototype.state = function getState () {
+    return this._state.get();
   };
 
   Game.prototype.start = function startGame () {
@@ -80,7 +89,7 @@ KOL.Game = (function () {
     event.preventDefault();
     var self = this;
 
-    switch (self._state) {
+    switch (self._state.get()) {
       case constants.STATE_MAP:
         self._world.keydown(event);
         break;
@@ -93,7 +102,7 @@ KOL.Game = (function () {
   Game.prototype.update = function onGameUpdate (dt, now) {
     var self = this;
 
-    switch (self._state) {
+    switch (self._state.get()) {
       case constants.STATE_TR_BATTLE:
         //TODO display transition to battle
         self._transition.update();
@@ -117,12 +126,12 @@ KOL.Game = (function () {
 
   Game.prototype.changeState = function changeState (options) {
     //TODO improve this
-    self._state = options.state.replace('STATE_', 'STATE_TR_');
+    self._state.set(options.state.replace('STATE_', 'STATE_TR_'));
 
     self._transition.run({
-      state: self._state,
+      state: self._state.get(),
       onfinish: function () {
-        self._state = option.state;
+        self._state.set(option.state);
         options.onfinish();
       }
     });
