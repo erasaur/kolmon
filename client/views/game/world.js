@@ -1,17 +1,18 @@
 var helpers = KOL.helpers;
 var constants = KOL.constants;
 
+var Game = KOL.Game;
 var World = KOL.World;
 var Worlds = KOL.Worlds;
 var Players = KOL.Players;
 
 // game -----------------------------------------------
 
-Template.game.onCreated(function () {
+Template.world.onCreated(function () {
   this.game = new Game();
 });
 
-Template.game.onRendered(function () {
+Template.world.onRendered(function () {
   var params = helpers.get.currentParams();
   Meteor.call('enterWorld', params._id);
 
@@ -24,18 +25,17 @@ Template.game.onRendered(function () {
   var bgContext = bgCanvas.getContext('2d');
   var playerContext = playerCanvas.getContext('2d');
 
-  var userId = Meteor.userId();
+  var user = Meteor.user();
   var params = helpers.get.currentParams();
 
   self.autorun(function (computation) {
     var world = Worlds.findOne(params._id);
-    var player = Players.findOne({ userId: userId });
-
-    console.log(world, player);
+    var player = Players.findOne(user.playerId);
 
     if (player && world) {
       self.game.load({
         world: world,
+        player: player,
         bgContext: bgContext,
         fgContext: fgContext,
         playerContext: playerContext
@@ -46,25 +46,28 @@ Template.game.onRendered(function () {
   });
 });
 
-Template.game.helpers({
+Template.world.helpers({
   canvasWidth: constants.CANVAS_WIDTH,
   canvasHeight: constants.CANVAS_HEIGHT,
   sidebar: function () {
+    var template = Template.instance();
     var state;
-    switch (this.game.state()) {
+
+    switch (template.game.state()) {
       case constants.STATE_BATTLE:
         state = 'battle'; break;
       default:
-        state = 'world'; break;
+        state = 'map'; break;
     }
     return state;
   },
   world: function () {
-    return this.game.world();
+    var template = Template.instance();
+    return template.game.world();
   }
 });
 
-Template.game.onDestroyed(function () {
+Template.world.onDestroyed(function () {
   this.game.stop();
   Meteor.call('leaveWorld');
 });
