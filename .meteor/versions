@@ -35,6 +35,8 @@ iron:router@1.0.7
 iron:url@1.0.7
 jquery@1.11.3_2
 json@1.0.3
+kolmon-components@0.0.1
+kolmon-deps@0.0.1
 kolmon-lib@0.0.1
 launch-screen@1.0.2
 less@1.0.14
