@@ -21,7 +21,7 @@ Meteor.startup(function () {
       createdAt: new Date(),
       name: 'Some other town',
       startingPosition: {
-        'default': { x: 240, y: 48 }
+        'default': { x: 240, y: 42 }
       },
       background: {
         'map0': { x: 0, y: 0 }

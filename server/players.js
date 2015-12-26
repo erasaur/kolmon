@@ -1,4 +1,5 @@
 var Worlds = KOL.Worlds;
+var Maps = KOL.Maps;
 var Players = KOL.Players;
 var constants = KOL.constants;
 
@@ -8,6 +9,8 @@ Meteor.methods({
 
     if (!this.userId) return;
 
+    console.log('entering world');
+
     var player = Players.findOne({ 'userId': this.userId });
     if (!player)
       throw new Meteor.Error('no-permission', i18n.t('please_login'));
@@ -16,13 +19,20 @@ Meteor.methods({
     if (!world || !world.slots)
       throw new Meteor.Error('invalid-world', i18n.t('invalid_world'));
 
-    Worlds.update(worldId, {
+    // entering a new world or doesn't have mapId property
+    if (player.worldId !== worldId || !player.mapId) {
+      Meteor.call('enterMap', world.defaultMapId);
+    }
+
+    Worlds.update(world._id, {
       $addToSet: { 'playerIds': player._id },
       $inc: { 'slots': -1 }
     });
   },
   leaveWorld: function () {
     if (!this.userId) return;
+
+    console.log('leaving world');
 
     var player = Players.findOne({ 'userId': this.userId });
     var world = player && Worlds.findOne(player.worldId);
@@ -34,7 +44,7 @@ Meteor.methods({
       });
     }
 
-    Players.update(player._id, { $unset: { worldId: '', inBattle: '' } });
+    Players.update(player._id, { $unset: { inBattle: '' } });
     // Battles.remove({ $or: [
     //   { 'senderId': playerId },
     //   { 'receiverId': playerId }
@@ -52,9 +62,8 @@ Meteor.methods({
       throw new Meteor.Error('invalid-map', i18n.t('invalid_map'));
     }
 
-    //TODO disallow changing to non-adjacent maps
-
     // entering a new map, update player
+    var player = Players.findOne({ userId: this.userId });
     if (player.mapId !== mapId) {
       var defaults = {
         'worldId': map.worldId,

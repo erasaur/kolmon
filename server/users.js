@@ -6,7 +6,8 @@ Accounts.onCreateUser(function (options, user) {
   var bagId = Bags.insert({ userId: user._id });
   var playerId = Players.insert({
     userId: user._id,
-    username: user.username
+    username: user.username,
+    image: constants.DEFAULT_PLAYER_SRC
   });
 
   // general
