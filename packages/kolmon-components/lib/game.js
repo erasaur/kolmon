@@ -2,6 +2,7 @@ var constants = KOL.constants;
 var Renderer = KOL.Renderer;
 var Timer = KOL.Timer;
 var Transition = KOL.Transition;
+var World = KOL.World;
 
 KOL.Game = (function () {
   function Game (options) {
@@ -28,9 +29,9 @@ KOL.Game = (function () {
       fg: new Renderer({
         context: options.fgContext
       }),
-      ui: new Renderer({
-        context: options.uiContext
-      })
+      // ui: new Renderer({
+      //   context: options.uiContext
+      // })
     };
 
     // init components -------------------------------
@@ -59,8 +60,7 @@ KOL.Game = (function () {
   };
 
   Game.prototype.start = function startGame () {
-    // initial render of world
-    self._world.render();
+    var self = this;
 
     // initialize time of last update
     self._lastUpdate = Date.now();
@@ -91,7 +91,7 @@ KOL.Game = (function () {
 
     switch (self._state.get()) {
       case constants.STATE_MAP:
-        self._world.keydown(event);
+        self._world.keydown(event, this._lastUpdate);
         break;
       case constants.STATE_BATTLE:
         //TODO

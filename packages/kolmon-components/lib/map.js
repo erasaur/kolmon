@@ -32,25 +32,23 @@ KOL.Map = (function () {
 
     // setup images -----------------------------------
 
-    self._background = {
-      data: map.background,
-      images: _.keys(map.background)
-    };
-    self._foreground = {
-      data: map.foreground,
-      images: _.keys(map.foreground)
-    };
+    self._background = _.map(map.background, function (value, key) {
+      return { src: key, x: value.x, y: value.y };
+    });
+    self._foreground = _.map(map.foreground, function (value, key) {
+      return { src: key, x: value.x, y: value.y };
+    });
 
     //TODO improve this
     onload = function () {
       if (++count >= 2) self.render();
     };
     self._renderers.bg.loadImages({
-      srcs: self._background.images,
+      srcs: _.keys(map.background),
       onload: onload
     });
     self._renderers.fg.loadImages({
-      srcs: self._foreground.images,
+      srcs: _.keys(map.foreground),
       onload: onload
     });
   };

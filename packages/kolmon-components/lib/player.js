@@ -30,13 +30,6 @@ KOL.Player = (function () {
       }
     });
 
-    // setup initial position ------------------------
-
-    // if returning to same map, use previous position
-    if (player.mapId !== map._id) {
-      self.changeMap(map._id);
-    }
-
     // set values to defaults
     this.reset();
   }
@@ -121,7 +114,7 @@ KOL.Player = (function () {
   Player.prototype.render = function renderPlayer () {
     if (!this._image) return;
 
-    if (this._moving) {
+    if (this.moving) {
       this._stepsSinceLast++;
 
       if (this._stepsSinceLast > this._stepsPerFrame) {
@@ -140,7 +133,7 @@ KOL.Player = (function () {
     // render image
     this._renderers.player.render(
       this._image,
-      (this._direction % 4) * width, // source x in spritesheet
+      (this.direction % 4) * width, // source x in spritesheet
       this._frameIndex * height + 1, // source y in spritesheet
       width,
       height,
@@ -171,11 +164,11 @@ KOL.Player = (function () {
     // if the player initiated a move that we don't yet know about
     if (!local) {
       if (playerDoc.moving) {
-        var previous = this.movementQueue.pop();
+        var previous = this._movementQueue.pop();
 
         // we've initiated a new move that we haven't seen yet (startTimes are different), enqueue it
         if (!previous || previous.startTime !== playerDoc.startTime) {
-          this.movementQueue.push({
+          this._movementQueue.push({
             destination: {
               x: this.nextX(playerDoc.x, playerDoc.direction),
               y: this.nextY(playerDoc.y, playerDoc.direction)
@@ -201,7 +194,7 @@ KOL.Player = (function () {
           // to right when it begins) because we might end up enqueuing the same
           // move midway through, if playerDoc.moving happens to still be true
           // before we finish the move.
-          this.movementQueue.shift();
+          this._movementQueue.shift();
           this.setPosition(false);
         }
 
@@ -221,10 +214,10 @@ KOL.Player = (function () {
     }
 
     // we're either idle or just finished a move, so let's move onto the next move in the queue, if there is one
-    if (!local && !this.moving && this.movementQueue.length) {
-      var next = this.movementQueue[0];
-      this.destination.x = next.destination.x;
-      this.destination.y = next.destination.y;
+    if (!local && !this.moving && this._movementQueue.length) {
+      var next = this._movementQueue[0];
+      this._destination.x = next.destination.x;
+      this._destination.y = next.destination.y;
       this.direction = next.direction;
       this.startTime = now;
       this.moving = true;
@@ -255,7 +248,7 @@ KOL.Player = (function () {
 
     // if it is a local change, propagate to global
     if (local) {
-      this.world._updated.changed();
+      this._world._updated.changed();
       Meteor.call('setPosition', this.x, this.y);
     }
   };
@@ -275,10 +268,10 @@ KOL.Player = (function () {
     offset = offset || constants.PX_PER_CELL;
 
     if (dir === constants.DIR_LEFT) // move left
-      return Math.max(currX - offset, this._destination.x);
+      return currX - offset;
 
     if (dir === constants.DIR_RIGHT) // move right
-      return Math.min(currX + offset, this._destination.x);
+      return currX + offset;
 
     return currX;
   };
@@ -287,10 +280,10 @@ KOL.Player = (function () {
     offset = offset || constants.PX_PER_CELL;
 
     if (dir === constants.DIR_UP) // move up
-      return Math.max(currY - offset, this._destination.y);
+      return currY - offset;
 
     if (dir === constants.DIR_DOWN) // move down
-      return Math.min(currY + offset, this._destination.y);
+      return currY + offset;
 
     return currY;
   };

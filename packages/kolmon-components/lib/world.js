@@ -19,8 +19,6 @@ KOL.World = (function () {
     var self = this;
     var world = options.world;
     var player = options.player;
-    var mapIds;
-    var mapId;
 
     // setup document ---------------------------------
 
@@ -44,14 +42,7 @@ KOL.World = (function () {
 
     // setup map --------------------------------------
 
-    mapIds = _.pluck(world.maps, 'id');
-    mapId = world.defaultMapId;
-
-    // if player previously in a map, return him there
-    if (_.contains(mapIds, player.mapId)) {
-      mapId = player.mapId;
-    }
-    self._map = self.loadMap(mapId);
+    self._map = self.loadMap(player.mapId);
 
     // setup player (after map) -----------------------
 
@@ -72,7 +63,7 @@ KOL.World = (function () {
       renderers: this._renderers
     });
 
-    this._players[playerObj.id] = playerObj;
+    this._players[playerObj._id] = playerObj;
     return playerObj;
   };
 
@@ -92,7 +83,7 @@ KOL.World = (function () {
     return this._player;
   };
 
-  World.prototype.keydown = function onWorldKeydown (event) {
+  World.prototype.keydown = function onWorldKeydown (event, lastUpdate) {
     event.preventDefault();
 
     var player = this._player;
@@ -109,7 +100,7 @@ KOL.World = (function () {
       if (this._map.isPortal(newX, newY)) {
         this.changeMap(newDir);
       } else {
-        player.setDirection(newDir, this._lastUpdate);
+        player.setDirection(newDir, lastUpdate);
       }
     }
   };

@@ -13,8 +13,11 @@ Package.describe({
 Package.onUse(function (api) {
   api.versionsFrom('1.1.0.2');
 
+  api.use('kolmon-lib');
+
   api.addFiles('lib/renderer.js');
   api.addFiles('lib/timer.js');
+  api.addFiles('lib/transition.js');
 
   // must load before world
   api.addFiles('lib/player.js');
