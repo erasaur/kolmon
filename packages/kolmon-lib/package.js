@@ -15,7 +15,7 @@ Package.onUse(function (api) {
 
   api.use('aldeed:collection2');
 
-  api.addFiles('lib.js');
+  api.addFiles('lib/lib.js');
   api.addFiles('lib/constants.js');
   api.addFiles('lib/helpers.js');
   api.addFiles('lib/utils.js');

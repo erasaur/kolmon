@@ -2,8 +2,8 @@ var constants = KOL.constants;
 
 KOL.utils = {
   normalizeSrc: function normalizeSrc (src) {
-    // TODO: more checks
-    return src.indexOf('/') !== -1 ? src : '/' + src + '.png';
+    // TODO: better checks
+    return _.contains(src, '/') ? src : '/' + src + '.png';
   },
   coorToPx: function coorToPx (coor) {
     if (!coor || _.isEmpty(coor)) return;

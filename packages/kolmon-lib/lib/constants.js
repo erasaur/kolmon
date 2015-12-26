@@ -29,7 +29,8 @@ KOL.constants = {
   DEFAULT_FONT: '12px sans-serif',
   DEFAULT_TEXT_ALIGN: 'center',
 
-  DEFAULT_WORLD_ID: 'worlds',
+  // DEFAULT_WORLD_ID: 'world1',
+  // DEFAULT_MAP_ID: 'map1',
   DEFAULT_PLAYER_SRC: '/player.png',
 
   DIR_UP: 101,
