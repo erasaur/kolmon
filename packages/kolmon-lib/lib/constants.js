@@ -45,5 +45,7 @@ KOL.constants = {
 
   MOVE_TIME: 500, // time in ms to travel one cell
   UPDATE_STEP: 20, // ms per update
-  UPDATES_PER_CALL: 25 // throttle update calls to roughly half a second
+  UPDATES_PER_CALL: 25, // throttle update calls to roughly half a second,
+
+  CRON_CLEANUP_TIME: 1 // time between cleanups, in minutes
 };

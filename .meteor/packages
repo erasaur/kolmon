@@ -15,3 +15,4 @@ twbs:bootstrap
 reactive-var
 tap:i18n
 kolmon-deps
+percolate:synced-cron

@@ -19,14 +19,3 @@ Accounts.onCreateUser(function (options, user) {
   _.extend(user, defaults);
   return user;
 });
-
-// user disconnect -----------------------------------
-
-// Meteor.onConnection(function (connection) {
-//   connection.onClose(function () {
-//     var userId = Meteor.userId();
-//     if (userId) {
-//       Meteor.call('leaveWorld');
-//     }
-//   });
-// });

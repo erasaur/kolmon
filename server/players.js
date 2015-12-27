@@ -91,12 +91,13 @@ Meteor.methods({
     }
 
     var user = Meteor.users.findOne(this.userId);
+
     Players.update(user.playerId, {
       $set: {
         'moving': false,
         'startTime': null,
         'x': x,
-        'y': y,
+        'y': y
       }
     }, { validate: false });
   },
@@ -105,12 +106,15 @@ Meteor.methods({
 
     //TODO: validation
 
+    var now = Date.now();
     var user = Meteor.users.findOne(this.userId);
+
     Players.update(user.playerId, {
       $set: {
         'direction': direction,
-        'startTime': Date.now(),
-        'moving': true
+        'startTime': now,
+        'moving': true,
+        'lastUpdate': now
       }
     }, { validate: false });
   }
