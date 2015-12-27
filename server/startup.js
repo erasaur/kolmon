@@ -1,6 +1,7 @@
 var constants = KOL.constants;
 var Maps = KOL.Maps;
 var Worlds = KOL.Worlds;
+var Players = KOL.Players;
 
 Meteor.startup(function () {
   constants.MOVES = JSON.parse(Assets.getText('moves.json'));
@@ -16,9 +17,21 @@ Meteor.startup(function () {
   // }
 
   if (Worlds.find().count() === 0) {
+
+    var world = {
+      createdAt: new Date(),
+      name: 'Main World',
+      userId: 'test',
+      userIds: [],
+      slots: 9001
+    };
+
+    var worldId = Worlds.insert(world);
+
     var map = {
       createdAt: new Date(),
       name: 'Some other town',
+      worldId: worldId,
       startingPosition: {
         'default': { x: 240, y: 42 }
       },
@@ -82,19 +95,14 @@ Meteor.startup(function () {
 
     var mapId = Maps.insert(map);
 
-    var world = {
-      createdAt: new Date(),
-      name: 'Main World',
-      userId: 'test',
-      userIds: [],
-      slots: 9001,
-      maps: [{
-        id: mapId
-      }],
-      defaultMapId: mapId
-    };
-
-    var worldId = Worlds.insert(world);
+    Worlds.update(worldId, {
+      $set: {
+        maps: [{
+          id: mapId
+        }],
+        defaultMapId: mapId
+      }
+    });
 
     // create user & player
     var userId = Accounts.createUser({
