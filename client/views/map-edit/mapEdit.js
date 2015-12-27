@@ -166,9 +166,9 @@ var toValidRectangle = function(rect) {
   }
 
   return {x: x,
-          y: y,
-          w: w,
-          h: h};
+    y: y,
+    w: w,
+    h: h};
 }
 
 
@@ -197,6 +197,12 @@ Template.mapClickable.helpers({
 });
 
 Template.mapClickable.events({
+  "click #save-map": function(e, template) {
+    Meteor.call('updateMapRegions', helpers.get.currentParams()._id,
+                                    template._currentMap.walls,
+                                    template._currentMap.portals,
+                                    template._currentMap.wild);
+  },
   "click #canvasRect": function(e, template) {
     /*
      Clear the rectangle, because it tends to stick around.

@@ -1,26 +1,28 @@
 <template name="mapEdit">
-    {{> contentFor region="nav" template="nav"}}
+  {{> contentFor region="nav" template="nav"}}
 
-    <ul id="type-list">
-      <a href="#" class="{{isChosen 'walls'}}"><li data-type="walls">Wall</li></a>
-      <a href="#" class="{{isChosen 'portals'}}"><li data-type="portals">Portal</li></a>
-      <a href="#" class="{{isChosen 'wild'}}"><li data-type="wild">Wild</li></a>
-      <a href="#" class="{{isChosen 'delete'}}"><li data-type="delete">Delete</li></a>
-    </ul>
-    {{> mapClickable type=getChosenType}}
+  <ul id="type-list">
+    <a href="#" class="{{isChosen 'walls'}}"><li data-type="walls">Wall</li></a>
+    <a href="#" class="{{isChosen 'portals'}}"><li data-type="portals">Portal</li></a>
+    <a href="#" class="{{isChosen 'wild'}}"><li data-type="wild">Wild</li></a>
+    <a href="#" class="{{isChosen 'delete'}}"><li data-type="delete">Delete</li></a>
+  </ul>
+  {{> mapClickable type=getChosenType}}
 </template>
 
 
 
 
 <template name="mapClickable">
-    <div class="col-sm-2">
-      {{type}}
-        <a href="{{pathFor route='worlds'}}">{{_ "lobby"}}</a>
-    </div>
-    <div class="col-sm-10">
-        <canvas id="canvas" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
-        <canvas id="canvasRectSaved" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
-        <canvas id="canvasRect" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
-    </div>
+  <div class="col-sm-2">
+    <a href="{{pathFor route='worlds'}}">{{_ "lobby"}}</a>
+  </div>
+  <div class="col-sm-10">
+    <canvas id="canvas" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+    <canvas id="canvasRectSaved" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+    <canvas id="canvasRect" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+  </div>
+  <button id="save-map">
+    Save Map
+  </button>
 </template>
