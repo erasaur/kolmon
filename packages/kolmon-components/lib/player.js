@@ -114,6 +114,14 @@ KOL.Player = (function () {
   Player.prototype.render = function renderPlayer () {
     if (!this._image) return;
 
+    // this._test = this._test || 0;
+    // if (this.username === 'user') {
+    //   if (++this._test > 200) {
+    //     console.log(this);
+    //     this._test = 0;
+    //   }
+    // }
+
     if (this.moving) {
       this._stepsSinceLast++;
 

@@ -63,7 +63,9 @@ Meteor.methods({
     }
 
     // entering a new map, update player
-    var player = Players.findOne({ userId: this.userId });
+    var user = Meteor.users.findOne(this.userId);
+    var player = Players.findOne(user.playerId);
+
     if (player.mapId !== mapId) {
       var defaults = {
         'worldId': map.worldId,
@@ -79,11 +81,13 @@ Meteor.methods({
     check([x, y], [Number]);
 
     // manually validate x and y, so we don't have to validate entire doc with ss
-    if (x < 0 || x > constants.CANVAS_WIDTH || y < 0 || y > constants.CANVAS_HEIGHT) {
+    if ((x < 0 || x > constants.CANVAS_WIDTH) ||
+        (y < 0 || y > constants.CANVAS_HEIGHT)) {
       return;
     }
 
-    Players.update({ 'userId': this.userId }, {
+    var user = Meteor.users.findOne(this.userId);
+    Players.update(user.playerId, {
       $set: {
         'moving': false,
         'startTime': null,
@@ -95,12 +99,10 @@ Meteor.methods({
   setDirection: function (direction) {
     check(direction, Number);
 
-    // manually validate direction, so we don't have to validate entire doc with ss
-    if (direction < 0 || direction > 4) {
-      return;
-    }
+    //TODO: validation
 
-    Players.update({ 'userId': this.userId }, {
+    var user = Meteor.users.findOne(this.userId);
+    Players.update(user.playerId, {
       $set: {
         'direction': direction,
         'startTime': Date.now(),
