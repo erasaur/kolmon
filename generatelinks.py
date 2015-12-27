@@ -11,9 +11,17 @@ with open('links.json', 'a') as f:
 
 
     # print path to all filenames.
+    first = True
     for filename in filenames:
-      if filename.lower().endswith('.gif'):
-        f.write('\t"' + str(count) + '": "' + os.path.join('http://www.pkparaiso.com/imagenes/xy/sprites/animados/', filename) + '",\n')
-        count += 1
 
-  f.write('}')
+      if filename.lower().endswith('.gif'):
+        if first: 
+          first = False
+          f.write('  "' + str(count) + '": "' + os.path.join('http://www.pkparaiso.com/imagenes/xy/sprites/animados/', filename) + '"')
+          count += 1
+        else:
+          f.write(',\n  "' + str(count) + '": "' + os.path.join('http://www.pkparaiso.com/imagenes/xy/sprites/animados/', filename) + '"')
+          count += 1
+      
+
+  f.write('\n}')
