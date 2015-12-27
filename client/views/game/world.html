@@ -1,0 +1,46 @@
+<template name="world">
+  {{> contentFor region="nav" template="nav"}}
+
+  <div class="col-sm-2">
+    <a href="{{pathFor route='worlds'}}">{{_ "lobby"}}</a> 
+
+    {{> Template.dynamic template=sidebar data=world}}
+  </div>
+
+  <div class="col-sm-10">
+    <canvas id="canvas-background" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+    <canvas id="canvas-players" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+    <canvas id="canvas-foreground" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+  </div>
+</template>
+
+<template name="map">
+  <div>
+    <span>{{_ "players_nearby"}}</span> 
+    <ul>
+      {{#unless nearbyPlayers.length}}
+        <li>{{_ "none"}}</li>
+      {{/unless}}
+
+      {{#each nearbyPlayers}}
+        <li><a href="#" class="js-challenge-send">{{username}}</a></li>
+      {{/each}}
+    </ul>
+  </div>
+  <div>
+    <span>{{_ "challenges_sent"}}</span>
+    <ul>
+      <li>
+        {{#if player.challenging}}
+          {{player.challenging}}
+        {{else}}
+          {{_ "none"}}
+        {{/if}}
+      </li>
+    </ul>
+  </div>
+</template>
+
+<template name="battle">
+  nothing to see here
+</template>

@@ -8,11 +8,11 @@ jquery
 accounts-ui
 iron:router
 accounts-password
-mizzao:user-status
 less
 aldeed:collection2
 chrismbeckett:fontawesome4
 twbs:bootstrap
 reactive-var
 tap:i18n
-kolmon-lib
+kolmon-deps
+percolate:synced-cron

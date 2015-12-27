@@ -1,0 +1,2 @@
+KOL = {};
+KOL.schemas = {};
