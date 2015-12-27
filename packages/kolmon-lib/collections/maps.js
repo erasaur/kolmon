@@ -60,17 +60,15 @@ schemas.Map = new SimpleSchema({
   },
   portals: {
     type: [Object],
-    optional: true,
     blackbox: true
 
     // example:
     // portals: [
-    //   { x: 240, y: 0, w: 32, h: 16 },
+    //   { x: 240, y: 0, w: 32, h: 16 , nextWorldId: '54203ETHDQN'},
     // ]
   },
   wild: {
     type: [Object],
-    optional: true,
     blackbox: true
 
     // example:

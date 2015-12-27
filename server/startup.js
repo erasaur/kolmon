@@ -46,6 +46,7 @@ Meteor.startup(function () {
       portals: [
         { x: 192, y: 0, w: 32, h: 16 }
       ],
+      wild: [],
       walls: [
         // top left
         { x: 0, y: 0, w: 64, h: 48 },
