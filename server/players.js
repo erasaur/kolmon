@@ -19,9 +19,12 @@ Meteor.methods({
     if (!world || !world.slots)
       throw new Meteor.Error('invalid-world', i18n.t('invalid_world'));
 
-    // entering a new world or doesn't have mapId property
-    if (player.worldId !== worldId || !player.mapId) {
+    var mapsInWorld = _.pluck(world.maps, 'id');
+    if (!_.contains(mapsInWorld, player.mapId)) {
       Meteor.call('enterMap', world.defaultMapId);
+    }
+    else if (!player.worldId) {
+      Players.update(player._id, { $set: { 'worldId': world._id } });
     }
 
     Worlds.update(world._id, {
@@ -34,7 +37,8 @@ Meteor.methods({
 
     console.log('leaving world');
 
-    var player = Players.findOne({ 'userId': this.userId });
+    var user = Meteor.users.findOne(this.userId);
+    var player = Players.findOne(user.playerId);
     var world = player && Worlds.findOne(player.worldId);
 
     if (world) {
@@ -44,7 +48,7 @@ Meteor.methods({
       });
     }
 
-    Players.update(player._id, { $unset: { inBattle: '' } });
+    Players.update(player._id, { $unset: { worldId: '', inBattle: '' } });
     // Battles.remove({ $or: [
     //   { 'senderId': playerId },
     //   { 'receiverId': playerId }

@@ -10,8 +10,7 @@ KOL.Player = (function () {
 
     _.extend(self, player, {
       _width: constants.PLAYER_WIDTH,
-      _height: constants.PLAYER_HEIGHT,
-      direction: 0
+      _height: constants.PLAYER_HEIGHT
     });
 
     // setup components -------------------------------
