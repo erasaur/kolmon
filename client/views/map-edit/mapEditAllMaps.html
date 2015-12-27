@@ -1,9 +1,9 @@
 <template name="mapEditAllMaps">
-    {{> contentFor region="nav" template="nav"}}
+  {{> contentFor region="nav" template="nav"}}
 
-    <div class="mapEditAllMaps">
-        {{#each worlds}}
-        <a href="{{pathFor route='mapEdit'}}">{{name}}</a>
-        {{/each}}
-    </div>
+  <div class="mapEditAllMaps">
+    {{#each maps}}
+      <a href="{{pathFor route='mapEdit'}}">{{name}}</a>
+    {{/each}}
+  </div>
 </template>
