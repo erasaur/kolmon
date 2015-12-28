@@ -1,7 +1,6 @@
 var constants = KOL.constants;
 var Maps = KOL.Maps;
 var Worlds = KOL.Worlds;
-var Players = KOL.Players;
 
 Meteor.startup(function () {
   constants.MOVES = JSON.parse(Assets.getText('moves.json'));
@@ -15,7 +14,6 @@ Meteor.startup(function () {
   // }
 
   if (Worlds.find().count() === 0) {
-
     var world = {
       createdAt: new Date(),
       name: 'Main World',
@@ -23,7 +21,6 @@ Meteor.startup(function () {
       userIds: [],
       slots: 9001
     };
-
     var worldId = Worlds.insert(world);
 
     var map = {
@@ -31,7 +28,7 @@ Meteor.startup(function () {
       name: 'Some other town',
       worldId: worldId,
       startingPosition: {
-        'default': { x: 240, y: 42 }
+        'default': { x: 240, y: 48 }
       },
       background: {
         'map0': { x: 0, y: 0 }
@@ -41,10 +38,6 @@ Meteor.startup(function () {
         'roof0': { x: 240, y: 49 },
         'roof1': { x: 80, y: 177 }
       },
-      portals: [
-        { x: 192, y: 0, w: 32, h: 16 }
-      ],
-      wild: [],
       walls: [
         // top left
         { x: 0, y: 0, w: 64, h: 48 },
@@ -93,42 +86,32 @@ Meteor.startup(function () {
     };
     var mapId = Maps.insert(map);
 
-<<<<<<< HEAD
     var map_north = {
       createdAt: new Date(),
       name: 'Some northern town',
+      worldId: worldId,
       startingPosition: {
         'default': { x: 240, y: 42 }
       },
+      foreground: {},
       background: {
         'map0': { x: 0, y: 0 }
       },
+      walls: [],
       portals: [
         { mapId: mapId, enterAt: constants.DIR_UP, x: 192, y: 0, w: 32, h: 16 }
       ]
     };
     var mapId_north = Maps.insert(map_north);
 
-    var world = {
-      createdAt: new Date(),
-      name: 'Main World',
-      userId: 'test',
-      userIds: [],
-      slots: 9001,
-      mapIds: [ mapId, mapId_north ],
-      defaultMapId: mapId
-    };
-    var worldId = Worlds.insert(world);
-=======
+    Maps.update(mapId, { $set: {
+      'portals': [{
+        mapId: mapId_north, enterAt: constants.DIR_UP, x: 192, y: 0, w: 32, h: 16
+      }]
+    }});
     Worlds.update(worldId, {
-      $set: {
-        maps: [{
-          id: mapId
-        }],
-        defaultMapId: mapId
-      }
+      $set: { 'mapIds': [ mapId, mapId_north ], 'defaultMapId': mapId }
     });
->>>>>>> mapMaker
 
     // create user & player
     var userId = Accounts.createUser({
