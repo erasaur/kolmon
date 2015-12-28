@@ -7,8 +7,6 @@ Meteor.startup(function () {
   constants.POKEMON = JSON.parse(Assets.getText('pokemon.json'));
   constants.TYPES = JSON.parse(Assets.getText('types.json'));
 
-  constants.TRANSITIONS = JSON.parse(Assets.getText('transitions.json'));
-
   // clear all players
 
   // if (Challenges.find().count() === 0) {
@@ -79,8 +77,22 @@ Meteor.startup(function () {
         { x: 272, y: 192, w: 16, h: 16 }
       ]
     };
-
     var mapId = Maps.insert(map);
+
+    var map_north = {
+      createdAt: new Date(),
+      name: 'Some northern town',
+      startingPosition: {
+        'default': { x: 240, y: 42 }
+      },
+      background: {
+        'map0': { x: 0, y: 0 }
+      },
+      portals: [
+        { mapId: mapId, enterAt: constants.DIR_UP, x: 192, y: 0, w: 32, h: 16 }
+      ]
+    };
+    var mapId_north = Maps.insert(map_north);
 
     var world = {
       createdAt: new Date(),
@@ -88,12 +100,9 @@ Meteor.startup(function () {
       userId: 'test',
       userIds: [],
       slots: 9001,
-      maps: [{
-        id: mapId
-      }],
+      mapIds: [ mapId, mapId_north ],
       defaultMapId: mapId
     };
-
     var worldId = Worlds.insert(world);
 
     // create user & player
