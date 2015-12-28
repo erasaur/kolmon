@@ -35,6 +35,9 @@ KOL.Renderer = (function () {
     var self = this;
     var loaded = 0;
     var len = options.srcs.length;
+
+    if (!len) options.onload();
+
     _.each(options.srcs, function (src) {
       if (self._images[src]) {
         if (++loaded >= len) options.onload(self._images);

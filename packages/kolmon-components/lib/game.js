@@ -48,15 +48,16 @@ KOL.Game = (function () {
 
     // init components -------------------------------
 
+    self._transition = new Transition({
+      renderers: self._renderers
+    });
+
     // fetch initial map document
     self.fetchMap(options.player.mapId, function () {
       self._world = new World({
         game: this,
         world: options.world,
         player: options.player,
-        renderers: self._renderers
-      });
-      self._transition = new Transition({
         renderers: self._renderers
       });
 
@@ -167,10 +168,8 @@ KOL.Game = (function () {
     var self = this;
 
     //TODO improve this
-    console.log('about to run transition for: ', options.state);
 
     self.transition(options.transition, function () {
-      console.log('changed state to: ', options.state);
       self._state = options.state;
       self._stateDep.changed();
 
