@@ -174,7 +174,7 @@ KOL.Player = (function () {
       }
 
       if (playerDoc.moving) {
-        var previous = this._movementQueue.pop();
+        var previous = this._movementQueue[this._movementQueue.length - 1];
 
         // we've initiated a new move that we haven't seen yet (startTimes are different), enqueue it
         if (!previous || previous.startTime !== playerDoc.startTime) {
