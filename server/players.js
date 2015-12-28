@@ -80,17 +80,23 @@ Meteor.methods({
       Players.update(player._id, { $set: defaults });
     }
   },
+  posChanged: function () {
+    if (!this.userId) return;
+
+    var user = Meteor.user();
+    Players.update(user.playerId, { $set: { 'posChanged': Date.now() } });
+  },
   setPosition: function (x, y) {
     check([x, y], [Number]);
 
     // manually validate x and y, so we don't have to validate entire doc with ss
-    if ((x < 0 || x > constants.CANVAS_WIDTH) ||
+    if (!this.userId ||
+        (x < 0 || x > constants.CANVAS_WIDTH) ||
         (y < 0 || y > constants.CANVAS_HEIGHT)) {
       return;
     }
 
-    var user = Meteor.users.findOne(this.userId);
-
+    var user = Meteor.user();
     Players.update(user.playerId, {
       $set: {
         'moving': false,

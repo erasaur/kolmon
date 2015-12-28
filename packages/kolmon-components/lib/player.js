@@ -48,6 +48,10 @@ KOL.Player = (function () {
     // number of updates that have passed since our last attempt to setPosition
     self._updateCount = 0;
 
+    // the last time that we had to immediately change
+    // the player position without initiating a move
+    self._positionChanged = 0;
+
     // x and y coordinates of our current move destination
     self._destination = {};
     // queue of moves to be executed
@@ -112,14 +116,6 @@ KOL.Player = (function () {
   Player.prototype.render = function renderPlayer () {
     if (!this._image) return;
 
-    // this._test = this._test || 0;
-    // if (this.username === 'user') {
-    //   if (++this._test > 200) {
-    //     console.log(this);
-    //     this._test = 0;
-    //   }
-    // }
-
     if (this.moving) {
       this._stepsSinceLast++;
 
@@ -169,6 +165,14 @@ KOL.Player = (function () {
     // if not local, check the newly fetched player document to see
     // if the player initiated a move that we don't yet know about
     if (!local) {
+      // if player changed position without initiating a move, e.g
+      // by entering a new map, update the position immediately
+      if (playerDoc.posChanged && this._posChanged !== playerDoc.posChanged) {
+        this.x = playerDoc.x;
+        this.y = playerDoc.y;
+        this._posChanged = playerDoc.posChanged;
+      }
+
       if (playerDoc.moving) {
         var previous = this._movementQueue.pop();
 
@@ -275,6 +279,10 @@ KOL.Player = (function () {
     this._destination.y = this.nextY(this.y, direction);
 
     Meteor.call('setDirection', direction);
+  };
+
+  Player.prototype.positionChanged = function positionChanged () {
+    Meteor.call('posChanged');
   };
 
   Player.prototype.nextX = function nextX (currX, dir, offset) {

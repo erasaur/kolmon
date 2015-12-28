@@ -158,6 +158,7 @@ KOL.World = (function () {
       // set the player position to the map defaults
       self._player.setDestination(self._map.initialPosition(portal.enterAt));
       self._player.setPosition(true);
+      self._player.positionChanged();
 
       // clear everything
       self.clear();
