@@ -1,0 +1,24 @@
+<template name="mapEdit">
+    {{> contentFor region="nav" template="nav"}}
+
+    <ul id="type-list">
+      <a href="#" class="{{isChosen 'collision'}}"><li data-type="collision">Collision</li></a>
+      <a href="#" class="{{isChosen 'portal'}}"><li data-type="portal">Portal</li></a>
+      <a href="#" class="{{isChosen 'wild'}}"><li  data-type="wild">Wild</li></a>
+    </ul>
+    {{> mapClickable}}
+</template>
+
+
+
+
+<template name="mapClickable">
+    <div class="col-sm-2">
+        <a href="{{pathFor route='worlds'}}">{{_ "lobby"}}</a>
+    </div>
+    <div class="col-sm-10">
+        <canvas id="canvas" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+        <canvas id="canvasRectSaved" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+        <canvas id="canvasRect" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+    </div>
+</template>
