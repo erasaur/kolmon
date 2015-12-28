@@ -1,14 +1,10 @@
-var constants = KOL.constants;
-
 Template.battle.helpers({
-  enemyPoke: function() {
-    return "http://www.pkparaiso.com/imagenes/xy/sprites/animados/abomasnow-mega.gif";
+  enemyPokes: function() {
+    return KOL.Pokemon.find({index: 877}); 
   },
-  playerPoke: function() {
-    return ;
-  }
-});
+  myPokes: function() {
+    var i = Math.floor(Math.random() * 1290);
+    return KOL.Pokemon.find({index: i});
 
-Template.battle.onRendered(function() {
-  
+  }
 });

@@ -1,12 +1,26 @@
 var constants = KOL.constants;
 var Maps = KOL.Maps;
 var Worlds = KOL.Worlds;
+var Pokemon = KOL.Pokemon;
 
 Meteor.startup(function () {
   constants.MOVES = JSON.parse(Assets.getText('moves.json'));
   constants.POKEMON = JSON.parse(Assets.getText('pokemon.json'));
   constants.TYPES = JSON.parse(Assets.getText('types.json'));
-  constants.LINKS = JSON.parse(Assets.getText("links.json"));
+  // constants.LINKS = JSON.parse(Assets.getText("links.json"));
+
+  if (Pokemon.find().count() === 0 ) {
+    var links = JSON.parse(Assets.getText("links.json"));
+
+    for ( var index in links) {
+      var link = links[index];
+      Pokemon.insert({
+        index: parseInt(index),
+        link: link
+      });
+    }
+  }
+
 
   constants.TRANSITIONS = JSON.parse(Assets.getText('transitions.json'));
 
@@ -32,7 +46,7 @@ Meteor.startup(function () {
         'roof1': { x: 80, y: 177 }
       },
       portals: [
-        { x: 192, y: 0, w: 32, h: 16 }
+      { x: 192, y: 0, w: 32, h: 16 }
       ],
       walls: [
         // top left
@@ -78,24 +92,24 @@ Meteor.startup(function () {
 
         // sign 3
         { x: 272, y: 192, w: 16, h: 16 }
-      ]
-    };
+        ]
+      };
 
-    var mapId = Maps.insert(map);
+      var mapId = Maps.insert(map);
 
-    var world = {
-      createdAt: new Date(),
-      name: 'Main World',
-      userId: 'test',
-      userIds: [],
-      slots: 9001,
-      maps: [{
-        id: mapId
-      }],
-      defaultMapId: mapId
-    };
+      var world = {
+        createdAt: new Date(),
+        name: 'Main World',
+        userId: 'test',
+        userIds: [],
+        slots: 9001,
+        maps: [{
+          id: mapId
+        }],
+        defaultMapId: mapId
+      };
 
-    var worldId = Worlds.insert(world);
+      var worldId = Worlds.insert(world);
 
     // create user & player
     var userId = Accounts.createUser({

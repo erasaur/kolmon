@@ -6,11 +6,15 @@
   </div>
 
   <div class="col-sm-10">
-    Enemy Poke:
-    <img src="{{enemyPoke}}">
-    <br>
-    Your Poke:
-    <img src="{{playerPoke}}">
+    
+    {{#each enemyPokes}}
+    <img src="{{link}}">
+    {{/each}}
+    
+    {{#each myPokes}}
+    <img src="{{link}}">
+    {{/each}}
   </div>
-  <!-- <audio autoplay loop><source src="battle.mp3" type="audio/mpeg">It appears that your browser doesn't support audio.</audio>  -->
+  
+  <audio autoplay loop><source src="battle.mp3" type="audio/mpeg">It appears that your browser doesn't support audio.</audio> 
 </template>
