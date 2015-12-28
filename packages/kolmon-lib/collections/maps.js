@@ -60,7 +60,6 @@ schemas.Map = new SimpleSchema({
   },
   portals: {
     type: [Object],
-    optional: true,
     blackbox: true
 
     // example:
@@ -70,7 +69,6 @@ schemas.Map = new SimpleSchema({
   },
   wild: {
     type: [Object],
-    optional: true,
     blackbox: true
 
     // example:
