@@ -121,6 +121,8 @@ KOL.Game = (function () {
     event.preventDefault();
     var self = this;
 
+    if (self._transition.running()) return;
+
     switch (self._state) {
       case constants.STATE_MAP:
         self._world.keydown(event, this._lastUpdate);

@@ -146,7 +146,7 @@ KOL.World = (function () {
     var self = this;
     var mapId = portal.mapId;
 
-    self._game.transition(constants.TRANSITION_FADE_IN);
+    // self._game.transition(constants.TRANSITION_FADE_IN);
 
     // whether we have the map obj cached or not, we have to
     // re-subscribe to the map to get the updated players
