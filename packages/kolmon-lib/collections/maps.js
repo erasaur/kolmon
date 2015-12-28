@@ -65,7 +65,7 @@ schemas.Map = new SimpleSchema({
 
     // example:
     // portals: [
-    //   { x: 240, y: 0, w: 32, h: 16 },
+    //   { mapId: 'asdf', enterAt: constants.DIR_LEFT, x: 240, y: 0, w: 32, h: 16 },
     // ]
   },
   wild: {

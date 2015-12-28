@@ -22,16 +22,10 @@ schemas.World = new SimpleSchema({
     type: Number,
     defaultValue: 30
   },
-  maps: { // maps in this world
-    type: [Object],
+  mapIds: { // maps in this world
+    type: [String],
     optional: true,
     blackbox: true
-
-    // example:
-    // maps: [
-    //   { id: 'asdf', north: 'asdf1', west: 'asdf2' },
-    //   { id: 'wow', south: 'asdf' },
-    // ]
   },
   defaultMapId: { // the 'starting' map for new players entering the world
     type: String,
