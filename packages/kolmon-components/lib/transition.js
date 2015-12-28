@@ -29,8 +29,6 @@ KOL.Transition = (function () {
       self.onfinish();
     }
 
-    console.log('running transition');
-
     self._type = options.type || self._type;
     self._running = true;
     self._current = 0;
@@ -44,8 +42,6 @@ KOL.Transition = (function () {
     var self = this;
     self._running = false;
 
-    console.log('finishing transition');
-
     if (self._onfinish) {
       self._onfinish();
       self._onfinish = null;
@@ -53,7 +49,6 @@ KOL.Transition = (function () {
   };
 
   Transition.prototype.update = function () {
-    console.log('update');
     var self = this;
     var alpha = self._current / self._numFrames;
 
