@@ -18,14 +18,19 @@ schemas.Player = new SimpleSchema({
   username: {
     type: String
   },
+  image: {
+    type: String,
+    optional: true,
+    defaultValue: constants.DEFAULT_PLAYER_SRC
+  },
   worldId: {
     type: String,
     optional: true
   },
-  // mapId: { // which map user is currently in
-  //   type: String,
-  //   optional: true
-  // },
+  mapId: { // which map user is currently in
+    type: String,
+    optional: true
+  },
   x: {
     type: Number,
     optional: true,
@@ -38,9 +43,18 @@ schemas.Player = new SimpleSchema({
     // min: 0,
     // max: constants.CANVAS_HEIGHT
   },
-  direction: { // 0 - static, 1 - up, 2 - left, 3 - right, 4 - bottom
+  direction: {
+    type: Number,
+    optional: true,
+    defaultValue: constants.DIR_STATIC
+  },
+  updated: {
     type: Number,
     optional: true
+
+    // time of last player update. used to immediately
+    // propagate changes to player documents without e.g
+    // initiating a move
   },
   moving: {
     type: Boolean,

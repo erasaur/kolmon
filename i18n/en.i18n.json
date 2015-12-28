@@ -4,6 +4,7 @@
   "lobby": "Lobby",
   "worlds": "Worlds",
   "subscribe": "Subscribe",
+  "map_edit": "Edit Map",
 
   "invalid_world": "World does not exist or has no slots.",
   "invalid_challenge": "Invalid challenge",

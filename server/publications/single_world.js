@@ -1,16 +1,15 @@
-var Players = KOL.Players;
 var Worlds = KOL.Worlds;
-var Battles = KOL.Battles;
+var Players = KOL.Players;
 
 Meteor.publish('singleWorld', function (worldId) {
+  check(worldId, String);
+
   if (!this.userId) return this.ready();
 
+  var user = Meteor.users.findOne(this.userId);
+
   return [
-    Players.find({ 'worldId': worldId }),
-    Worlds.find(worldId),
-    // Battles.find({ $or: [
-    //   { 'sender.id': this.userId },
-    //   { 'receiver.id': this.userId }
-    // ]})
+    Worlds.find(worldId, { limit: 1 }),
+    Players.find(user.playerId, { limit: 1 })
   ];
 });
