@@ -6,6 +6,7 @@ Meteor.startup(function () {
   constants.MOVES = JSON.parse(Assets.getText('moves.json'));
   constants.POKEMON = JSON.parse(Assets.getText('pokemon.json'));
   constants.TYPES = JSON.parse(Assets.getText('types.json'));
+  constants.LINKS = JSON.parse(Assets.getText("links.json"));
 
   constants.TRANSITIONS = JSON.parse(Assets.getText('transitions.json'));
 

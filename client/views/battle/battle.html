@@ -1,0 +1,16 @@
+<template name="battle">
+  {{> contentFor region="nav" template="nav"}}
+  
+  <div class="col-sm-2">
+    <a href="{{pathFor route='worlds'}}">{{_ "lobby"}}</a> 
+  </div>
+
+  <div class="col-sm-10">
+    Enemy Poke:
+    <img src="{{enemyPoke}}">
+    <br>
+    Your Poke:
+    <img src="{{playerPoke}}">
+  </div>
+  <!-- <audio autoplay loop><source src="battle.mp3" type="audio/mpeg">It appears that your browser doesn't support audio.</audio>  -->
+</template>
