@@ -8,10 +8,7 @@ KOL.Player = (function () {
 
     // setup document ---------------------------------
 
-    _.extend(self, player, {
-      _width: constants.PLAYER_WIDTH,
-      _height: constants.PLAYER_HEIGHT
-    });
+    _.extend(self, player);
 
     // setup components -------------------------------
 
@@ -25,6 +22,9 @@ KOL.Player = (function () {
       srcs: player.image,
       onload: function (images) {
         self._image = images[player.image];
+        self._width = constants.PX_PER_CELL;
+        self._height = self._image.height / constants.PLAYER_NUM_FRAMES;
+        self._offsetY = self._height - constants.PX_PER_CELL;
       }
     });
 
@@ -130,7 +130,7 @@ KOL.Player = (function () {
     }
 
     var width = Math.max(1, this._width);
-    var height = Math.max(1, this._height / constants.PLAYER_NUM_FRAMES);
+    var height = Math.max(1, this._height);
 
     // render image
     this._renderers.player.render(
@@ -140,7 +140,7 @@ KOL.Player = (function () {
       width,
       height,
       ~~(0.5 + this.x), // round value to prevent anti aliasing by canvas
-      ~~(0.5 + this.y),
+      ~~(0.5 + (this.y - this._offsetY)),
       width,
       height
     );

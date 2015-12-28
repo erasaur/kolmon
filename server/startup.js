@@ -28,7 +28,7 @@ Meteor.startup(function () {
       name: 'Some other town',
       worldId: worldId,
       startingPosition: {
-        'default': { x: 240, y: 42 }
+        'default': { x: 240, y: 48 }
       },
       background: {
         'map0': { x: 0, y: 0 }
