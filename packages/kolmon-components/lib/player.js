@@ -15,7 +15,6 @@ KOL.Player = (function () {
 
     // setup components -------------------------------
 
-    self._player = player;
     self._map = map;
     self._world = options.world;
     self._renderers = options.renderers;
@@ -61,11 +60,11 @@ KOL.Player = (function () {
   };
 
   Player.prototype.changeMap = function changeMap (map) {
-    var start = map.startingPosition();
+    var start = map.initialPosition();
 
-    self._player.mapId = map._id;
-    self._player.x = start.x;
-    self._player.y = start.y;
+    self.mapId = map._id;
+    self.x = start.x;
+    self.y = start.y;
 
     Meteor.call('enterMap', map._id);
   };
@@ -252,6 +251,13 @@ KOL.Player = (function () {
     this.y = this._destination.y;
     this.moving = false;
     this.startTime = null;
+
+    // if player happens to be stuck inside a wall, reset to initial position
+    if (isNaN(this.x) || isNaN(this.y) || this._map.getWall(this.x, this.y)) {
+      var start = this._map.initialPosition();
+      this.x = start.x;
+      this.y = start.y;
+    }
 
     // if it is a local change, propagate to global
     if (local) {
