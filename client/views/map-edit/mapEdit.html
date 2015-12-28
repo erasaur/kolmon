@@ -1,12 +1,15 @@
 <template name="mapEdit">
   {{> contentFor region="nav" template="nav"}}
 
-  <ul id="type-list">
-    <a href="#" class="{{isChosen 'walls'}}"><li data-type="walls">Wall</li></a>
-    <a href="#" class="{{isChosen 'portals'}}"><li data-type="portals">Portal</li></a>
-    <a href="#" class="{{isChosen 'wild'}}"><li data-type="wild">Wild</li></a>
-    <a href="#" class="{{isChosen 'delete'}}"><li data-type="delete">Delete</li></a>
-  </ul>
+  <div class="col-sm-2">
+    <ul id="type-list">
+      <a href="#" class="{{isChosen 'walls'}}"><li data-type="walls">Wall</li></a>
+      <a href="#" class="{{isChosen 'portals'}}"><li data-type="portals">Portal</li></a>
+      <a href="#" class="{{isChosen 'wild'}}"><li data-type="wild">Wild</li></a>
+      <a href="#" class="{{isChosen 'delete'}}"><li data-type="delete">Delete</li></a>
+    </ul>
+  </div>
+
   {{> mapClickable type=getChosenType}}
 </template>
 
@@ -14,15 +17,38 @@
 
 
 <template name="mapClickable">
-  <div class="col-sm-2">
-    <a href="{{pathFor route='worlds'}}">{{_ "lobby"}}</a>
+  <div class="col-sm-5">
+
+    <button id="save-map">
+      Save Map
+    </button>
+
+    <div class="canvases">
+      <canvas id="canvas" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+      <canvas id="canvasRectSaved" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+      <canvas id="canvasRect" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+    </div>
   </div>
-  <div class="col-sm-10">
-    <canvas id="canvas" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
-    <canvas id="canvasRectSaved" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
-    <canvas id="canvasRect" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+
+  <div id="next-map-select" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <h3>Select the Map Id you would like to link this portal to.</h3>
+        <small>Thumbnails coming soon.</small>
+
+        <ul id="next-map-list">
+        {{#each getMapsInWorld}}
+          <li>
+            <a href='#'>{{_id}}</a>
+          </li>
+        {{/each}}
+        </ul>
+      </div>
+    </div>
   </div>
-  <button id="save-map">
-    Save Map
-  </button>
+
+  {{#if selectingNextMap}}
+      {{> nextMap mapId=nextMapId }}
+  {{/if}}
+
 </template>

@@ -1,6 +1,6 @@
 var Maps = KOL.Maps;
 
-Meteor.publish('singleMap', function (mapId) {
+Meteor.publish('singleMapEdit', function (mapId) {
   check(mapId, String);
 
   if (!this.userId) return this.ready();

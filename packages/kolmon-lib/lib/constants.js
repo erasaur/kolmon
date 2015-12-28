@@ -43,6 +43,7 @@ KOL.constants = {
   PORTAL_FILL_STYLE: 'rgba(225,0,0,0.5)',
   WILD_FILL_STYLE: 'rgba(0,225,0,0.5)',
   WALL_FILL_STYLE: 'rgba(0,0,225,0.5)',
+  UNIT_FILL_STYLE: 'rgba(0,0,0,1)',
 
   FILL_STYLE: {
     portal: 'rgba(225,0,0,0.5)',
