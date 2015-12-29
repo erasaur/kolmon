@@ -12,15 +12,26 @@ Meteor.startup(function () {
   if (Pokemon.find().count() === 0 ) {
     var links = JSON.parse(Assets.getText("links.json"));
 
-    for ( var index in links) {
-      var link = links[index];
+    for ( var i in links) {
+      var link = links[i];
       Pokemon.insert({
-        index: parseInt(index),
-        link: link
+        index: parseInt(i),
+        link: link,
+        side: "front"
+      });
+    }
+
+    var links_back = JSON.parse(Assets.getText("links-back.json"));
+
+    for ( var j in links_back) {
+      var link = links_back[j];
+      Pokemon.insert({
+        index: parseInt(j),
+        link: link,
+        side: "back"
       });
     }
   }
-
 
   constants.TRANSITIONS = JSON.parse(Assets.getText('transitions.json'));
 
