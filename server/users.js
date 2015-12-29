@@ -4,18 +4,11 @@ var constants = KOL.constants;
 
 Accounts.onCreateUser(function (options, user) {
   var bagId = Bags.insert({ userId: user._id });
-  var playerId = {
+  var playerId = Players.insert({
     userId: user._id,
     username: user.username,
-    worldId: worldId,
-    image: constants.DEFAULT_PLAYER_SRC,
-    // mapId: { // which map user is currently in
-    //   type: String,
-    //   optional: true
-    // },
-    x: map.startingPosition.default.x,
-    y: map.startingPosition.default.y
-  };
+    image: constants.DEFAULT_PLAYER_SRC
+  });
 
   // general
   var defaults = {

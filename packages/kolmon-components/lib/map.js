@@ -96,5 +96,9 @@ KOL.Map = (function () {
     return this.intersects(this.walls, x, y);
   };
 
+  Map.prototype.getWild = function (x, y) {
+    return this.intersects(this.wild, x, y);
+  };
+
   return Map;
 })();
