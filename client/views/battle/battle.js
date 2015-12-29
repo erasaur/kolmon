@@ -34,39 +34,12 @@ Template.battle.onRendered(function() {
 
     bgContext.scale(widthScalar, heightScalar);
     bgContext.drawImage(background, 0, 0);  
-
-
-    /* === DRAW TEXT BOX === */
-
-    /* For reference */
-    /* fillRect(x, y, width, height) */ 
-    /* fillText(string text, float x, float y, [optional] float maxWidth) */
-    /* strokeText(string text, float x, float y, [optional] float maxWidth) */
-
-    /* Black Layer of Text Panel*/
-    fgContext.fillStyle = "#000";
-    var offset = 0;
-    fgContext.fillRect(offset, constants.CANVAS_HEIGHT - (textBoxHeight - offset), constants.CANVAS_WIDTH - (2 * offset) , textBoxHeight - (2* offset));
-
-    /* Color Layer of Text Panel */
-    offset = 3;
-    fgContext.fillStyle = "#6070C0";
-    // fgContext.fillRect(offset, constants.CANVAS_HEIGHT - (textBoxHeight - offset), constants.CANVAS_WIDTH - (2 * offset) , textBoxHeight - (2* offset));
-
-    roundRect(fgContext, offset, constants.CANVAS_HEIGHT - (textBoxHeight - offset), constants.CANVAS_WIDTH - (2 * offset) , textBoxHeight - (2* offset), 5, true, false)
-
-    /* Front-most Layer of Text Panel */
-    offset = 8;
-    var secondaryOffset = 10;
-    fgContext.fillStyle = "#FFF";
-    // fgContext.fillRect(offset + secondaryOffset, constants.CANVAS_HEIGHT - (textBoxHeight - offset), constants.CANVAS_WIDTH - (2 * offset) - (4 * secondaryOffset), textBoxHeight - (2* offset));
-    roundRect(fgContext, offset + secondaryOffset, constants.CANVAS_HEIGHT - (textBoxHeight - offset), constants.CANVAS_WIDTH - (2 * offset) - (4 * secondaryOffset), textBoxHeight - (2* offset), 5, true, false)
-
-
-    /* === DRAW POKEMON HEALTH/STATUS BOXES === */
-
-
+    
+    drawTextBox(fgContext, textBoxHeight, 5, 0, 3, 8, 10);
   };
+
+
+  
 
 
 
@@ -124,3 +97,51 @@ Template.battle.onRendered(function() {
   }
 
 }
+
+/**
+ * Draws a blank text box on a canvas, using the roundRect() method.
+ * @param {CanvasRenderingContext2D} context
+ * @param {Number} height of text box, in px
+ * @param {Number} border radius of text box, in px
+ * @param {Number} the back rectangle's offset based on the edge of canvas, in px
+ * @param {Number} the middle rectangle's offset based on the edge of canvas, in px
+ * @param {Number} the front rectangle's offset based on the edge of canvas, in px
+ * @param {Number} the front rectangle's style offset based on the edge of the canvas, in px
+ */
+
+ function drawTextBox(context, height, radius, backOffset, middleOffset, frontOffset, styleOffset) {
+  var fgContext = context;
+
+  /* Back Layer of Text Box */
+
+  fgContext.fillStyle = "#000";
+  fgContext.fillRect(backOffset, constants.CANVAS_HEIGHT - (height - backOffset), 
+    constants.CANVAS_WIDTH - (2 * backOffset) , height - (2 * backOffset));
+
+  /* Middle Layer of Text Box */
+
+  fgContext.fillStyle = "#6070C0";
+  roundRect(fgContext, middleOffset, constants.CANVAS_HEIGHT - (height - middleOffset), 
+    constants.CANVAS_WIDTH - (2 * middleOffset) , height - (2 * middleOffset), radius, true, false)
+
+  /* Front Layer of Text Box */
+
+  fgContext.fillStyle = "#FFF";
+  roundRect(fgContext, frontOffset + styleOffset, constants.CANVAS_HEIGHT - (height - frontOffset), 
+    constants.CANVAS_WIDTH - (2 * frontOffset) - (4 * styleOffset), height - (2 * frontOffset), radius, true, false);
+}
+
+function drawBattleOptionsPopup() {
+
+  offset = 3; // offset from edge of the canvas
+  fgContext.fillStyle = "#6070C0";
+  var popupWidth = 170; // width of the popup
+  roundRect(fgContext, constants.CANVAS_WIDTH - popupWidth, constants.CANVAS_HEIGHT - textBoxHeight, 
+    popupWidth, textBoxHeight, radius, true, false)
+
+  offset = 5; // offset from edge of the popup
+  fgContext.fillStyle = "#FFF";
+  roundRect(fgContext, constants.CANVAS_WIDTH - (popupWidth - offset) , 
+    constants.CANVAS_HEIGHT - (textBoxHeight - offset), popupWidth - (2 * offset), textBoxHeight - (2 * offset), radius, true, false)
+}
+
