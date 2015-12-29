@@ -101,14 +101,22 @@ KOL.World = (function () {
     else if (!this._map.getWall(newX, newY)) {
       player.setDirection(newDir, lastUpdate);
 
-      if (this._map.getWild(newX, newY)) {
-        this.encounterWild();
+      var wild = this._map.getWild(newX, newY);
+      if (wild) {
+        this.encounterWild(wild);
       }
     }
   };
 
-  World.prototype.encounterWild = function encounterWild () {
-    //TODO
+  World.prototype.encounterWild = function encounterWild (wild) {
+    if (Math.random() <= wild.rate) {
+      var random = Math.random();
+      var encounter = _.find(wild.encounters, function (encounter) {
+        return random <= encounter.rate;
+      });
+      //TODO init battle
+      console.log('encountered wild pokemon: ', encounter);
+    }
   };
 
   World.prototype.render = function renderWorld () {

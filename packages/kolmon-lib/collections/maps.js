@@ -74,7 +74,8 @@ schemas.Map = new SimpleSchema({
     // example:
     // wild: [{
     //   x: 416, y: 352, w: 64, h: 64, // coordinates of wild area
-    //   pokemon: [                    // array of potential encounters
+    //   rate: 0.7,                    // overall encounter rate
+    //   encounters: [                 // array of potential encounters
     //     { id: 1, rate: 0.3 }
     //   ]
     // }]
