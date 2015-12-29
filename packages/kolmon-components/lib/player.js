@@ -29,7 +29,10 @@ KOL.Player = (function () {
     });
 
     // set values to defaults
-    this.reset();
+    self.reset();
+
+    // initial render
+    self.render();
   }
 
   Player.prototype.reset = function resetPlayer () {

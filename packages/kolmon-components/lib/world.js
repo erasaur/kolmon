@@ -48,8 +48,8 @@ KOL.World = (function () {
 
     self._player = self.loadPlayer(player);
 
-    // initial render
-    self.render();
+    // initial update
+    this._updated.changed();
   };
 
   World.prototype.loadPlayer = function loadPlayer (playerId) {

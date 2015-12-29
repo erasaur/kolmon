@@ -32,7 +32,7 @@ Template.world.onRendered(function () {
 
   self.autorun(function (computation) {
     var world = Worlds.findOne(params._id);
-    var player = Players.findOne(user.playerId);
+    var player = Players.findOne({ '_id': user.playerId, 'worldId': world._id });
 
     if (player && world) {
       self.game.load({
