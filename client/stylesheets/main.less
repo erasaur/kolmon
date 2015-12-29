@@ -8,6 +8,7 @@
 canvas {
   border: 1px solid black;
   position: absolute;
+  cursor: default;
 
   .center { 
     left: 50%; 
@@ -22,8 +23,16 @@ a {
 #type-list {
   list-style: none;
 
+  a {
+    display: block;
+  }
+
   .active {
     text-decoration: none;
     font-weight: bolder;
   }
+}
+
+.canvases{
+  margin-top: 20px;
 }

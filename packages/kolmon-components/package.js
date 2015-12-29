@@ -18,6 +18,7 @@ Package.onUse(function (api) {
   api.addFiles('lib/renderer.js');
   api.addFiles('lib/timer.js');
   api.addFiles('lib/transition.js');
+  api.addFiles('lib/map_editor.js')
 
   // must load before world
   api.addFiles('lib/player.js');

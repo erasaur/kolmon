@@ -1,4 +1,6 @@
 KOL.constants = {
+  EPSILON: 1e-9,
+
   STATUS_PENDING: 0,
   STATUS_ACCEPTED: 1,
   STATUS_REJECTED: 2,
@@ -36,6 +38,18 @@ KOL.constants = {
   DIR_LEFT: 102,
   DIR_RIGHT: 103,
   DIR_DOWN: 104,
+
+  PORTAL_FILL_STYLE: 'rgba(225,0,0,0.5)',
+  WILD_FILL_STYLE: 'rgba(0,225,0,0.5)',
+  WALL_FILL_STYLE: 'rgba(0,0,225,0.5)',
+  UNIT_FILL_STYLE: 'rgba(0,0,0,1)',
+
+  FILL_STYLE: {
+    portal: 'rgba(225,0,0,0.5)',
+    wild: 'rgba(0,225,0,0.5)',
+    wall: 'rgba(0,0,225,0.5)'
+  },
+
 
   STATE_MAP: 151,
   STATE_BATTLE: 152,
