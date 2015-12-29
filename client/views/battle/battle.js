@@ -33,13 +33,27 @@ Template.battle.onRendered(function() {
     var heightScalar = (constants.CANVAS_HEIGHT - textBoxHeight) / background.height;
 
     bgContext.scale(widthScalar, heightScalar);
-    bgContext.drawImage(background, 0, 0);  
+    bgContext.drawImage(background, 0, 0); 
+
+
+    var radius = 5;
+    var backLayerOffset = 0;
+    var middleLayerOffset = 3;
+    var frontLayerOffset = 8;
+    var styleOffset = 10;
 
     /* === DRAW TEXT BOX === */
 
-    drawBlankTextBox(fgContext, textBoxHeight, 5, 0, 3, 8, 10);
+    drawTextBox(fgContext, textBoxHeight, radius, "lightskyblue", backLayerOffset, middleLayerOffset, 
+      frontLayerOffset, styleOffset, false);
 
     /* === DRAW OPTIONS POPUP === */
+
+    var width = 170;
+
+    /* Offsets are calculated with respect to the text box */
+    drawOptionsPopup(fgContext, width, textBoxHeight, radius, "lightsteelblue", 
+      backLayerOffset + middleLayerOffset, frontLayerOffset);
 
     /* === DRAW HEALTH BARS === */
 
@@ -70,7 +84,7 @@ Template.battle.onRendered(function() {
  * @param {Boolean} [fill = false] Whether to fill the rectangle.
  * @param {Boolean} [stroke = true] Whether to stroke the rectangle.
  */
-function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+ function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
   if (typeof stroke == 'undefined') {
     stroke = true;
   }
@@ -106,54 +120,80 @@ function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
 }
 
 /**
- * Draws a blank text box on a canvas, using the roundRect() method.
- * @param {CanvasRenderingContext2D} context
- * @param {Number} height of text box, in px
- * @param {Number} border radius of text box, in px
- * @param {Number} the back rectangle's offset based on the edge of canvas, in px
- * @param {Number} the middle rectangle's offset based on the edge of canvas, in px
- * @param {Number} the front rectangle's offset based on the edge of canvas, in px
- * @param {Number} the front rectangle's style offset based on the edge of the canvas, in px
+ * Draws a styled text box (without text) on a canvas, using the roundRect() method.
+ * @param context 2D Canvas context in which the text box should be drawn.
+ * @param height Height of the text box, in px.
+ * @param radius Border radius of the text box, in px.
+ * @param color Color of the middle rectangle. 
+ * @param backLayerOffset The back rectangle's offset, in px, based on the edge of the canvas.
+ * @param middleLayerOffset The middle rectangle's offset, in px, based on the edge of the canvas.
+ * @param frontLayerOffset The front rectangle's offset, in px, based on the edge of the canvas.
+ * @param styleOffset The front rectangle's style offset, in px, based on the edge of the canvas.
+ * @param transparentBackLayer Set to true to make the back rectangle transparent, or false to keep 
+ * it black. Intended for non-battle scenes.
  */
-
-function drawTextBox(context, height, radius, backOffset, middleOffset, frontOffset, styleOffset) {
-  var fgContext = context;
+ function drawTextBox(context, height, radius, color, backLayerOffset, middleLayerOffset, frontLayerOffset, 
+  styleOffset, transparentBackLayer) {
 
   /* Back Layer of Text Box */
 
-  fgContext.fillStyle = "#000";
-  fgContext.fillRect(backOffset, constants.CANVAS_HEIGHT - (height - backOffset), 
-    constants.CANVAS_WIDTH - (2 * backOffset) , height - (2 * backOffset));
+  if (transparentBackLayer) {
+    context.fillStyle = "transparent"; 
+    context.fillRect(backLayerOffset, constants.CANVAS_HEIGHT - (height - backLayerOffset), 
+      constants.CANVAS_WIDTH - (2 * backLayerOffset) , height - (2 * backLayerOffset));
+  }
+  else {
+    context.fillStyle = "#000"; // black 
+    context.fillRect(backLayerOffset, constants.CANVAS_HEIGHT - (height - backLayerOffset), 
+      constants.CANVAS_WIDTH - (2 * backLayerOffset) , height - (2 * backLayerOffset));
+  }
 
   /* Middle Layer of Text Box */
 
-  fgContext.fillStyle = "#6070C0";
-  roundRect(fgContext, middleOffset, constants.CANVAS_HEIGHT - (height - middleOffset), 
-    constants.CANVAS_WIDTH - (2 * middleOffset) , height - (2 * middleOffset), radius, true, false)
+  context.fillStyle = color; 
+  roundRect(context, middleLayerOffset, constants.CANVAS_HEIGHT - (height - middleLayerOffset), 
+    constants.CANVAS_WIDTH - (2 * middleLayerOffset), height - (2 * middleLayerOffset), 
+    radius, true, false);
 
   /* Front Layer of Text Box */
 
-  fgContext.fillStyle = "#FFF";
-  roundRect(fgContext, frontOffset + styleOffset, constants.CANVAS_HEIGHT - (height - frontOffset), 
-    constants.CANVAS_WIDTH - (2 * frontOffset) - (4 * styleOffset), height - (2 * frontOffset), radius, true, false);
+  context.fillStyle = "#FFF"; // white
+  roundRect(context, frontLayerOffset + styleOffset, constants.CANVAS_HEIGHT - (height - frontLayerOffset), 
+    constants.CANVAS_WIDTH - (2 * frontLayerOffset) - (4 * styleOffset), height - (2 * frontLayerOffset), 
+    radius, true, false);
 }
 
-function drawOptionsPopup() {
+/**
+ * Draws a styled options popup (without text) on a canvas, using the roundRect() method.
+ * Should be used in conjunction with a styled textbox (see drawTextBox()), and the offsets should be
+ * given with respect to the styled textbox.
+ * @param context 2D Canvas context in which the text box should be drawn.
+ * @param width width of the text box, in px.
+ * @param height Height of the text box, in px.
+ * @param radius Border radius of the text box, in px.
+ * @param color Color of the back rectangle. 
+ * @param backLayerOffset The back rectangle's offset, in px, based on the edge of the canvas.
+ * @param frontLayerOffset The front rectangle's offset, in px, based on the edge of the canvas.
+ */
+function drawOptionsPopup(context, width, height, radius, color, backLayerOffset, frontLayerOffset) {
 
-  offset = 3; // offset from edge of the canvas
-  fgContext.fillStyle = "#6070C0";
-  var popupWidth = 170; // width of the popup
-  roundRect(fgContext, constants.CANVAS_WIDTH - popupWidth, constants.CANVAS_HEIGHT - textBoxHeight, 
-    popupWidth, textBoxHeight, radius, true, false)
+  /* Back Layer of Popup */
 
-  offset = 5; // offset from edge of the popup
-  fgContext.fillStyle = "#FFF";
-  roundRect(fgContext, constants.CANVAS_WIDTH - (popupWidth - offset) , 
-    constants.CANVAS_HEIGHT - (textBoxHeight - offset), popupWidth - (2 * offset), textBoxHeight - (2 * offset), radius, true, false)
+  context.fillStyle = color; 
+  roundRect(context, constants.CANVAS_WIDTH - width, constants.CANVAS_HEIGHT - (height - backLayerOffset), 
+    width - backLayerOffset, height - (2 * backLayerOffset), radius, true, false)
+
+  /* Front Layer of Popup */
+
+  context.fillStyle = "#FFF"; 
+  roundRect(context, constants.CANVAS_WIDTH - (width - frontLayerOffset), constants.CANVAS_HEIGHT - (height - frontLayerOffset), 
+    width - (2 * frontLayerOffset), height - (2 * frontLayerOffset), radius, true, false)
+
 }
 
 
 function drawHealthBars() {
+
 
 }
 
