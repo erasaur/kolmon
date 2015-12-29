@@ -34,15 +34,22 @@ Template.battle.onRendered(function() {
 
     bgContext.scale(widthScalar, heightScalar);
     bgContext.drawImage(background, 0, 0);  
-    
-    drawTextBox(fgContext, textBoxHeight, 5, 0, 3, 8, 10);
+
+    /* === DRAW TEXT BOX === */
+
+    drawBlankTextBox(fgContext, textBoxHeight, 5, 0, 3, 8, 10);
+
+    /* === DRAW OPTIONS POPUP === */
+
+    /* === DRAW HEALTH BARS === */
+
+    /* === DRAW MOVES MENU === */
+
+    /* === DRAW BAG MENU === */
+
+    /* === DRAW PKMN MENU === */
+
   };
-
-
-  
-
-
-
 });
 
 /**
@@ -63,7 +70,7 @@ Template.battle.onRendered(function() {
  * @param {Boolean} [fill = false] Whether to fill the rectangle.
  * @param {Boolean} [stroke = true] Whether to stroke the rectangle.
  */
- function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
   if (typeof stroke == 'undefined') {
     stroke = true;
   }
@@ -109,7 +116,7 @@ Template.battle.onRendered(function() {
  * @param {Number} the front rectangle's style offset based on the edge of the canvas, in px
  */
 
- function drawTextBox(context, height, radius, backOffset, middleOffset, frontOffset, styleOffset) {
+function drawTextBox(context, height, radius, backOffset, middleOffset, frontOffset, styleOffset) {
   var fgContext = context;
 
   /* Back Layer of Text Box */
@@ -131,7 +138,7 @@ Template.battle.onRendered(function() {
     constants.CANVAS_WIDTH - (2 * frontOffset) - (4 * styleOffset), height - (2 * frontOffset), radius, true, false);
 }
 
-function drawBattleOptionsPopup() {
+function drawOptionsPopup() {
 
   offset = 3; // offset from edge of the canvas
   fgContext.fillStyle = "#6070C0";
@@ -145,3 +152,19 @@ function drawBattleOptionsPopup() {
     constants.CANVAS_HEIGHT - (textBoxHeight - offset), popupWidth - (2 * offset), textBoxHeight - (2 * offset), radius, true, false)
 }
 
+
+function drawHealthBars() {
+
+}
+
+function drawMovesMenu() {
+
+}
+
+function drawBagMenu() {
+
+}
+
+function drawPkmnMenu() {
+
+}
