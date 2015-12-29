@@ -35,43 +35,64 @@ Template.mapClickable.onCreated(function () {
   this._drag_start_X = 0;
   this._drag_start_Y = 0;
   this._selectingNextMap = new ReactiveVar(false);
+  this._enterAt = undefined;
 });
 
 
 Template.mapClickable.onRendered(function () {
-  var templateInstance = this;
-  var Canvas = templateInstance.find('#canvas');
-  var CanvasRect = templateInstance.find("#canvasRect");
+  var template = this;
+  var Canvas = template.find('#canvas');
+  var CanvasRect = template.find("#canvasRect");
 
-  templateInstance._context = Canvas.getContext('2d');
-  templateInstance._contextRect = CanvasRect.getContext('2d');
+  template._context = Canvas.getContext('2d');
+  template._contextRect = CanvasRect.getContext('2d');
 
   var imageElement = new Image();
   imageElement.onload = function() {
-    templateInstance._context.drawImage(imageElement, 0, 0, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT);
+    template._context.drawImage(imageElement, 0, 0, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT);
   };
 
   imageElement.src = '/map0.png'; // change this later to grab the Id in the URL
   if(imageElement.complete ){
-    templateInstance._context.drawImage(imageElement, 0, 0, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT);
+    template._context.drawImage(imageElement, 0, 0, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT);
   }
 
-  var canvasRectSaved = templateInstance.find('#canvasRectSaved');
+  var canvasRectSaved = template.find('#canvasRectSaved');
   var contextRectSaved = canvasRectSaved.getContext('2d');
-  templateInstance._contextRectSaved = contextRectSaved;
+  template._contextRectSaved = contextRectSaved;
 
   var params = helpers.get.currentParams();
 
-  templateInstance.autorun( function() {
-    templateInstance._currentMap = Maps.findOne({ _id: params._id });
+  template.autorun( function() {
+    template._currentMap = Maps.findOne({ _id: params._id });
 
-    if( templateInstance._currentMap === undefined) {
+    if( template._currentMap === undefined) {
       return;
     }
 
-    MapEditor.drawSavedRectangles(canvasRectSaved, templateInstance._currentMap);
+    MapEditor.drawSavedRectangles(canvasRectSaved, template._currentMap);
   });
 
+
+  template.autorun(function() {
+    if( ! template._selectingNextMap.get() ) {
+      if(template._enterAt && template._portalRect) {
+        template._currentMap.portals.push({
+          mapId: template._nextMapId,
+          x: template._portalRect.x,
+          y: template._portalRect.y,
+          w: template._portalRect.w,
+          h: template._portalRect.h,
+          enterAt: template._enterAt
+        });
+
+        console.log(template._enterAt);
+        console.log(template._currentMap.portals);
+
+        MapEditor.drawSavedRectangles(template.find('#canvasRectSaved'), template._currentMap);
+      }
+    }
+  });
 
 });
 
@@ -84,12 +105,25 @@ Template.mapClickable.helpers({
 
     return Maps.find({worldId: worldId});
   },
+  selectingNextMapVar: function() {
+    return Template.instance()._selectingNextMap;
+  },
   selectingNextMap: function() {
-
     return Template.instance()._selectingNextMap.get();
   },
   nextMapId: function() {
     return Template.instance()._nextMapId;
+  },
+  hookEnterAt: function() {
+    var template = Template.instance();
+
+    template._enterAt = {
+      x: 0,
+      y: 0,
+      dir: constants.DIR_DOWN
+    };
+
+    return template._enterAt;
   }
 });
 
@@ -124,13 +158,14 @@ Template.mapClickable.events({
       });
 
 
-      if(['walls', 'portals', 'wild'].indexOf(this.type) >= 0) {
+      if( this.type === 'portals' ) {
+        template._portalRect = rect;
+        $('#next-map-select').modal();
+      }
+      else if(['walls', 'wild'].indexOf(this.type) >= 0) {
+
         template._currentMap[this.type].push(rect);
 
-        if(this.type === 'portals') {
-          // drop down a modal to select the linked Map
-          $('#next-map-select').modal();
-        }
       }
       else if(this.type === 'delete') {
         // delete all rectangles in template._currentMap that intersect this rectangle
