@@ -13,7 +13,7 @@ with open('links-back.json', 'a') as f:
     first = True
 
     for filename in filenames:
-      match = re.search(r'[^123456789].gif', filename)
+      match = re.search(r'[^-123456789].gif', filename)
       
       if filename.lower().endswith('.gif') and match:
         if first: 
