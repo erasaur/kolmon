@@ -38,8 +38,6 @@ Template.battle.onRendered(function() {
 
     /* === DRAW TEXT BOX === */
 
-    /* TODO: Use roundRect() instead of fillRect() */
-
     /* For reference */
     /* fillRect(x, y, width, height) */ 
     /* fillText(string text, float x, float y, [optional] float maxWidth) */
