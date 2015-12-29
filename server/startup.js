@@ -33,8 +33,6 @@ Meteor.startup(function () {
     }
   }
 
-  constants.TRANSITIONS = JSON.parse(Assets.getText('transitions.json'));
-
   // clear all players
 
   // if (Challenges.find().count() === 0) {
@@ -42,9 +40,19 @@ Meteor.startup(function () {
   // }
 
   if (Worlds.find().count() === 0) {
+    var world = {
+      createdAt: new Date(),
+      name: 'Main World',
+      userId: 'test',
+      userIds: [],
+      slots: 9001
+    };
+    var worldId = Worlds.insert(world);
+
     var map = {
       createdAt: new Date(),
       name: 'Some other town',
+      worldId: worldId,
       startingPosition: {
         'default': { x: 240, y: 42 }
       },
@@ -56,9 +64,6 @@ Meteor.startup(function () {
         'roof0': { x: 240, y: 49 },
         'roof1': { x: 80, y: 177 }
       },
-      portals: [
-      { x: 192, y: 0, w: 32, h: 16 }
-      ],
       walls: [
         // top left
         { x: 0, y: 0, w: 64, h: 48 },
@@ -105,22 +110,34 @@ Meteor.startup(function () {
         { x: 272, y: 192, w: 16, h: 16 }
         ]
       };
-
       var mapId = Maps.insert(map);
 
-      var world = {
+      var map_north = {
         createdAt: new Date(),
-        name: 'Main World',
-        userId: 'test',
-        userIds: [],
-        slots: 9001,
-        maps: [{
-          id: mapId
-        }],
-        defaultMapId: mapId
+        name: 'Some northern town',
+        worldId: worldId,
+        startingPosition: {
+          'default': { x: 240, y: 42 }
+        },
+        foreground: {},
+        background: {
+          'map0': { x: 0, y: 0 }
+        },
+        walls: [],
+        portals: [
+        { mapId: mapId, enterAt: constants.DIR_UP, x: 192, y: 0, w: 32, h: 16 }
+        ]
       };
+      var mapId_north = Maps.insert(map_north);
 
-      var worldId = Worlds.insert(world);
+      Maps.update(mapId, { $set: {
+        'portals': [{
+          mapId: mapId_north, enterAt: constants.DIR_UP, x: 192, y: 0, w: 32, h: 16
+        }]
+      }});
+      Worlds.update(worldId, {
+        $set: { 'mapIds': [ mapId, mapId_north ], 'defaultMapId': mapId }
+      });
 
     // create user & player
     var userId = Accounts.createUser({

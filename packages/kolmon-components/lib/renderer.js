@@ -15,8 +15,9 @@ KOL.Renderer = (function () {
     this._width = options.width || constants.CANVAS_WIDTH;
     this._height = options.height || constants.CANVAS_HEIGHT;
 
-    // text rendering options ------------------------
+    // rendering options ------------------------------
 
+    this._context.fillStyle = constants.DEFAULT_FILL_STYLE;
     this._context.lineWidth = constants.DEFAULT_LINE_WIDTH;
     this._context.font = constants.DEFAULT_FONT;
     this._context.textAlign = constants.DEFAULT_TEXT_ALIGN;
@@ -34,6 +35,9 @@ KOL.Renderer = (function () {
     var self = this;
     var loaded = 0;
     var len = options.srcs.length;
+
+    if (!len) options.onload();
+
     _.each(options.srcs, function (src) {
       if (self._images[src]) {
         if (++loaded >= len) options.onload(self._images);
@@ -67,6 +71,27 @@ KOL.Renderer = (function () {
     });
 
     return self;
+  };
+
+  Renderer.prototype.renderRect = function (options) {
+    if (arguments.length > 1) {
+      this._context.fillRect.apply(this._context, arguments);
+    } else {
+      //TODO: improve setting custom context settings
+      this._context.save();
+
+      if (options.globalAlpha) {
+        this._context.globalAlpha = options.globalAlpha;
+      }
+      if (options.fillStyle) {
+        this._context.fillStyle = options.fillStyle;
+      }
+      this._context.fillRect(options.x, options.y, options.width, options.height);
+
+      // restore original settings
+      this._context.restore();
+    }
+    return this;
   };
 
   Renderer.prototype.renderText = function (options) {

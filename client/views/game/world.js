@@ -20,10 +20,12 @@ Template.world.onRendered(function () {
   var fgCanvas = self.find('#canvas-foreground');
   var bgCanvas = self.find('#canvas-background');
   var playerCanvas = self.find('#canvas-players');
+  var transitionCanvas = self.find('#canvas-transition');
 
   var fgContext = fgCanvas.getContext('2d');
   var bgContext = bgCanvas.getContext('2d');
   var playerContext = playerCanvas.getContext('2d');
+  var transitionContext = transitionCanvas.getContext('2d');
 
   var user = Meteor.user();
   var params = helpers.get.currentParams();
@@ -38,10 +40,26 @@ Template.world.onRendered(function () {
         player: player,
         bgContext: bgContext,
         fgContext: fgContext,
-        playerContext: playerContext
+        playerContext: playerContext,
+        transitionContext: transitionContext
       });
       self.world = self.game.world();
       computation.stop();
+    }
+  });
+
+  // fetch new documents as we change maps in game
+  self.autorun(function (computation) {
+    var subscription;
+    var mapId = self.game.fetchMapId();
+
+    if (_.isString(mapId)) {
+      subscription = self.subscribe('singleMap', mapId);
+
+      //TODO display loading indicator
+      if (subscription.ready()) {
+        self.game.fetchedMap();
+      }
     }
   });
 });

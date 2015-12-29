@@ -26,7 +26,7 @@ KOL.World = (function () {
 
     // setup components -------------------------------
 
-    self._world = world;
+    self._game = options.game;
     self._renderers = options.renderers;
     self._players = {}; // cache of playerObj's
     self._maps = {}; // cache of mapObj's
@@ -48,10 +48,8 @@ KOL.World = (function () {
 
     self._player = self.loadPlayer(player);
 
-    // initial update
-    self._map.render();
-    self._player.render();
-    self._updated.changed();
+    // initial render
+    self.render();
   };
 
   World.prototype.loadPlayer = function loadPlayer (playerId) {
@@ -95,14 +93,29 @@ KOL.World = (function () {
 
     var newX = player.nextX(player.x, newDir);
     var newY = player.nextY(player.y, newDir);
+    var portal = this._map.getPortal(newX, newY);
 
-    if (!this._map.isWall(newX, newY)) {
-      if (this._map.isPortal(newX, newY)) {
-        this.changeMap(newDir);
-      } else {
-        player.setDirection(newDir, lastUpdate);
-      }
+    if (portal) {
+      this.changeMap(portal);
     }
+    else if (!this._map.getWall(newX, newY)) {
+      player.setDirection(newDir, lastUpdate);
+    }
+  };
+
+  World.prototype.render = function renderWorld () {
+    this._map.render();
+    this._player.render();
+    this._updated.changed();
+  };
+
+  World.prototype.clear = function clearWorld () {
+    this._map.clear();
+    this.clearPlayers();
+  };
+
+  World.prototype.clearPlayers = function clearPlayers () {
+    this._renderers.player.clear();
   };
 
   World.prototype.update = function onWorldUpdate (dt, now) {
@@ -111,9 +124,9 @@ KOL.World = (function () {
     var players;
     var player;
 
-    self._map.clearPlayers();
+    self.clearPlayers();
 
-    players = Players.find({ 'worldId': self._world._id }, {
+    players = Players.find({ 'worldId': self._id, 'mapId': self._map._id }, {
       sort: { 'y': 1 }
     });
 
@@ -129,58 +142,54 @@ KOL.World = (function () {
     });
   };
 
-  World.prototype.changeMap = function changeMap (inDirection) {
+  World.prototype.changeMap = function changeMap (portal) {
     var self = this;
-    var mapId = self.adjacentMap(inDirection);
+    var mapId = portal.mapId;
 
-    if (!mapId) {
-      throw 'No adjacent map in that direction!';
-    }
+    // self._game.transition(constants.TRANSITION_FADE_IN);
 
-    self._game.changeState({
-      state: constants.STATE_MAP,
-      onfinish: function () {
-        self._map = self._maps[mapId] || self.loadMap(mapId);
+    // whether we have the map obj cached or not, we have to
+    // re-subscribe to the map to get the updated players
+    self._game.fetchMap(mapId, function () {
+      self._map = self._maps[mapId] || self.loadMap(mapId);
 
-        self._player.changeMap(self._map);
+      self._player.changeMap(self._map);
 
-        // set the player position to the map defaults
-        self._player.setDestination(self._map.startingPosition(inDirection));
-        self._player.setPosition(true);
+      // set the player position to the map defaults
+      self._player.setDestination(self._map.initialPosition(portal.enterAt));
+      self._player.setPosition(true);
+      self._player.positionChanged();
 
-        // reset player position/movement
-        self._player.reset();
+      // clear everything
+      self.clear();
 
-        // re-render everything
-        self._map.clearPlayers();
-        self._map.render();
-        self._player.render();
-      }
+      // reset player movement
+      self._player.reset();
+
+      // render everything
+      self.render();
+
+      self._game.transition(constants.TRANSITION_FADE_OUT);
     });
-  };
-
-  World.prototype.adjacentMap = function adjacentMap (direction) {
-    return this._world.maps[this._map.id][direction];
   };
 
   World.prototype.nearbyPlayers = function nearbyPlayers () {
     this._updated.depend();
+    if (!this._player) return;
 
-    if (this._player) {
-      var player = this._player;
-      var players = this._players;
+    var player = this._player;
+    var players = this._players;
 
-      var minX = player.x - constants.PX_PER_CELL;
-      var maxX = player.x + constants.PX_PER_CELL;
-      var minY = player.y - constants.PX_PER_CELL;
-      var maxY = player.y + constants.PX_PER_CELL;
+    var minX = player.x - constants.PX_PER_CELL;
+    var maxX = player.x + constants.PX_PER_CELL;
+    var minY = player.y - constants.PX_PER_CELL;
+    var maxY = player.y + constants.PX_PER_CELL;
 
-      return _.filter(players, function (p) {
-        return (player.id !== p.id) &&
-               (p.x >= minX && p.x <= maxX) &&
-               (p.y >= minY && p.y <= maxY);
-      });
-    }
+    return _.filter(players, function (p) {
+      return (player.id !== p.id) &&
+             (p.x >= minX && p.x <= maxX) &&
+             (p.y >= minY && p.y <= maxY);
+    });
   };
 
   return World;

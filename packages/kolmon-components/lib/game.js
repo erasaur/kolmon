@@ -10,12 +10,21 @@ KOL.Game = (function () {
       return new Game(options);
     }
 
-    this._state = new ReactiveVar();
+    this._stateDep = new Tracker.Dependency();
+    this._fetchMapDep = new Tracker.Dependency();
     if (options) this.load(options);
   }
 
   Game.prototype.load = function loadGame (options) {
     var self = this;
+
+    // config ----------------------------------------
+
+    self._timer = Timer;
+    self._lastUpdate;
+    self._fetchMapCb;
+    self._state = constants.STATE_MAP;
+    self._stateDep.changed();
 
     // init renderers --------------------------------
 
@@ -29,6 +38,9 @@ KOL.Game = (function () {
       fg: new Renderer({
         context: options.fgContext
       }),
+      transition: new Renderer({
+        context: options.transitionContext
+      }),
       // ui: new Renderer({
       //   context: options.uiContext
       // })
@@ -36,28 +48,55 @@ KOL.Game = (function () {
 
     // init components -------------------------------
 
-    self._world = new World({
-      world: options.world,
-      player: options.player,
+    self._transition = new Transition({
       renderers: self._renderers
     });
 
-    // config ----------------------------------------
+    // fetch initial map document
+    self.fetchMap(options.player.mapId, function () {
+      self._world = new World({
+        game: this,
+        world: options.world,
+        player: options.player,
+        renderers: self._renderers
+      });
 
-    self._timer = Timer;
-    self._lastUpdate;
-    self._state.set(constants.STATE_MAP);
-
-    self.start();
+      self.start();
+    });
   };
+
+  // getters ------------------------------------------
 
   Game.prototype.world = function getWorld () {
     return this._world;
   };
 
   Game.prototype.state = function getState () {
-    return this._state.get();
+    this._stateDep.depend();
+    return this._state;
   };
+
+  Game.prototype.fetchMapId = function getFetchMapId () {
+    this._fetchMapDep.depend();
+    return this._fetchMapId;
+  };
+
+  // subscriptions ------------------------------------
+
+  Game.prototype.fetchMap = function gameFetchMap (mapId, cb) {
+    this._fetchMapCb = cb;
+    this._fetchMapId = mapId;
+    this._fetchMapDep.changed();
+  };
+
+  Game.prototype.fetchedMap = function gameFetchedMap () {
+    if (_.isFunction(this._fetchMapCb)) {
+      this._fetchMapCb();
+      this._fetchMapCb = null;
+    }
+  };
+
+  // game loop ----------------------------------------
 
   Game.prototype.start = function startGame () {
     var self = this;
@@ -76,36 +115,35 @@ KOL.Game = (function () {
   Game.prototype.stop = function stopGame (id) {
     $(window).off('keydown.game');
     (this._timer || Timer).stop(id);
-
-    //TODO handle player disconnect, e.g clear out player from the world
-
-    if (!id) {
-      this._map = null;
-      this._players = null;
-    }
   };
 
   Game.prototype.keydown = function onGameKeydown (event) {
     event.preventDefault();
     var self = this;
 
-    switch (self._state.get()) {
+    if (self._transition.running()) return;
+
+    switch (self._state) {
       case constants.STATE_MAP:
         self._world.keydown(event, this._lastUpdate);
         break;
       case constants.STATE_BATTLE:
         //TODO
         break;
+      // case constants.STATE_LOADING: break; // noop
     }
   };
 
   Game.prototype.update = function onGameUpdate (dt, now) {
     var self = this;
 
-    switch (self._state.get()) {
-      case constants.STATE_TR_BATTLE:
-        //TODO display transition to battle
-        self._transition.update();
+    if (self._transition.running()) {
+      self._transition.update();
+    }
+
+    switch (self._state) {
+      case constants.STATE_LOADING:
+        //TODO display nice loading indicator
         break;
       case constants.STATE_MAP:
         self._world.update(dt, now);
@@ -124,14 +162,20 @@ KOL.Game = (function () {
     this._lastUpdate = now;
   };
 
-  Game.prototype.changeState = function changeState (options) {
-    //TODO improve this
-    self._state.set(options.state.replace('STATE_', 'STATE_TR_'));
+  Game.prototype.transition = function transitionGame (type, cb) {
+    this._transition.run({ type: type, onfinish: cb });
+  };
 
-    self._transition.run({
-      state: self._state.get(),
-      onfinish: function () {
-        self._state.set(option.state);
+  Game.prototype.changeState = function changeState (options) {
+    var self = this;
+
+    //TODO improve this
+
+    self.transition(options.transition, function () {
+      self._state = options.state;
+      self._stateDep.changed();
+
+      if (_.isFunction(options.onfinish)) {
         options.onfinish();
       }
     });

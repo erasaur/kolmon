@@ -26,6 +26,7 @@ KOL.constants = {
   // TYPES: JSON.parse(Assets.getText('types.json')),
   // LINKS: JSON.parse(Assets.getText('links.json')),
 
+  DEFAULT_FILL_STYLE: '#000',
   DEFAULT_LINE_WIDTH: 1,
   DEFAULT_FONT: '12px sans-serif',
   DEFAULT_TEXT_ALIGN: 'center',
@@ -40,9 +41,13 @@ KOL.constants = {
   DIR_DOWN: 104,
 
   STATE_MAP: 151,
-  STATE_TR_MAP: 152,
-  STATE_BATTLE: 153,
-  STATE_TR_BATTLE: 154,
+  STATE_BATTLE: 152,
+  STATE_TR: 153,
+  STATE_LOADING: 154,
+
+  TRANSITION_FADE_IN: 201,
+  TRANSITION_FADE_OUT: 202,
+  TRANSITION_NUM_FRAMES: 50, // number of frames to run transition
 
   MOVE_TIME: 500, // time in ms to travel one cell
   UPDATE_STEP: 20, // ms per update

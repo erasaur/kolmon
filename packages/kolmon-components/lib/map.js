@@ -22,13 +22,7 @@ KOL.Map = (function () {
     // setup components -------------------------------
 
     self._world = options.world;
-    self._map = map;
     self._renderers = options.renderers;
-
-    // setup walls ------------------------------------
-
-    self._walls = map.walls;
-    self._portals = map.portals;
 
     // setup images -----------------------------------
 
@@ -55,35 +49,38 @@ KOL.Map = (function () {
 
   // rendering ---------------------------------------
 
-  Map.prototype.render = function () {
+  Map.prototype.render = function renderMap () {
     this._renderers.bg.render(this._background);
     this._renderers.fg.render(this._foreground);
   };
 
-  Map.prototype.clearPlayers = function () {
-    this._renderers.player.clear();
+  Map.prototype.clear = function clearMap () {
+    this._renderers.bg.clear();
+    this._renderers.fg.clear();
   };
 
   // game functionality -------------------------------
 
-  Map.prototype.startingPosition = function (fromDirection) {
-    if (fromDirection === constants.DIR_UP) {
-      return this.startingPosition.south;
+  Map.prototype.initialPosition = function getInitialPosition (fromDirection) {
+    var self = this;
+    var start;
+
+    switch (fromDirection) {
+      case constants.DIR_UP:
+        start = self.startingPosition.south; break;
+      case constants.DIR_DOWN:
+        start = self.startingPosition.north; break;
+      case constants.DIR_LEFT:
+        start = self.startingPosition.east; break;
+      case constants.DIR_RIGHT:
+        start = self.startingPosition.west; break;
     }
-    else if (fromDirection === constants.DIR_DOWN) {
-      return this.startingPosition.north;
-    }
-    else if (fromDirection === constants.DIR_LEFT) {
-      return this.startingPosition.east;
-    }
-    else if (fromDirection === constants.DIR_RIGHT) {
-      return this.startingPosition.west;
-    }
-    return this.startingPosition.default;
+
+    return start || this.startingPosition.default;
   };
 
   Map.prototype.intersects = function (rects, x, y) {
-    return _.some(rects, function (rect) {
+    return _.find(rects, function (rect) {
       return (x < rect.x + rect.w) &&
              (x >= rect.x) &&
              (y < rect.y + rect.h - constants.PX_PER_CELL) &&
@@ -91,11 +88,11 @@ KOL.Map = (function () {
     });
   };
 
-  Map.prototype.isPortal = function (x, y) {
+  Map.prototype.getPortal = function (x, y) {
     return this.intersects(this.portals, x, y);
   };
 
-  Map.prototype.isWall = function (x, y) {
+  Map.prototype.getWall = function (x, y) {
     return this.intersects(this.walls, x, y);
   };
 
