@@ -10,13 +10,12 @@
     <canvas id="canvas-background" width="{{canvasWidth}}" height="{{canvasHeight}}" style="z-index: -1;"></canvas>
     <canvas id="canvas-foreground" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
 
-    <div style="width: {{canvasWidth}}px; height: {{canvasHeight}}px" class="clearfix">
+    <div style="position: relative; width: {{canvasWidth}}px; height: {{canvasHeight}}px">
       {{#each myPokes}}
-      <img draggable="false" style="z-index: 1; padding: {{canvasWidth}}" src="{{link}}">
+      <img draggable="false" style="position: absolute; bottom: 90px; left: 45px; zoom: 120%;" src="{{link}}">
       {{/each}}
-
       {{#each enemyPokes}}
-      <img draggable="false" style="float: right;" src="{{link}}">
+      <img draggable="false" style="position: absolute; bottom: 250px; right: 75px; zoom: 80%;" src="{{link}}">
       {{/each}}
     </div>
     

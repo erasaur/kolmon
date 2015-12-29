@@ -4,7 +4,7 @@ Template.battle.helpers({
   canvasWidth: constants.CANVAS_WIDTH,
   canvasHeight: constants.CANVAS_HEIGHT,
   enemyPokes: function() {
-    return KOL.Pokemon.find({index: 167, side: "front"}); 
+    return KOL.Pokemon.find({index: 500, side: "front"}); 
   },
   myPokes: function() {
     // TODO: change i to index of lead pokemon of currentUser
@@ -21,8 +21,14 @@ Template.battle.onRendered(function() {
   background.src = "http://i.imgur.com/53aqSY5.png";
 
   background.onload = function(){
-    bgContext.scale(0.3, 0.3);
+
+
+    var widthScalar = constants.CANVAS_WIDTH / background.width;
+    var heightScalar = (constants.CANVAS_HEIGHT - 90) / background.height;
+
+    bgContext.scale(widthScalar, heightScalar);
     bgContext.drawImage(background, 0, 0);  
+
   };
 
 });
