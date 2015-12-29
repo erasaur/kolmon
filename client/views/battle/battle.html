@@ -5,15 +5,21 @@
     <a href="{{pathFor route='worlds'}}">{{_ "lobby"}}</a> 
   </div>
 
+  
   <div class="col-sm-10">
+    <canvas id="canvas-background" width="{{canvasWidth}}" height="{{canvasHeight}}" style="z-index: -1;"></canvas>
+    <canvas id="canvas-foreground" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+
+    <div style="width: {{canvasWidth}}px; height: {{canvasHeight}}px" class="clearfix">
+      {{#each myPokes}}
+      <img draggable="false" style="z-index: 1; padding: {{canvasWidth}}" src="{{link}}">
+      {{/each}}
+
+      {{#each enemyPokes}}
+      <img draggable="false" style="float: right;" src="{{link}}">
+      {{/each}}
+    </div>
     
-    {{#each enemyPokes}}
-    <img src="{{link}}">
-    {{/each}}
-    
-    {{#each myPokes}}
-    <img src="{{link}}">
-    {{/each}}
   </div>
   
   <audio autoplay loop><source src="battle.mp3" type="audio/mpeg">It appears that your browser doesn't support audio.</audio> 
