@@ -1,6 +1,7 @@
 var constants = KOL.constants;
 var Maps = KOL.Maps;
 var Worlds = KOL.Worlds;
+var Players = KOL.Players;
 
 Meteor.startup(function () {
   constants.MOVES = JSON.parse(Assets.getText('moves.json'));
@@ -38,6 +39,8 @@ Meteor.startup(function () {
         'roof0': { x: 240, y: 49 },
         'roof1': { x: 80, y: 177 }
       },
+      wild: [],
+      portals: [],
       walls: [
         // top left
         { x: 0, y: 0, w: 64, h: 48 },
@@ -97,6 +100,7 @@ Meteor.startup(function () {
       background: {
         'map0': { x: 0, y: 0 }
       },
+      wild: [],
       walls: [],
       portals: [
         { mapId: mapId, enterAt: constants.DIR_UP, x: 192, y: 0, w: 32, h: 16 }
@@ -118,19 +122,5 @@ Meteor.startup(function () {
       username: 'test',
       password: 'asdfasdf'
     });
-
-    var player = {
-      userId: userId,
-      username: 'test',
-      worldId: worldId,
-      // mapId: { // which map user is currently in
-      //   type: String,
-      //   optional: true
-      // },
-      x: map.startingPosition.default.x,
-      y: map.startingPosition.default.y
-    };
-
-    Players.insert(player);
   }
 });

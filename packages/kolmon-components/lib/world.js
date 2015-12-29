@@ -100,7 +100,15 @@ KOL.World = (function () {
     }
     else if (!this._map.getWall(newX, newY)) {
       player.setDirection(newDir, lastUpdate);
+
+      if (this._map.getWild(newX, newY)) {
+        this.encounterWild();
+      }
     }
+  };
+
+  World.prototype.encounterWild = function encounterWild () {
+    //TODO
   };
 
   World.prototype.render = function renderWorld () {

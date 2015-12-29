@@ -11,7 +11,8 @@ Meteor.methods({
 
     console.log('entering world');
 
-    var player = Players.findOne({ 'userId': this.userId });
+    var user = Meteor.user();
+    var player = Players.findOne(user.playerId);
     if (!player)
       throw new Meteor.Error('no-permission', i18n.t('please_login'));
 
