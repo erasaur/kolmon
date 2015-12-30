@@ -110,12 +110,24 @@ KOL.World = (function () {
 
   World.prototype.encounterWild = function encounterWild (wild) {
     if (Math.random() <= wild.rate) {
+      var self = this;
       var random = Math.random();
       var encounter = _.find(wild.encounters, function (encounter) {
         return random <= encounter.rate;
       });
-      //TODO init battle
-      console.log('encountered wild pokemon: ', encounter);
+
+      self._game.fetchPokemon(encounter.id, function () {
+        self._game.loadBattle({
+
+        });
+        self._game.changeState({
+          state: constants.STATE_BATTLE,
+          transition: constants.TRANSITION_FADE_OUT,
+          onfinish: function () {
+
+          }
+        });
+      });
     }
   };
 
@@ -161,8 +173,6 @@ KOL.World = (function () {
   World.prototype.changeMap = function changeMap (portal) {
     var self = this;
     var mapId = portal.mapId;
-
-    // self._game.transition(constants.TRANSITION_FADE_IN);
 
     // whether we have the map obj cached or not, we have to
     // re-subscribe to the map to get the updated players
