@@ -15,6 +15,7 @@ Template.battle.helpers({
   }
 });
 
+
 Template.battle.onRendered(function() {
   var bgCanvas = document.getElementById("canvas-background");
   var fgCanvas = document.getElementById("canvas-foreground");
@@ -39,10 +40,13 @@ Template.battle.onRendered(function() {
 
     var radius = 5;
     var frameWidth = 5;
+    var enemyPokeName = "Pikachu";
+    var currentPokeName = "Mudkip";
 
     /* === DRAW TEXT BOX === */
 
     drawTextBox(fgContext, textBoxHeight, frameWidth);
+    typeWrite(fgContext, "A wild " +  enemyPokeName + " appeared!", frameWidth, textBoxHeight);
 
     /* === DRAW OPTIONS POPUP === */
 
@@ -53,11 +57,11 @@ Template.battle.onRendered(function() {
 
     /* === DRAW STATUS PANELS === */
 
-    drawStatusPanel(fgContext, 10, 10, true, "Mewtwo", "male", 100, 
+    drawStatusPanel(fgContext, 10, 10, true, enemyPokeName, "male", 100, 
       "poison", 420, 420, 1000, 9001);
 
-    drawStatusPanel(fgContext, 220, 170, false, "Mudkip", "female", 5, 
-      "", 26, 100, 1000, 9001);
+    drawStatusPanel(fgContext, 220, 170, false, currentPokeName, "female", 5, 
+      "", 15, 100, 1000, 9001);
 
 
     /* === DRAW MOVES MENU === */
@@ -68,6 +72,7 @@ Template.battle.onRendered(function() {
 
   };
 });
+
 
 /**
  * Draws a rounded rectangle using the current state of the canvas.
@@ -171,8 +176,9 @@ Template.battle.onRendered(function() {
   
   context.strokeStyle = "#FFF"; 
   context.lineWidth = frameWidth;
-  roundRect(context, constants.CANVAS_WIDTH - (width - frameWidth), constants.CANVAS_HEIGHT - (height - frameWidth), 
-    width - (2 * frameWidth), height - (2 * frameWidth), 5, false, true);
+  roundRect(context, constants.CANVAS_WIDTH - (width - frameWidth), 
+    constants.CANVAS_HEIGHT - (height - frameWidth), width - (2 * frameWidth), 
+    height - (2 * frameWidth), 5, false, true);
 
   /* Text Area */
 
@@ -201,7 +207,7 @@ Template.battle.onRendered(function() {
  * @param currentExp Current exp points of the pokemon, e.g. 1000
  * @param maxExp Maximum exp points of the pokemon, e.g. 9001
  */
-function drawStatusPanel(context, pos_x, pos_y, isEnemy, name, gender, level, status, 
+ function drawStatusPanel(context, pos_x, pos_y, isEnemy, name, gender, level, status, 
   currentHP, maxHP, currentExp, maxExp) {
 
   var width = 150;
@@ -216,14 +222,26 @@ function drawStatusPanel(context, pos_x, pos_y, isEnemy, name, gender, level, st
 
   /* HP Bar */
 
-  percentHP = currentHP / maxHP;
-  percentExp = currentExp / maxExp;
+  var percentHP = currentHP / maxHP;
+  var percentExp = currentExp / maxExp;
+  var healthBarColor;
+
+  if (percentHP <= 0.15) {
+    healthBarColor = "red";
+  }
+  else if (percentHP <= 0.5) {
+    healthBarColor = "gold";
+  }
+  else if (percentHP <= 1) {
+    healthBarColor = "lawngreen";
+  }
 
   context.fillStyle = "rgba(0, 0, 0, 0.618)";
   roundRect(context, pos_x + 25, pos_y + (height / 2.5), width - (25 + 5), 4, 2, true, false);
 
-  context.fillStyle = "lawngreen";
-  roundRect(context, pos_x + 25, pos_y + (height / 2.5), (width - (25 + 5)) * percentHP, 4, 2, true, false);
+  context.fillStyle = healthBarColor;
+  roundRect(context, pos_x + 25, pos_y + (height / 2.5), (width - (25 + 5)) * percentHP, 
+    4, 2, true, false);
 
   /* Exp Bar */
 
@@ -232,7 +250,8 @@ function drawStatusPanel(context, pos_x, pos_y, isEnemy, name, gender, level, st
     roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), width - (2 * 5), 4, 2, true, false);
 
     context.fillStyle = "deepskyblue";
-    roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), (width - (2 * 5)) * percentExp, 4, 2, true, false);
+    roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), (width - (2 * 5)) * percentExp, 
+      4, 2, true, false);
   }
 
   /* HP Label */
@@ -274,7 +293,8 @@ function drawStatusPanel(context, pos_x, pos_y, isEnemy, name, gender, level, st
 
   context.font = fontSize - 5 + "px Verdana";
   context.fillStyle = statusColor;
-  roundRect(context, pos_x + 5, pos_y + (height / 2.5) + ((fontSize - 5) / 2) - (fontSize - 5) + 1, 18, 11, 2, true, false);
+  roundRect(context, pos_x + 5, pos_y + (height / 2.5) + ((fontSize - 5) / 2) - (fontSize - 5) + 1, 
+    18, 11, 2, true, false);
   context.fillStyle = statusTextColor;
   context.fillText(statusText, pos_x + 5 + 1, pos_y + (height / 2.5) + ((fontSize - 4) / 2));
 
@@ -336,9 +356,29 @@ function drawPkmnMenu() {
   // different canvas
 }
 
-function typeText(string) {
+function drawTrainer(context, isEnemy) {
+  // Either the current player or the enemy trainer
+}
+
+function drawAbility(context, abilityName, pokemonName, isEnemy) {
+  // Either current pokemon's ability or the enemy pokemon's ability
+}
+
+function drawWeather(context, weather) {
+  // Draw weather effect
+}
+
+function drawStatusEffect(context, status, isEnemy) {
+  // Draw status effect, either on the current pokemon or the enemy pokemon
+}
+
+function drawMove(context, move, isEnemy) {
+  // Draw a move's animation, with respect to either the current pokemon or the enemy pokemon
+}
+
+function typeWrite(context, string, frameWidth, textBoxHeight) {
   context.font = 13 + "px Verdana";
   context.fillStyle = "#FFF";
-  context.fillText(string, pos_x + 5, pos_y + fontSize);
+  context.fillText(string, frameWidth + 5, constants.CANVAS_HEIGHT - textBoxHeight + frameWidth + 20);
 
 }
