@@ -12,6 +12,7 @@ KOL.constants = {
   CANVAS_HEIGHT: 312,
   PX_PER_CELL: 16,
 
+  PLAYER_HEIGHT: 66,
   PLAYER_NUM_FRAMES: 3, // number of frames in walking animation
 
   get CENTER_X () {

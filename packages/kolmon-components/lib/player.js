@@ -23,7 +23,7 @@ KOL.Player = (function () {
       onload: function (images) {
         self._image = images[player.image];
         self._width = constants.PX_PER_CELL;
-        self._height = self._image.height / constants.PLAYER_NUM_FRAMES;
+        self._height = constants.PLAYER_HEIGHT / constants.PLAYER_NUM_FRAMES;
         self._offsetY = self._height - constants.PX_PER_CELL;
       }
     });
