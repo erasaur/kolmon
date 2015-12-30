@@ -3,6 +3,7 @@ var Renderer = KOL.Renderer;
 var Timer = KOL.Timer;
 var Transition = KOL.Transition;
 var World = KOL.World;
+var Battle = KOL.Battle;
 
 KOL.Game = (function () {
   function Game (options) {
@@ -11,7 +12,7 @@ KOL.Game = (function () {
     }
 
     this._stateDep = new Tracker.Dependency();
-    this._fetchMapDep = new Tracker.Dependency();
+    this._fetchDocs = new ReactiveVar();
     if (options) this.load(options);
   }
 
@@ -22,7 +23,7 @@ KOL.Game = (function () {
 
     self._timer = Timer;
     self._lastUpdate;
-    self._fetchMapCb;
+    self._fetchCb;
     self._state = constants.STATE_MAP;
     self._stateDep.changed();
 
@@ -51,6 +52,9 @@ KOL.Game = (function () {
     self._transition = new Transition({
       renderers: self._renderers
     });
+    self._battle = new Battle({
+      renderers: self._renderers
+    });
 
     // fetch initial map document
     self.fetchMap(options.player.mapId, function () {
@@ -76,24 +80,36 @@ KOL.Game = (function () {
     return this._state;
   };
 
-  Game.prototype.fetchMapId = function getFetchMapId () {
-    this._fetchMapDep.depend();
-    return this._fetchMapId;
+  Game.prototype.fetchDocs = function getFetchDocs () {
+    return this._fetchDocs.get();
   };
 
   // subscriptions ------------------------------------
 
-  Game.prototype.fetchMap = function gameFetchMap (mapId, cb) {
-    this._fetchMapCb = cb;
-    this._fetchMapId = mapId;
-    this._fetchMapDep.changed();
+  Game.prototype.fetch = function gameFetch (docIds, sub, cb) {
+    this._fetchCb = cb;
+    this._fetchDocs.set({ ids: docIds, sub: sub });
   };
 
-  Game.prototype.fetchedMap = function gameFetchedMap () {
-    if (_.isFunction(this._fetchMapCb)) {
-      this._fetchMapCb();
-      this._fetchMapCb = null;
+  Game.prototype.fetched = function gameFetched () {
+    if (_.isFunction(this._fetchCb)) {
+      this._fetchCb();
+      this._fetchCb = null;
     }
+  };
+
+  //TODO improve fetching. currently, if multiple calls to fetch are
+  //concurrently initiated, then some callbacks will be thrown away.
+
+  Game.prototype.fetchMap = function gameFetchMap (mapId, cb) {
+    this.fetch(mapId, 'singleMap', cb);
+  };
+
+  Game.prototype.fetchPokemon = function gameFetchPokemon (pokeIds, cb) {
+    if (!_.isArray(pokeIds)) {
+      pokeIds = [ pokeIds ];
+    }
+    this.fetch(pokeIds, 'pokemon', cb);
   };
 
   // game loop ----------------------------------------
@@ -121,16 +137,14 @@ KOL.Game = (function () {
     event.preventDefault();
     var self = this;
 
-    if (self._transition.running()) return;
+    if (self._transition.running()) {
+      return; // disable keypress when transitioning
+    }
 
     switch (self._state) {
       case constants.STATE_MAP:
         self._world.keydown(event, this._lastUpdate);
         break;
-      case constants.STATE_BATTLE:
-        //TODO
-        break;
-      // case constants.STATE_LOADING: break; // noop
     }
   };
 
@@ -138,18 +152,15 @@ KOL.Game = (function () {
     var self = this;
 
     if (self._transition.running()) {
-      self._transition.update();
+      self._transition.update(); // run transition concurrently
     }
 
     switch (self._state) {
-      case constants.STATE_LOADING:
-        //TODO display nice loading indicator
-        break;
       case constants.STATE_MAP:
         self._world.update(dt, now);
         break;
       case constants.STATE_BATTLE:
-        //TODO
+        self._battle.update(dt, now);
         break;
     }
   };
