@@ -8,7 +8,20 @@ Meteor.startup(function () {
   constants.POKEMON = JSON.parse(Assets.getText('pokemon.json'));
   constants.TYPES = JSON.parse(Assets.getText('types.json'));
 
-  // clear all players
+  // load maximum stat values
+  var maxSpeed;
+  // var maxAtt;
+  // var maxDef;
+  _.each(constants.POKEMON, function (pokemon) {
+    maxSpeed = Math.max(maxSpeed, pokemon.speed);
+    // maxAtt = Math.max(maxAtt, pokemon.att);
+    // maxDef = Math.max(maxDef, pokemon.def);
+  });
+  constants.MAX_POKEMON_BASE_SPEED = maxSpeed;
+  // constants.MAX_POKEMON_BASE_ATT = maxAtt;
+  // constants.MAX_POKEMON_BASE_DEF = maxDef;
+
+  //TODO clear all players
 
   // if (Challenges.find().count() === 0) {
   //   Challenges._ensureIndex({ createdAt: 1 }, { expireAfterSeconds: 300 });
