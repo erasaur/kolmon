@@ -57,6 +57,8 @@ Template.battle.onRendered(function() {
 
     /* === DRAW HEALTH BARS === */
 
+    drawHealthBars(fgContext);
+
     /* === DRAW MOVES MENU === */
 
     /* === DRAW BAG MENU === */
@@ -125,10 +127,11 @@ Template.battle.onRendered(function() {
  * @param height Height of the text box, in px.
  * @param radius Border radius of the text box, in px.
  * @param color Color of the middle rectangle. 
- * @param backLayerOffset The back rectangle's offset, in px, based on the edge of the canvas.
- * @param middleLayerOffset The middle rectangle's offset, in px, based on the edge of the canvas.
- * @param frontLayerOffset The front rectangle's offset, in px, based on the edge of the canvas.
- * @param styleOffset The front rectangle's style offset, in px, based on the edge of the canvas.
+ * @param backLayerOffset The back rectangle's offset, in px, based on the canvas dimensions.
+ * @param middleLayerOffset The middle rectangle's offset, in px, based on the canvas dimensions.
+ * @param frontLayerOffset The front rectangle's offset, in px, based on the canvas dimensions.
+ * @param styleOffset The front rectangle's style offset, in px, based on the canvas dimensions, 
+ * but arbitrarily calculated for style purposes.
  * @param transparentBackLayer Set to true to make the back rectangle transparent, or false to keep 
  * it black. Intended for non-battle scenes.
  */
@@ -172,10 +175,10 @@ Template.battle.onRendered(function() {
  * @param height Height of the text box, in px.
  * @param radius Border radius of the text box, in px.
  * @param color Color of the back rectangle. 
- * @param backLayerOffset The back rectangle's offset, in px, based on the edge of the canvas.
- * @param frontLayerOffset The front rectangle's offset, in px, based on the edge of the canvas.
+ * @param backLayerOffset The back rectangle's offset, in px, based on the canvas dimensions.
+ * @param frontLayerOffset The front rectangle's offset, in px, based on the canvas dimensions.
  */
-function drawOptionsPopup(context, width, height, radius, color, backLayerOffset, frontLayerOffset) {
+ function drawOptionsPopup(context, width, height, radius, color, backLayerOffset, frontLayerOffset) {
 
   /* Back Layer of Popup */
 
@@ -185,15 +188,55 @@ function drawOptionsPopup(context, width, height, radius, color, backLayerOffset
 
   /* Front Layer of Popup */
 
-  context.fillStyle = "#FFF"; 
-  roundRect(context, constants.CANVAS_WIDTH - (width - frontLayerOffset), constants.CANVAS_HEIGHT - (height - frontLayerOffset), 
-    width - (2 * frontLayerOffset), height - (2 * frontLayerOffset), radius, true, false)
+  context.fillStyle = "#FFF"; // white
+  roundRect(context, constants.CANVAS_WIDTH - (width - frontLayerOffset), 
+    constants.CANVAS_HEIGHT - (height - frontLayerOffset), width - (2 * frontLayerOffset), 
+    height - (2 * frontLayerOffset), radius, true, false)
 
 }
 
 
-function drawHealthBars() {
+function drawHealthBars(context) {
+  var offset = 5;
+  var width = 150;
+  var height = 50;
+  var radius = 10;
 
+  /* Enemy Poke's Health Bar */
+
+  context.fillStyle = "rgba(0, 0, 0, 0.3)";
+  roundRect(context, offset, offset, width, height, radius, true, false);
+  context.fillStyle = "lawngreen";
+  roundRect(context, offset + 20, offset + (height / 2), width - (2 * 12.5), 4, 2, true, false);
+
+
+  context.fillStyle = "deepskyblue";
+  roundRect(context, 2 * offset, offset + (height / 4 * 3), width - (2 * offset), 3, 2, true, false);
+
+  var name = "Pokemon";
+  var gender = "♂";
+  var level = "100"
+  var fontSize = 13;
+
+  context.font = fontSize - 4 + "px Verdana";
+  context.fillStyle = "greenyellow";
+  context.fillText("HP", 2 * offset, offset + (height / 2) + (fontSize - 4) / 2);
+
+
+  context.font = fontSize + "px Verdana";
+  context.fillStyle = "#FFF";
+  context.fillText(name, offset + 5, offset + fontSize);
+  context.font = fontSize + 5 + "px Verdana";
+  context.fillStyle = "dodgerblue";
+  context.fillText(gender, width - 48, offset + fontSize);
+  context.font = fontSize - 3 + "px Verdana";
+  context.fillStyle = "orange";
+  context.fillText("Lv", width - 35, offset + fontSize);  
+  context.font = fontSize + "px Verdana";
+  context.fillStyle = "#FFF";
+  context.fillText(level, width - 23, offset + fontSize);
+
+  /* Current Poke's Health Bar */
 
 }
 
