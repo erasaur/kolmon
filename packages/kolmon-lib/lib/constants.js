@@ -39,17 +39,16 @@ KOL.constants = {
   DIR_RIGHT: 103,
   DIR_DOWN: 104,
 
-  PORTAL_FILL_STYLE: 'rgba(225,0,0,0.5)',
-  WILD_FILL_STYLE: 'rgba(0,225,0,0.5)',
-  WALL_FILL_STYLE: 'rgba(0,0,225,0.5)',
-  UNIT_FILL_STYLE: 'rgba(0,0,0,1)',
+  // PORTAL_FILL_STYLE: 'rgba(225,0,0,0.5)',
+  // WILD_FILL_STYLE: 'rgba(0,225,0,0.5)',
+  // WALL_FILL_STYLE: 'rgba(0,0,225,0.5)',
+  // UNIT_FILL_STYLE: 'rgba(0,0,0,1)',
 
   FILL_STYLE: {
     portal: 'rgba(225,0,0,0.5)',
     wild: 'rgba(0,225,0,0.5)',
     wall: 'rgba(0,0,225,0.5)'
   },
-
 
   STATE_MAP: 151,
   STATE_BATTLE: 152,
@@ -58,6 +57,9 @@ KOL.constants = {
   TRANSITION_FADE_IN: 201,
   TRANSITION_FADE_OUT: 202,
   TRANSITION_NUM_FRAMES: 50, // number of frames to run transition
+
+  BATTLE_WILD: 251,
+  BATTLE_TRAINER: 252,
 
   MOVE_TIME: 500, // time in ms to travel one cell
   UPDATE_STEP: 20, // ms per update
