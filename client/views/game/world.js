@@ -48,17 +48,22 @@ Template.world.onRendered(function () {
     }
   });
 
-  // fetch new documents as we change maps in game
+  // self.autorun(function (computation) {
+  //   if (!self.subscriptionsReady()) {
+  //     // display loading indicator
+  //   }
+  // });
+
+  // fetch new documents as needed
   self.autorun(function (computation) {
     var subscription;
-    var mapId = self.game.fetchMapId();
+    var docs = self.game.fetchDocs();
 
-    if (_.isString(mapId)) {
-      subscription = self.subscribe('singleMap', mapId);
+    if (docs.ids) {
+      subscription = self.subscribe(docs.sub, doc.ids);
 
-      //TODO display loading indicator
       if (subscription.ready()) {
-        self.game.fetchedMap();
+        self.game.fetched();
       }
     }
   });
