@@ -22,7 +22,8 @@ Template.battle.onRendered(function() {
   bgContext = bgCanvas.getContext("2d");
 
   var background = new Image();
-  background.src = "http://i.imgur.com/53aqSY5.png";
+  // background.src = "http://i.imgur.com/53aqSY5.png";
+  background.src = "http://orig09.deviantart.net/0c99/f/2012/120/0/5/pokemon_bw_2_background_trainer_rips_by_arshes91-d4y2k47.png"
 
   background.onload = function(){
 
@@ -57,8 +58,13 @@ Template.battle.onRendered(function() {
 
     /* === DRAW HEALTH BARS === */
 
-    drawHealthBar(fgContext, 200, 150);
-    drawHealthBar(fgContext, 10, 10);
+    drawHealthBar(fgContext, 10, 10, true, "Mewtwo", "male", 100, 
+      "poison", 420, 420, 1000, 9001);
+
+    drawHealthBar(fgContext, 220, 170, false, "Mudkip", "female", 5, 
+      "", 26, 100, 1000, 9001);
+
+
     /* === DRAW MOVES MENU === */
 
     /* === DRAW BAG MENU === */
@@ -196,55 +202,118 @@ Template.battle.onRendered(function() {
 }
 
 
-function drawHealthBar(context, pos_x, pos_y) {
+function drawHealthBar(context, pos_x, pos_y, isEnemy, name, gender, level, status, 
+  currentHP, maxHP, currentExp, maxExp) {
 
   var width = 150;
   var height = 50;
-  var radius = 10;
-
-  /* Enemy Poke's Health Bar */
-
-  context.fillStyle = "rgba(0, 0, 0, 0.1)";
-  roundRect(context, pos_x, pos_y, width, height - 11, radius, true, false);
-  context.fillStyle = "lawngreen";
-  roundRect(context, pos_x + 20, pos_y + (height / 2.5), width - (2 * 12.5), 4, 2, true, false);
-
-
-  context.fillStyle = "deepskyblue";
-  roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), width - (2 * 5), 3, 2, true, false);
-
-  var name = "Mudkip";
-  var gender = "♂";
-  var level = "100"
+  var radius = 5;
   var fontSize = 13;
 
-  var currentHP = 420;
-  var maxHP = 420;
+  /* Back Panel */
 
-  context.font = fontSize - 4 + "px Verdana";
-  context.fillStyle = "greenyellow";
-  context.fillText("HP", pos_x + 5, pos_y + (height / 2.5) + ((fontSize - 4) / 2));
+  context.fillStyle = "rgba(0, 0, 0, 0.618)";
+  roundRect(context, pos_x, pos_y, width, height - 11, radius, true, false);
 
-  context.font = fontSize - 2 + "px Tahoma";
-  context.fillStyle = "#FFF";
-  context.fillText(currentHP + " / " + maxHP, pos_x + 20, pos_y + fontSize + 23);
+  /* HP Bar */
+
+  context.fillStyle = "lawngreen";
+  roundRect(context, pos_x + 25, pos_y + (height / 2.5), width - (25 + 5), 4, 2, true, false);
+
+  /* Exp Bar */
+
+  if (!isEnemy) {
+    context.fillStyle = "deepskyblue";
+    roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), width - (2 * 5), 3, 2, true, false);
+  }
+
+  /* HP Label */
+  
+  var statusColor = "transparent";
+  var statusTextColor = "greenYellow";
+  var statusText = " HP";
+
+  if (status === "burn"){
+    statusColor = "#E05848";
+    statusTextColor = "#FFF";
+    statusText = "BRN";
+  }
+  else if (status === "faint") {
+    statusColor = "#B00000";
+    statusTextColor = "#FFF";
+    statusText = "FNT";
+  }
+  else if (status === "freeze") {
+    statusColor = "#009898";
+    statusTextColor = "#FFF";
+    statusText = "FRZ";
+  }
+  else if (status === "paralyze") {
+    statusColor = "#E8A800";
+    statusTextColor = "#FFF";
+    statusText = "PAR";
+  }
+  else if (status === "poison") {
+    statusColor = "#C040C8";
+    statusTextColor = "#FFF";
+    statusText = "PSN";
+  }
+  else if (status === "sleep") {
+    statusColor = "#687060";
+    statusTextColor = "#FFF";
+    statusText = "SLP";
+  }
+
+  context.font = fontSize - 5 + "px Verdana";
+  context.fillStyle = statusColor;
+  roundRect(context, pos_x + 5, pos_y + (height / 2.5) + ((fontSize - 5) / 2) - (fontSize - 5) + 1, 18, 11, 2, true, false);
+  context.fillStyle = statusTextColor;
+  context.fillText(statusText, pos_x + 5 + 1, pos_y + (height / 2.5) + ((fontSize - 4) / 2));
+
+  /* HP Numbers */
+
+  if (!isEnemy) {
+    context.font = fontSize - 2 + "px Verdana";
+    context.fillStyle = "#FFF";
+    context.fillText(currentHP + " / " + maxHP, pos_x + 25, pos_y + fontSize + 22);
+  }
+
+  /* Pokemon's Name */
 
   context.font = fontSize + "px Verdana";
   context.fillStyle = "#FFF";
   context.fillText(name, pos_x + 5, pos_y + fontSize);
-  context.font = fontSize + 5 + "px Verdana";
-  context.fillStyle = "dodgerblue";
-  context.fillText(gender, pos_x + 95, pos_y + fontSize);
+
+  /* Gender Symbol */
+
+  context.font = fontSize + "px Verdana";
+
+  var g;
+  if (gender === "male") {
+    g = "♂";
+    context.fillStyle = "#B3E5FC";
+  }
+  else if (gender === "female") {
+    g = "♀";
+    context.fillStyle = "#FF8A80";
+  }
+  else {
+    g = "";
+  }
+  
+  context.fillText(g, pos_x + 97, pos_y + fontSize);
+
+  /* Level Label */
+
   context.font = fontSize - 3 + "px Verdana";
   context.fillStyle = "orange";
-  context.fillText("Lv", pos_x + 108, pos_y + fontSize);  
+  context.fillText("Lv", pos_x + 108, pos_y + fontSize); 
+
+  /* Level Number*/
+
   context.font = fontSize + "px Tahoma";
   context.fillStyle = "#FFF";
-  context.fillText(level, pos_x + 120, pos_y + fontSize);
-
-
-  /* Current Poke's Health Bar */
-
+  context.fillText(level, pos_x + 121, pos_y + fontSize);
 }
 
 function drawMovesMenu() {
