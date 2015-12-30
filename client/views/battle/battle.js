@@ -49,7 +49,7 @@ Template.battle.onRendered(function() {
     var width = 170;
 
     /* Offsets are calculated with respect to the text box */
-    drawOptionsPopup(fgContext, width, textBoxHeight, frameWidth);
+    // drawOptionsPopup(fgContext, width, textBoxHeight, frameWidth);
 
     /* === DRAW HEALTH BARS === */
 
@@ -199,14 +199,23 @@ function drawHealthBar(context, pos_x, pos_y, isEnemy, name, gender, level, stat
 
   /* HP Bar */
 
-  context.fillStyle = "lawngreen";
+  percentHP = currentHP / maxHP;
+  percentExp = currentExp / maxExp;
+
+  context.fillStyle = "rgba(0, 0, 0, 0.618)";
   roundRect(context, pos_x + 25, pos_y + (height / 2.5), width - (25 + 5), 4, 2, true, false);
+
+  context.fillStyle = "lawngreen";
+  roundRect(context, pos_x + 25, pos_y + (height / 2.5), (width - (25 + 5)) * percentHP, 4, 2, true, false);
 
   /* Exp Bar */
 
   if (!isEnemy) {
-    context.fillStyle = "deepskyblue";
+    context.fillStyle = "rgba(0, 0, 0, 0.618)";
     roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), width - (2 * 5), 3, 2, true, false);
+
+    context.fillStyle = "deepskyblue";
+    roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), (width - (2 * 5)) * percentExp, 3, 2, true, false);
   }
 
   /* HP Label */
@@ -277,7 +286,7 @@ function drawHealthBar(context, pos_x, pos_y, isEnemy, name, gender, level, stat
   }
   else if (gender === "female") {
     g = "♀";
-    context.fillStyle = "#FF8A80";
+    context.fillStyle = "#FF80AB";
   }
   else {
     g = "";
@@ -308,4 +317,11 @@ function drawBagMenu() {
 
 function drawPkmnMenu() {
   // different canvas
+}
+
+function typeText(string) {
+  context.font = 13 + "px Verdana";
+  context.fillStyle = "#FFF";
+  context.fillText(string, pos_x + 5, pos_y + fontSize);
+
 }
