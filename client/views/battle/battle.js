@@ -57,8 +57,8 @@ Template.battle.onRendered(function() {
 
     /* === DRAW HEALTH BARS === */
 
-    drawHealthBars(fgContext);
-
+    drawHealthBar(fgContext, 200, 150);
+    drawHealthBar(fgContext, 10, 10);
     /* === DRAW MOVES MENU === */
 
     /* === DRAW BAG MENU === */
@@ -196,45 +196,52 @@ Template.battle.onRendered(function() {
 }
 
 
-function drawHealthBars(context) {
-  var offset = 5;
+function drawHealthBar(context, pos_x, pos_y) {
+
   var width = 150;
   var height = 50;
   var radius = 10;
 
   /* Enemy Poke's Health Bar */
 
-  context.fillStyle = "rgba(0, 0, 0, 0.3)";
-  roundRect(context, offset, offset, width, height, radius, true, false);
+  context.fillStyle = "rgba(0, 0, 0, 0.1)";
+  roundRect(context, pos_x, pos_y, width, height - 11, radius, true, false);
   context.fillStyle = "lawngreen";
-  roundRect(context, offset + 20, offset + (height / 2), width - (2 * 12.5), 4, 2, true, false);
+  roundRect(context, pos_x + 20, pos_y + (height / 2.5), width - (2 * 12.5), 4, 2, true, false);
 
 
   context.fillStyle = "deepskyblue";
-  roundRect(context, 2 * offset, offset + (height / 4 * 3), width - (2 * offset), 3, 2, true, false);
+  roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), width - (2 * 5), 3, 2, true, false);
 
-  var name = "Pokemon";
+  var name = "Mudkip";
   var gender = "♂";
   var level = "100"
   var fontSize = 13;
 
+  var currentHP = 420;
+  var maxHP = 420;
+
   context.font = fontSize - 4 + "px Verdana";
   context.fillStyle = "greenyellow";
-  context.fillText("HP", 2 * offset, offset + (height / 2) + (fontSize - 4) / 2);
+  context.fillText("HP", pos_x + 5, pos_y + (height / 2.5) + ((fontSize - 4) / 2));
 
+  context.font = fontSize - 2 + "px Tahoma";
+  context.fillStyle = "#FFF";
+  context.fillText(currentHP + " / " + maxHP, pos_x + 20, pos_y + fontSize + 23);
 
   context.font = fontSize + "px Verdana";
   context.fillStyle = "#FFF";
-  context.fillText(name, offset + 5, offset + fontSize);
+  context.fillText(name, pos_x + 5, pos_y + fontSize);
   context.font = fontSize + 5 + "px Verdana";
   context.fillStyle = "dodgerblue";
-  context.fillText(gender, width - 48, offset + fontSize);
+  context.fillText(gender, pos_x + 95, pos_y + fontSize);
   context.font = fontSize - 3 + "px Verdana";
   context.fillStyle = "orange";
-  context.fillText("Lv", width - 35, offset + fontSize);  
-  context.font = fontSize + "px Verdana";
+  context.fillText("Lv", pos_x + 108, pos_y + fontSize);  
+  context.font = fontSize + "px Tahoma";
   context.fillStyle = "#FFF";
-  context.fillText(level, width - 23, offset + fontSize);
+  context.fillText(level, pos_x + 120, pos_y + fontSize);
+
 
   /* Current Poke's Health Bar */
 
