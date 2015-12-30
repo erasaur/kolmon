@@ -51,12 +51,12 @@ Template.battle.onRendered(function() {
     /* Offsets are calculated with respect to the text box */
     // drawOptionsPopup(fgContext, width, textBoxHeight, frameWidth);
 
-    /* === DRAW HEALTH BARS === */
+    /* === DRAW STATUS PANELS === */
 
-    drawHealthBar(fgContext, 10, 10, true, "Mewtwo", "male", 100, 
+    drawStatusPanel(fgContext, 10, 10, true, "Mewtwo", "male", 100, 
       "poison", 420, 420, 1000, 9001);
 
-    drawHealthBar(fgContext, 220, 170, false, "Mudkip", "female", 5, 
+    drawStatusPanel(fgContext, 220, 170, false, "Mudkip", "female", 5, 
       "", 26, 100, 1000, 9001);
 
 
@@ -160,9 +160,9 @@ Template.battle.onRendered(function() {
 /**
  * Draws an options popup (without text) on a canvas, using the roundRect() method.
  * Should be used in conjunction with a styled textbox (see drawTextBox()).
- * @param context 2D Canvas context in which the text box should be drawn.
- * @param width width of the text box, in px.
- * @param height Height of the text box, in px.
+ * @param context 2D Canvas context in which the popup should be drawn.
+ * @param width Width of the popup, in px.
+ * @param height Height of the popup, in px.
  * @param frameWidth The popup's frame width, in px, relative the canvas dimensions.
  */
  function drawOptionsPopup(context, width, height, frameWidth) {
@@ -183,8 +183,25 @@ Template.battle.onRendered(function() {
 
 }
 
-
-function drawHealthBar(context, pos_x, pos_y, isEnemy, name, gender, level, status, 
+/**
+ * Draws a single StatusPanel anywhere on a given convas.
+ * @param context 2D Canvas context in which the text box should be drawn.
+ * @param pos_x X-coordinate of the StatusPanel, from the left of the canvas, in px.
+ * @param pos_y Y-coordinate of the StatusPanel, from the top of the canvas, in px.
+ * @param isEnemy Set to true to make this an enemy's StatusPanel, otherwise set to false
+ * to make it the player pokemon's StatusPanel. 
+ * @param name Name of the pokemon, e.g. "Bob".
+ * @param gender Gender of the pokemon, accepts "male", "female", or "" (if
+ * the Pokemon has no gender).
+ * @param level Level of the pokemon, e.g. 100
+ * @param status Status of the pokemon. Possible statuses are "burn", "faint", "freeze",
+ * "paralyze", "poison", "sleep", and "" (for no status effect);
+ * @param currentHP Current hitpoints of the pokemon, e.g. 26.
+ * @param maxHP Maximum hitpoints of the pokemon, e.g. 100.
+ * @param currentExp Current exp points of the pokemon, e.g. 1000
+ * @param maxExp Maximum exp points of the pokemon, e.g. 9001
+ */
+function drawStatusPanel(context, pos_x, pos_y, isEnemy, name, gender, level, status, 
   currentHP, maxHP, currentExp, maxExp) {
 
   var width = 150;
@@ -212,10 +229,10 @@ function drawHealthBar(context, pos_x, pos_y, isEnemy, name, gender, level, stat
 
   if (!isEnemy) {
     context.fillStyle = "rgba(0, 0, 0, 0.618)";
-    roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), width - (2 * 5), 3, 2, true, false);
+    roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), width - (2 * 5), 4, 2, true, false);
 
     context.fillStyle = "deepskyblue";
-    roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), (width - (2 * 5)) * percentExp, 3, 2, true, false);
+    roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), (width - (2 * 5)) * percentExp, 4, 2, true, false);
   }
 
   /* HP Label */
