@@ -18,9 +18,12 @@ Template.battle.helpers({
 
 Template.battle.onRendered(function() {
   var bgCanvas = document.getElementById("canvas-background");
+  var textCanvas = document.getElementById("canvas-text");
   var fgCanvas = document.getElementById("canvas-foreground");
-  fgContext = fgCanvas.getContext("2d");
-  bgContext = bgCanvas.getContext("2d");
+  
+  var fgContext = fgCanvas.getContext("2d");
+  var textContext = textCanvas.getContext("2d");
+  var bgContext = bgCanvas.getContext("2d");
 
   var background = new Image();
   // background.src = "http://i.imgur.com/53aqSY5.png";
@@ -30,7 +33,7 @@ Template.battle.onRendered(function() {
 
     /* === DRAW BACKGROUND === */
 
-    var textBoxHeight = 90;
+    var textBoxHeight = 80;
     var widthScalar = constants.CANVAS_WIDTH / background.width;
     var heightScalar = (constants.CANVAS_HEIGHT) / background.height;
 
@@ -46,7 +49,10 @@ Template.battle.onRendered(function() {
     /* === DRAW TEXT BOX === */
 
     drawTextBox(fgContext, textBoxHeight, frameWidth);
-    typeWrite(fgContext, "A wild " +  enemyPokeName + " appeared!", frameWidth, textBoxHeight);
+    // context, canvas, string, startX, startY, lineHeight, padding
+    typeWrite(textContext, textCanvas, "Bob sent out " +  enemyPokeName + " appeared! What will " + 
+      currentPokeName + " do? The foe's " + enemyPokeName + " used Thunderbolt! It's super effective!" , frameWidth + 5, 
+      constants.CANVAS_HEIGHT - textBoxHeight + 30, 15, 10);
 
     /* === DRAW OPTIONS POPUP === */
 
@@ -376,9 +382,32 @@ function drawMove(context, move, isEnemy) {
   // Draw a move's animation, with respect to either the current pokemon or the enemy pokemon
 }
 
-function typeWrite(context, string, frameWidth, textBoxHeight) {
-  context.font = 13 + "px Verdana";
+function typeWrite(context, canvas, string, startX, startY, lineHeight, padding) {
+  context.font = "14px Verdana";
   context.fillStyle = "#FFF";
-  context.fillText(string, frameWidth + 5, constants.CANVAS_HEIGHT - textBoxHeight + frameWidth + 20);
 
+  "use strict";
+  var cursorX = startX || 0;
+  var cursorY = startY || 0;
+  var lineHeight = lineHeight || 14; // Depends on the font size
+  padding = padding || 10;
+  var i = 0;
+  $_inter = setInterval(function() {
+    var rem = string.substr(i);
+    var space = rem.indexOf(' ');
+    space = (space === -1) ? string.length:space;
+    var wordwidth = context.measureText(rem.substr(0, space)).width;
+    var w = context.measureText(string.charAt(i)).width;
+    if(cursorX + wordwidth >= canvas.width - padding) {
+      cursorX = startX;
+      cursorY += lineHeight;
+    }
+    context.fillText(string.charAt(i), cursorX, cursorY);
+    i++;
+    cursorX += w;
+    if(i === string.length) {
+      clearInterval($_inter);
+    }
+  }, 50);
 }
+
