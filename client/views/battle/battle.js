@@ -50,16 +50,17 @@ Template.battle.onRendered(function() {
     /* === DRAW TEXT BOX === */
 
     drawTextBox(fgContext, textBoxHeight, frameWidth);
-    // context, canvas, string, startX, startY, lineHeight, padding
-    typeWrite(textContext, textCanvas, "Bob sent out " +  enemyPokeName + "!" , frameWidth + 5, 
+    typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , frameWidth + 5, 
       constants.CANVAS_HEIGHT - textBoxHeight + 30, 28, 10);
+    // drawDownArrow(fgContext, constants.CANVAS_WIDTH - 20, constants.CANVAS_HEIGHT - 20 - frameWidth, "#FFF");
 
     /* === DRAW OPTIONS POPUP === */
 
     var width = 170;
 
-    /* Offsets are calculated with respect to the text box */
     drawOptionsPopup(fgContext, width, textBoxHeight, frameWidth);
+    drawRightArrow(fgContext, constants.CANVAS_WIDTH - width + (2 * frameWidth) + 10, 
+      constants.CANVAS_HEIGHT - textBoxHeight + (2 * frameWidth) + 10 , "#FFF"); // 10 refers to the arrow size width
 
     /* === DRAW STATUS PANELS === */
 
@@ -201,7 +202,7 @@ Template.battle.onRendered(function() {
 
   context.font = "14px Verdana"
   context.fillStyle = "#FFF";
-  context.fillText("Fight" , constants.CANVAS_WIDTH - (width - frameWidth) + 40, 
+  context.fillText("Fight" , constants.CANVAS_WIDTH - (width - frameWidth) + 35, 
     constants.CANVAS_HEIGHT - height + 30);
 
   context.font = "14px Verdana"
@@ -211,7 +212,7 @@ Template.battle.onRendered(function() {
 
   context.font = "14px Verdana"
   context.fillStyle = "#FFF";
-  context.fillText("Team" , constants.CANVAS_WIDTH - (width - frameWidth) + 40, 
+  context.fillText("Team" , constants.CANVAS_WIDTH - (width - frameWidth) + 35, 
     constants.CANVAS_HEIGHT - height + 30 + 2 * fontSize);
 
   context.font = "14px Verdana"
@@ -434,5 +435,27 @@ function typeWrite(context, canvas, string, startX, startY, lineHeight, padding)
       clearInterval($_inter);
     }
   }, 80);
+}
+
+function drawDownArrow(context, x, y, color) {
+  context.fillStyle = color;
+  context.beginPath();
+  context.moveTo(x, y);
+  context.lineTo(x + 10, y);
+  context.lineTo(x + (10 / 2), y + (Math.sqrt(3) * (10 / 2)));
+  context.lineTo(x, y);
+  context.closePath();
+  context.fill();
+}
+
+function drawRightArrow(context, x, y, color) {
+  context.fillStyle = color;
+  context.beginPath();
+  context.moveTo(x, y);
+  context.lineTo(x + (Math.sqrt(3) * (10 / 2)), y + (10 / 2));
+  context.lineTo(x , y + 10);
+  context.lineTo(x, y);
+  context.closePath();
+  context.fill();
 }
 
