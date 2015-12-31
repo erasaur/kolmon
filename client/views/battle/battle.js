@@ -27,7 +27,8 @@ Template.battle.onRendered(function() {
 
   var background = new Image();
   // background.src = "http://i.imgur.com/53aqSY5.png";
-  background.src = "http://orig09.deviantart.net/0c99/f/2012/120/0/5/pokemon_bw_2_background_trainer_rips_by_arshes91-d4y2k47.png"
+  background.src = "http://orig12.deviantart.net/b598/f/2014/310/a/6/pokemon_x_and_y_forest_battle_background_by_phoenixoflight92-d85ijvr.png";
+  // background.src = "http://orig09.deviantart.net/0c99/f/2012/120/0/5/pokemon_bw_2_background_trainer_rips_by_arshes91-d4y2k47.png";
 
   background.onload = function(){
 
@@ -50,16 +51,15 @@ Template.battle.onRendered(function() {
 
     drawTextBox(fgContext, textBoxHeight, frameWidth);
     // context, canvas, string, startX, startY, lineHeight, padding
-    typeWrite(textContext, textCanvas, "Bob sent out " +  enemyPokeName + " appeared! What will " + 
-      currentPokeName + " do? The foe's " + enemyPokeName + " used Thunderbolt! It's super effective!" , frameWidth + 5, 
-      constants.CANVAS_HEIGHT - textBoxHeight + 30, 15, 10);
+    typeWrite(textContext, textCanvas, "Bob sent out " +  enemyPokeName + "!" , frameWidth + 5, 
+      constants.CANVAS_HEIGHT - textBoxHeight + 30, 28, 10);
 
     /* === DRAW OPTIONS POPUP === */
 
     var width = 170;
 
     /* Offsets are calculated with respect to the text box */
-    // drawOptionsPopup(fgContext, width, textBoxHeight, frameWidth);
+    drawOptionsPopup(fgContext, width, textBoxHeight, frameWidth);
 
     /* === DRAW STATUS PANELS === */
 
@@ -145,6 +145,7 @@ Template.battle.onRendered(function() {
 
   /* Frame Top */
 
+  context.strokeStyle = "transparent"; 
   context.beginPath();
   context.moveTo(0, constants.CANVAS_HEIGHT - (height - frameWidth));
   context.lineTo(constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT - (height - frameWidth));
@@ -153,6 +154,7 @@ Template.battle.onRendered(function() {
 
   /* Frame Bottom */
 
+  context.strokeStyle = "transparent";
   context.beginPath();
   context.moveTo(0, constants.CANVAS_HEIGHT - frameWidth);
   context.lineTo(constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT - frameWidth);
@@ -180,19 +182,42 @@ Template.battle.onRendered(function() {
 
   /* Frame Border */
   
-  context.strokeStyle = "#FFF"; 
+  context.strokeStyle = "transparent"; 
   context.lineWidth = frameWidth;
   roundRect(context, constants.CANVAS_WIDTH - (width - frameWidth), 
     constants.CANVAS_HEIGHT - (height - frameWidth), width - (2 * frameWidth), 
-    height - (2 * frameWidth), 5, false, true);
+    height - (2 * frameWidth), 0, false, true);
 
   /* Text Area */
 
   context.fillStyle = "rgba(0, 0, 0, 0.5)"; 
-  roundRect(context, constants.CANVAS_WIDTH - (width - frameWidth), 
+  roundRect(context, constants.CANVAS_WIDTH - (width - 2 * frameWidth), 
     constants.CANVAS_HEIGHT - (height - frameWidth), width - (2 * frameWidth), 
-    height - (2 * frameWidth), 5, true, false)
+    height - (2 * frameWidth), 0, true, false)
 
+  /* Options */ 
+
+  var fontSize = 14;
+
+  context.font = "14px Verdana"
+  context.fillStyle = "#FFF";
+  context.fillText("Fight" , constants.CANVAS_WIDTH - (width - frameWidth) + 40, 
+    constants.CANVAS_HEIGHT - height + 30);
+
+  context.font = "14px Verdana"
+  context.fillStyle = "#FFF";
+  context.fillText("Bag" , constants.CANVAS_WIDTH - (width - frameWidth) + 110, 
+    constants.CANVAS_HEIGHT - height + 30);
+
+  context.font = "14px Verdana"
+  context.fillStyle = "#FFF";
+  context.fillText("Team" , constants.CANVAS_WIDTH - (width - frameWidth) + 40, 
+    constants.CANVAS_HEIGHT - height + 30 + 2 * fontSize);
+
+  context.font = "14px Verdana"
+  context.fillStyle = "#FFF";
+  context.fillText("Run" , constants.CANVAS_WIDTH - (width - frameWidth) + 110, 
+    constants.CANVAS_HEIGHT - height + 30 + 2 * fontSize);
 }
 
 /**
@@ -223,7 +248,7 @@ Template.battle.onRendered(function() {
 
   /* Back Panel */
 
-  context.fillStyle = "rgba(0, 0, 0, 0.618)";
+  context.fillStyle = "rgba(0, 0, 0, 0.5)";
   roundRect(context, pos_x, pos_y, width, height - 11, radius, true, false);
 
   /* HP Bar */
@@ -243,10 +268,10 @@ Template.battle.onRendered(function() {
   }
 
   context.fillStyle = "rgba(0, 0, 0, 0.618)";
-  roundRect(context, pos_x + 25, pos_y + (height / 2.5), width - (25 + 5), 4, 2, true, false);
+  roundRect(context, pos_x + 28, pos_y + (height / 2.5), width - (25 + 8), 4, 2, true, false);
 
   context.fillStyle = healthBarColor;
-  roundRect(context, pos_x + 25, pos_y + (height / 2.5), (width - (25 + 5)) * percentHP, 
+  roundRect(context, pos_x + 28, pos_y + (height / 2.5), (width - (25 + 8)) * percentHP, 
     4, 2, true, false);
 
   /* Exp Bar */
@@ -300,7 +325,7 @@ Template.battle.onRendered(function() {
   context.font = fontSize - 5 + "px Verdana";
   context.fillStyle = statusColor;
   roundRect(context, pos_x + 5, pos_y + (height / 2.5) + ((fontSize - 5) / 2) - (fontSize - 5) + 1, 
-    18, 11, 2, true, false);
+    19, 11, 2, true, false);
   context.fillStyle = statusTextColor;
   context.fillText(statusText, pos_x + 5 + 1, pos_y + (height / 2.5) + ((fontSize - 4) / 2));
 
@@ -408,6 +433,6 @@ function typeWrite(context, canvas, string, startX, startY, lineHeight, padding)
     if(i === string.length) {
       clearInterval($_inter);
     }
-  }, 50);
+  }, 80);
 }
 
