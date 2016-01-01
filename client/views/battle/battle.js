@@ -119,7 +119,7 @@ Template.battle.onRendered(function() {
     drawStatusPanel(fgContext, 10, 10, true, enemyPokeName, "male", 100, 
       "poison", constants.CANVAS_HEIGHT - textBoxHeight, 420, 1000, 9001);
 
-    drawStatusPanel(fgContext, 220, 170, false, currentPokeName, "female", 5, 
+    drawStatusPanel(fgContext, constants.CANVAS_WIDTH - 150 - 10, constants.CANVAS_HEIGHT - textBoxHeight - 50, false, currentPokeName, "female", 5, 
       "", 15, 100, 1000, 9001);
 
 
@@ -200,7 +200,7 @@ Template.battle.onRendered(function() {
 
   /* Frame Top */
 
-  context.strokeStyle = "#000"; 
+  context.strokeStyle = "transparent"; 
   context.beginPath();
   context.moveTo(0, constants.CANVAS_HEIGHT - (height - frameWidth));
   context.lineTo(constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT - (height - frameWidth));
@@ -209,7 +209,7 @@ Template.battle.onRendered(function() {
 
   /* Frame Bottom */
 
-  context.strokeStyle = "#000";
+  context.strokeStyle = "transparent";
   context.beginPath();
   context.moveTo(0, constants.CANVAS_HEIGHT - frameWidth);
   context.lineTo(constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT - frameWidth);
