@@ -90,13 +90,14 @@ KOL.Battle = (function () {
   };
 
   Battle.prototype.switchPokemon = function switchPokemon (player, index) {
+    this._status = constants.STATE_SWITCH_POKEMON;
+
     var pokemon;
     if (player._id === this._player._id) {
       pokemon = this._ownPokemon;
     } else {
       pokemon = this._enemyPokemon;
     }
-    this._status = constants.STATE_SWITCH_POKEMON;
 
     if (pokemon[index] && pokemon[index].health() > 0) {
       // switch
