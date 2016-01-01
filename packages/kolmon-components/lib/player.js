@@ -142,8 +142,8 @@ KOL.Player = (function () {
       this._frameIndex * height + 1, // source y in spritesheet
       width,
       height,
-      ~~(0.5 + this.x), // round value to prevent anti aliasing by canvas
-      ~~(0.5 + (this.y - this._offsetY)),
+      Math.round(this.x), // round value to prevent anti aliasing by canvas
+      Math.round(this.y - this._offsetY),
       width,
       height
     );
