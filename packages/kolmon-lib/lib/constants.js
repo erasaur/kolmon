@@ -60,7 +60,7 @@ KOL.constants = {
   TRANSITION_FADE_OUT: 202,
   TRANSITION_NUM_FRAMES: 50, // number of frames to run transition
 
-  MOVE_TIME: 500, // time in ms to travel one cell
+  MOVE_TIME: 420, // time in ms to travel one cell
   UPDATE_STEP: 20, // ms per update
   UPDATES_PER_CALL: 25, // throttle update calls to roughly half a second,
 
