@@ -335,29 +335,33 @@ typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , fr
     healthBarColor = "lawngreen";
   }
 
-  
-  context.fillStyle = "rgba(0, 0, 0, 0.618)";
+  var gradient = context.createLinearGradient( pos_x + 28, pos_y + (height / 2.5), pos_x + 28, pos_y + (height / 2.5) + 3);
+  gradient.addColorStop(0, "#FFF");   
+  gradient.addColorStop(1, "#000");
+  context.fillStyle = gradient;
   roundRect(context, pos_x + 28, pos_y + (height / 2.5), width - (25 + 8), 4, 2, true, false);
   
-  context.strokeStyle = "rgba(255, 255, 255, 0.2)";
-  context.lineWidth = 1;
-  roundRect(context, pos_x + 28, pos_y + (height / 2.5), width - (25 + 8), 4, 2, false, true);
-
-  context.fillStyle = healthBarColor;
+  var gradient = context.createLinearGradient( pos_x + 28, pos_y + (height / 2.5), pos_x + 28, pos_y + (height / 2.5) + 3);
+  gradient.addColorStop(0, "#FFF");   
+  gradient.addColorStop(1, healthBarColor);
+  context.fillStyle = gradient;
   roundRect(context, pos_x + 28, pos_y + (height / 2.5), (width - (25 + 8)) * percentHP, 
     4, 2, true, false);
 
   /* Exp Bar */
 
   if (!isEnemy) {
-    context.fillStyle = "rgba(0, 0, 0, 0.618)";
+
+    var gradient = context.createLinearGradient( pos_x + 5, pos_y + (height / 6 * 5), pos_x + 5, pos_y + (height / 6 * 5) + 3);
+    gradient.addColorStop(0, "#FFF");   
+    gradient.addColorStop(1, "#000");
+    context.fillStyle = gradient;
     roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), width - (2 * 5), 4, 2, true, false);
     
-    context.strokeStyle = "rgba(255, 255, 255, 0.2)";
-    context.lineWidth = 1;
-    roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), width - (2 * 5), 4, 2, false, true);
-    
-    context.fillStyle = "deepskyblue";
+    var gradient = context.createLinearGradient( pos_x + 5, pos_y + (height / 6 * 5), pos_x + 5, pos_y + (height / 6 * 5) + 3);
+    gradient.addColorStop(0, "#FFF");   
+    gradient.addColorStop(1, "deepskyblue");
+    context.fillStyle = gradient;
     roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), (width - (2 * 5)) * percentExp, 
       4, 2, true, false);
   }
