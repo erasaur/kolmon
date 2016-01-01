@@ -67,6 +67,19 @@ Template.battle.helpers({
 
 
 Template.battle.onRendered(function() {
+
+  /* gif styling */
+
+  $('.enemyPoke').load(function() {
+    console.log($('.enemyPoke').height());
+    console.log($('.enemyPoke').width());
+  });
+
+  $('.enemyPoke').css({'position': 'absolute', 'bottom': '200px', 'right': '90px', 'zoom': '80%'});
+
+  $('.myPoke').css({'position': 'absolute', 'bottom': '20px', 'left': '35px', 'zoom': '160%'});
+
+
   var bgCanvas = document.getElementById("canvas-background");
   var textCanvas = document.getElementById("canvas-text");
   var fgCanvas = document.getElementById("canvas-foreground");
@@ -102,8 +115,8 @@ Template.battle.onRendered(function() {
     // typeWrite(textContext, textCanvas, "A wild " +  enemyPokeName + " appeared!" , frameWidth + 5, 
     //   constants.CANVAS_HEIGHT - textBoxHeight + 30, 28, 10);
 
-    typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , frameWidth + 5, 
-      constants.CANVAS_HEIGHT - textBoxHeight + 30, 28, 10);
+typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , frameWidth + 5, 
+  constants.CANVAS_HEIGHT - textBoxHeight + 30, 28, 10);
     // drawDownArrow(fgContext, constants.CANVAS_WIDTH - 20, constants.CANVAS_HEIGHT - 20 - frameWidth, "#FFF");
 
     /* === DRAW OPTIONS POPUP === */
@@ -117,7 +130,7 @@ Template.battle.onRendered(function() {
     /* === DRAW STATUS PANELS === */
 
     drawStatusPanel(fgContext, 10, 10, true, enemyPokeName, "male", 100, 
-      "poison", constants.CANVAS_HEIGHT - textBoxHeight, 420, 1000, 9001);
+      "poison", 260, 420, 1000, 9001);
 
     drawStatusPanel(fgContext, constants.CANVAS_WIDTH - 150 - 10, constants.CANVAS_HEIGHT - textBoxHeight - 50, false, currentPokeName, "female", 5, 
       "", 15, 100, 1000, 9001);
@@ -303,7 +316,7 @@ Template.battle.onRendered(function() {
 
   /* Back Panel */
 
-  context.fillStyle = "rgba(0, 0, 0, 0.5)";
+  context.fillStyle = "rgba(0, 0, 0, 0.3)";
   roundRect(context, pos_x, pos_y, width, height - 11, radius, true, false);
 
   /* HP Bar */
@@ -322,8 +335,13 @@ Template.battle.onRendered(function() {
     healthBarColor = "lawngreen";
   }
 
+  
   context.fillStyle = "rgba(0, 0, 0, 0.618)";
   roundRect(context, pos_x + 28, pos_y + (height / 2.5), width - (25 + 8), 4, 2, true, false);
+  
+  context.strokeStyle = "rgba(255, 255, 255, 0.2)";
+  context.lineWidth = 1;
+  roundRect(context, pos_x + 28, pos_y + (height / 2.5), width - (25 + 8), 4, 2, false, true);
 
   context.fillStyle = healthBarColor;
   roundRect(context, pos_x + 28, pos_y + (height / 2.5), (width - (25 + 8)) * percentHP, 
@@ -334,7 +352,11 @@ Template.battle.onRendered(function() {
   if (!isEnemy) {
     context.fillStyle = "rgba(0, 0, 0, 0.618)";
     roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), width - (2 * 5), 4, 2, true, false);
-
+    
+    context.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    context.lineWidth = 1;
+    roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), width - (2 * 5), 4, 2, false, true);
+    
     context.fillStyle = "deepskyblue";
     roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), (width - (2 * 5)) * percentExp, 
       4, 2, true, false);
