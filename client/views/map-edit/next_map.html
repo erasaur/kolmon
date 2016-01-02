@@ -1,0 +1,33 @@
+<template name="nextMap">
+
+  <div id="next-map" class="col-sm-5">
+
+    <button id="finish-selecting">
+      Finish Selecting Map!
+    </button>
+
+    <div class="canvases">
+      <canvas id="next-canvas" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+      <canvas id="next-canvas-saved" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+      <canvas id="next-canvas-select" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+    </div>
+
+    <div id="direction-select" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <h3>Select the direction in which you would like to move</h3>
+
+          <ul id="next-map-list">
+            {{#each getMapsInWorld}}
+            <li>
+              <a href='#'>{{_id}}</a>
+            </li>
+            {{/each}}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</template>
