@@ -1,6 +1,3 @@
-console.log('map edit');
-
-
 var constants = KOL.constants;
 var Maps = KOL.Maps;
 var MapEditor = KOL.MapEditor;
