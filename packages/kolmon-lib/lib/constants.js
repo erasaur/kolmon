@@ -24,7 +24,6 @@ KOL.constants = {
   // MOVES: JSON.parse(Assets.getText('moves.json')),
   // POKEMON: JSON.parse(Assets.getText('pokemon.json')),
   // TYPES: JSON.parse(Assets.getText('types.json')),
-  // LINKS: JSON.parse(Assets.getText('links.json')),
 
   DEFAULT_FILL_STYLE: '#000',
   DEFAULT_LINE_WIDTH: 1,

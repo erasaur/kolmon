@@ -23,9 +23,32 @@ KOL.BattleRenderer = (function () {
     this.drawStatusPanel(123, 123, enemyCurrent, true);
   };
 
-  BattleRenderer.prototype.drawStatusPanel = function drawStatusPanel (pos_x, pos_y, pokemon, isEnemy) {
-    
+  BattleRenderer.prototype.roundRect = function roundRect (x, y, width, height, radius, fill, stroke) {
+
   };
 
+  BattleRenderer.prototype.drawTextBox = function drawTextBox (height, frameWidth) {
+
+  };
+
+  BattleRenderer.prototype.drawOptionsPopup = function drawOptionsPopup(width, height, frameWidth) {
+
+  };
+
+  BattleRenderer.prototype.drawStatusPanel = function drawStatusPanel (pos_x, pos_y, pokemon, isEnemy) {
+
+  };
+
+  BattleRenderer.prototype.typeWrite = function typeWrite (canvas, string, startX, startY, lineHeight, padding) {
+
+  };
+
+  BattleRenderer.prototype.drawDownArrow = function drawDownArrow (x, y, color) {
+
+  };
+
+  BattleRenderer.prototype.drawRightArrow = function drawRightArrow (x, y, color) {
+
+  };
 
 })();

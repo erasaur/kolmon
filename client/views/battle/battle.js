@@ -59,7 +59,6 @@ Template.battle.helpers({
     return KOL.Pokemon.find({index: i, side: "front"}); 
   },
   myPokes: function() {
-    // TODO: change i to index of lead pokemon of currentUser
     var i = Math.floor(Math.random() * 500); 
     return KOL.Pokemon.find({index: i, side: "back"});
   }
@@ -67,120 +66,95 @@ Template.battle.helpers({
 
 
 Template.battle.onRendered(function() {
-
-  /* gif styling */
-
-  $('.enemyPoke').load(function() {
-    console.log($('.enemyPoke').height());
-    console.log($('.enemyPoke').width());
-  });
-
-  $('.enemyPoke').css({'position': 'absolute', 'bottom': '200px', 'right': '90px', 'zoom': '80%'});
-
-  $('.myPoke').css({'position': 'absolute', 'bottom': '20px', 'left': '35px', 'zoom': '160%'});
-
-
   var bgCanvas = document.getElementById("canvas-background");
   var textCanvas = document.getElementById("canvas-text");
   var fgCanvas = document.getElementById("canvas-foreground");
-  
   var fgContext = fgCanvas.getContext("2d");
   var textContext = textCanvas.getContext("2d");
   var bgContext = bgCanvas.getContext("2d");
+  var bgImage = new Image();
 
-  var background = new Image();
-  background.src = backgrounds[Math.floor(Math.random() * backgrounds.length)];
-  // background.src = "http://orig12.deviantart.net/b598/f/2014/310/a/6/pokemon_x_and_y_forest_battle_background_by_phoenixoflight92-d85ijvr.png";
+  bgImage.src = backgrounds[Math.floor(Math.random() * backgrounds.length)];
 
-  background.onload = function(){
-
-    /* === DRAW BACKGROUND === */
-
+  bgImage.onload = function () {
     var textBoxHeight = 80;
-    var widthScalar = constants.CANVAS_WIDTH / background.width;
-    var heightScalar = (constants.CANVAS_HEIGHT) / background.height;
-
-    bgContext.scale(widthScalar, heightScalar);
-    bgContext.drawImage(background, 0, 0); 
-
-
+    var widthScalar = constants.CANVAS_WIDTH / bgImage.width;
+    var heightScalar = (constants.CANVAS_HEIGHT) / bgImage.height;
     var radius = 5;
     var frameWidth = 5;
     var enemyPokeName = "Pikachu";
     var currentPokeName = "Mudkip";
 
-    /* === DRAW TEXT BOX === */
+    bgContext.scale(widthScalar, heightScalar);
+    bgContext.drawImage(bgImage, 0, 0); 
+
+    // draw text box 
 
     drawTextBox(fgContext, textBoxHeight, frameWidth);
-    // typeWrite(textContext, textCanvas, "A wild " +  enemyPokeName + " appeared!" , frameWidth + 5, 
-    //   constants.CANVAS_HEIGHT - textBoxHeight + 30, 28, 10);
 
-typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , frameWidth + 5, 
-  constants.CANVAS_HEIGHT - textBoxHeight + 30, 28, 10);
+    // draw text 
+
+    typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , frameWidth + 5, 
+      constants.CANVAS_HEIGHT - textBoxHeight + 30, 28, 10);
+
+    // draw down arrow
+
     // drawDownArrow(fgContext, constants.CANVAS_WIDTH - 20, constants.CANVAS_HEIGHT - 20 - frameWidth, "#FFF");
 
-    /* === DRAW OPTIONS POPUP === */
+    // draw options popup
 
     var width = 170;
 
     drawOptionsPopup(fgContext, width, textBoxHeight, frameWidth);
     drawRightArrow(fgContext, constants.CANVAS_WIDTH - width + (2 * frameWidth) + 10, 
-      constants.CANVAS_HEIGHT - textBoxHeight + (2 * frameWidth) + 10 , "#FFF"); // 10 refers to the arrow size width
+    constants.CANVAS_HEIGHT - textBoxHeight + (2 * frameWidth) + 10 , "#FFF"); // 10 refers to the arrow size width
 
-    /* === DRAW STATUS PANELS === */
+    // draw status panels
 
     drawStatusPanel(fgContext, 10, 10, true, enemyPokeName, "male", 100, 
       "poison", 260, 420, 1000, 9001);
-
     drawStatusPanel(fgContext, constants.CANVAS_WIDTH - 150 - 10, constants.CANVAS_HEIGHT - textBoxHeight - 50, false, currentPokeName, "female", 5, 
       "", 15, 100, 1000, 9001);
-
-
-    /* === DRAW MOVES MENU === */
-
-    /* === DRAW BAG MENU === */
-
-    /* === DRAW PKMN MENU === */
-
   };
-
-
 });
 
-
 /**
- * Draws a rounded rectangle using the current state of the canvas.
- * If you omit the last three params, it will draw a rectangle
- * outline with a 5 pixel border radius
- * @param {CanvasRenderingContext2D} ctx
- * @param {Number} x The top left x coordinate
- * @param {Number} y The top left y coordinate
- * @param {Number} width The width of the rectangle
- * @param {Number} height The height of the rectangle
- * @param {Number} [radius = 5] The corner radius; It can also be an object 
- *                 to specify different radii for corners
- * @param {Number} [radius.tl = 0] Top left
- * @param {Number} [radius.tr = 0] Top right
- * @param {Number} [radius.br = 0] Bottom right
- * @param {Number} [radius.bl = 0] Bottom left
- * @param {Boolean} [fill = false] Whether to fill the rectangle.
- * @param {Boolean} [stroke = true] Whether to stroke the rectangle.
- */
- function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+* Draws a rounded rectangle using the current state of the canvas.
+* If you omit the last three params, it will draw a rectangle
+* outline with a 5 pixel border radius
+* @param {CanvasRenderingContext2D} ctx
+* @param {Number} x The top left x coordinate
+* @param {Number} y The top left y coordinate
+* @param {Number} width The width of the rectangle
+* @param {Number} height The height of the rectangle
+* @param {Number} [radius = 5] The corner radius; It can also be an object 
+*                 to specify different radii for corners
+* @param {Number} [radius.tl = 0] Top left
+* @param {Number} [radius.tr = 0] Top right
+* @param {Number} [radius.br = 0] Bottom right
+* @param {Number} [radius.bl = 0] Bottom left
+* @param {Boolean} [fill = false] Whether to fill the rectangle.
+* @param {Boolean} [stroke = true] Whether to stroke the rectangle.
+*/
+function roundRect (ctx, x, y, width, height, radius, fill, stroke) {
   if (typeof stroke == 'undefined') {
     stroke = true;
   }
+
   if (typeof radius === 'undefined') {
     radius = 5;
   }
+
   if (typeof radius === 'number') {
     radius = {tl: radius, tr: radius, br: radius, bl: radius};
-  } else {
+  } 
+  else {
     var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
     for (var side in defaultRadius) {
       radius[side] = radius[side] || defaultRadius[side];
     }
   }
+
   ctx.beginPath();
   ctx.moveTo(x + radius.tl, y);
   ctx.lineTo(x + width - radius.tr, y);
@@ -192,80 +166,48 @@ typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , fr
   ctx.lineTo(x, y + radius.tl);
   ctx.quadraticCurveTo(x, y, x + radius.tl, y);
   ctx.closePath();
+
   if (fill) {
     ctx.fill();
   }
+
   if (stroke) {
     ctx.stroke();
   }
-
 }
 
 /**
- * Draws a text box (without text) on a canvas, using the roundRect() method. 
- * Note that the perceived height of the text box will not be the same as the  
- * given height (the actual height will be smaller).
- * @param context 2D Canvas context in which the text box should be drawn.
- * @param height Height of the text box, in px. Actual height will be smaller.
- * @param frameWidth The text box's frame width, in px, relative the canvas dimensions.
- */
- function drawTextBox(context, height, frameWidth) {
-
-  /* Frame Top */
-
-  context.strokeStyle = "transparent"; 
-  context.beginPath();
-  context.moveTo(0, constants.CANVAS_HEIGHT - (height - frameWidth));
-  context.lineTo(constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT - (height - frameWidth));
-  context.lineWidth = frameWidth;
-  context.stroke();
-
-  /* Frame Bottom */
-
-  context.strokeStyle = "transparent";
-  context.beginPath();
-  context.moveTo(0, constants.CANVAS_HEIGHT - frameWidth);
-  context.lineTo(constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT - frameWidth);
-  context.lineWidth = frameWidth;
-  context.stroke();
-
-  /* Text Area*/
-
+* Draws a text box (without text) on a canvas, using the roundRect() method. 
+* Note that the perceived height of the text box will not be the same as the  
+* given height (the actual height will be smaller).
+* @param context 2D Canvas context in which the text box should be drawn.
+* @param height Height of the text box, in px. Actual height will be smaller.
+* @param frameWidth The text box's frame width, in px, relative the canvas dimensions.
+*/
+function drawTextBox (context, height, frameWidth) {
   context.fillStyle = "rgba(0, 0, 0, 0.5)"; 
   roundRect(context, 0, constants.CANVAS_HEIGHT - (height - frameWidth), 
     constants.CANVAS_WIDTH, height - (2 * frameWidth), 
     0, true, false);
-
 }
 
 /**
- * Draws an options popup (without text) on a canvas, using the roundRect() method.
- * Should be used in conjunction with a styled textbox (see drawTextBox()).
- * @param context 2D Canvas context in which the popup should be drawn.
- * @param width Width of the popup, in px.
- * @param height Height of the popup, in px.
- * @param frameWidth The popup's frame width, in px, relative the canvas dimensions.
- */
- function drawOptionsPopup(context, width, height, frameWidth) {
-
-  /* Frame Border */
-  
-  context.strokeStyle = "transparent"; 
-  context.lineWidth = frameWidth;
-  roundRect(context, constants.CANVAS_WIDTH - (width - frameWidth), 
-    constants.CANVAS_HEIGHT - (height - frameWidth), width - (2 * frameWidth), 
-    height - (2 * frameWidth), 0, false, true);
-
-  /* Text Area */
+* Draws an options popup (without text) on a canvas, using the roundRect() method.
+* Should be used in conjunction with a styled textbox (see drawTextBox()).
+* @param context 2D Canvas context in which the popup should be drawn.
+* @param width Width of the popup, in px.
+* @param height Height of the popup, in px.
+* @param frameWidth The popup's frame width, in px, relative the canvas dimensions.
+*/
+function drawOptionsPopup (context, width, height, frameWidth) {
+  var fontSize = 14;
 
   context.fillStyle = "rgba(0, 0, 0, 0.5)"; 
   roundRect(context, constants.CANVAS_WIDTH - (width - 2 * frameWidth), 
     constants.CANVAS_HEIGHT - (height - frameWidth), width - (2 * frameWidth), 
     height - (2 * frameWidth), 0, true, false)
 
-  /* Options */ 
-
-  var fontSize = 14;
+  // draw options
 
   context.font = "14px Verdana"
   context.fillStyle = "#FFF";
@@ -289,41 +231,39 @@ typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , fr
 }
 
 /**
- * Draws a single StatusPanel anywhere on a given convas.
- * @param context 2D Canvas context in which the text box should be drawn.
- * @param pos_x X-coordinate of the StatusPanel, from the left of the canvas, in px.
- * @param pos_y Y-coordinate of the StatusPanel, from the top of the canvas, in px.
- * @param isEnemy Set to true to make this an enemy's StatusPanel, otherwise set to false
- * to make it the player pokemon's StatusPanel. 
- * @param name Name of the pokemon, e.g. "Bob".
- * @param gender Gender of the pokemon, accepts "male", "female", or "" (if
- * the Pokemon has no gender).
- * @param level Level of the pokemon, e.g. 100
- * @param status Status of the pokemon. Possible statuses are "burn", "faint", "freeze",
- * "paralyze", "poison", "sleep", and "" (for no status effect);
- * @param currentHP Current hitpoints of the pokemon, e.g. 26.
- * @param maxHP Maximum hitpoints of the pokemon, e.g. 100.
- * @param currentExp Current exp points of the pokemon, e.g. 1000
- * @param maxExp Maximum exp points of the pokemon, e.g. 9001
- */
- function drawStatusPanel(context, pos_x, pos_y, isEnemy, name, gender, level, status, 
-  currentHP, maxHP, currentExp, maxExp) {
-
+* Draws a single StatusPanel anywhere on a given convas.
+* @param context 2D Canvas context in which the text box should be drawn.
+* @param pos_x The distance from the left of the canvas, in px.
+* @param pos_y The distance from the top of the canvas, in px.
+* @param isEnemy Set to true to make this an enemy's StatusPanel, otherwise set to false
+* to make it the player pokemon's StatusPanel. 
+* @param name Name of the pokemon, e.g. "Bob".
+* @param gender Gender of the pokemon, accepts "male", "female", or "" (if
+* the Pokemon has no gender).
+* @param level Level of the pokemon, e.g. 100
+* @param status Status of the pokemon. Possible statuses are "burn", "faint", "freeze",
+* "paralyze", "poison", "sleep", and "" (for no status effect);
+* @param currentHP Current hitpoints of the pokemon, e.g. 26.
+* @param maxHP Maximum hitpoints of the pokemon, e.g. 100.
+* @param currentEXP Current exp points of the pokemon, e.g. 1000
+* @param maxEXP Maximum exp points of the pokemon, e.g. 9001
+*/
+function drawStatusPanel (context, pos_x, pos_y, isEnemy, name, gender, level, status, 
+  currentHP, maxHP, currentEXP, maxEXP) {
   var width = 150;
   var height = 50;
   var radius = 5;
   var fontSize = 13;
+  var percentHP = currentHP / maxHP;
+  var percentExp = currentEXP / maxEXP;
+  var healthBarColor;
 
-  /* Back Panel */
+  // back panel
 
-  context.fillStyle = "rgba(0, 0, 0, 0.3)";
+  context.fillStyle = "rgba(0, 0, 0, 0.5)";
   roundRect(context, pos_x, pos_y, width, height - 11, radius, true, false);
 
-  /* HP Bar */
-
-  var percentHP = currentHP / maxHP;
-  var percentExp = currentExp / maxExp;
-  var healthBarColor;
+  // draw HP bar
 
   if (percentHP <= 0.15) {
     healthBarColor = "red";
@@ -340,7 +280,7 @@ typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , fr
   gradient.addColorStop(1, "#000");
   context.fillStyle = gradient;
   roundRect(context, pos_x + 28, pos_y + (height / 2.5), width - (25 + 8), 4, 2, true, false);
-  
+
   var gradient = context.createLinearGradient( pos_x + 28, pos_y + (height / 2.5), pos_x + 28, pos_y + (height / 2.5) + 3);
   gradient.addColorStop(0, "#FFF");   
   gradient.addColorStop(1, healthBarColor);
@@ -348,16 +288,15 @@ typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , fr
   roundRect(context, pos_x + 28, pos_y + (height / 2.5), (width - (25 + 8)) * percentHP, 
     4, 2, true, false);
 
-  /* Exp Bar */
+  // draw EXP bar
 
   if (!isEnemy) {
-
     var gradient = context.createLinearGradient( pos_x + 5, pos_y + (height / 6 * 5), pos_x + 5, pos_y + (height / 6 * 5) + 3);
     gradient.addColorStop(0, "#FFF");   
     gradient.addColorStop(1, "#000");
     context.fillStyle = gradient;
     roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), width - (2 * 5), 4, 2, true, false);
-    
+
     var gradient = context.createLinearGradient( pos_x + 5, pos_y + (height / 6 * 5), pos_x + 5, pos_y + (height / 6 * 5) + 3);
     gradient.addColorStop(0, "#FFF");   
     gradient.addColorStop(1, "deepskyblue");
@@ -366,8 +305,8 @@ typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , fr
       4, 2, true, false);
   }
 
-  /* HP Label */
-  
+  // draw status label
+
   var statusColor = "transparent";
   var statusTextColor = "greenYellow";
   var statusText = " HP";
@@ -410,7 +349,7 @@ typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , fr
   context.fillStyle = statusTextColor;
   context.fillText(statusText, pos_x + 5 + 1, pos_y + (height / 2.5) + ((fontSize - 4) / 2));
 
-  /* HP Numbers */
+  // draw HP numbers 
 
   if (!isEnemy) {
     context.font = fontSize - 2 + "px Verdana";
@@ -418,17 +357,16 @@ typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , fr
     context.fillText(currentHP + " / " + maxHP, pos_x + 25, pos_y + fontSize + 22);
   }
 
-  /* Pokemon's Name */
+  // draw pokemon's name
 
   context.font = fontSize + "px Verdana";
   context.fillStyle = "#FFF";
   context.fillText(name, pos_x + 5, pos_y + fontSize);
 
-  /* Gender Symbol */
-
-  context.font = fontSize + "px Verdana";
+  // draw gender symbol
 
   var g;
+
   if (gender === "male") {
     g = "♂";
     context.fillStyle = "#B3E5FC";
@@ -440,52 +378,68 @@ typeWrite(textContext, textCanvas, "What will " +  currentPokeName + " do?" , fr
   else {
     g = "";
   }
-  
+
+  context.font = fontSize + "px Verdana";
   context.fillText(g, pos_x + 97, pos_y + fontSize);
 
-  /* Level Label */
+  // draw level lavel 
 
   context.font = fontSize - 3 + "px Verdana";
   context.fillStyle = "orange";
   context.fillText("Lv", pos_x + 108, pos_y + fontSize); 
 
-  /* Level Number*/
+  // draw level number
 
   context.font = fontSize + "px Tahoma";
   context.fillStyle = "#FFF";
   context.fillText(level, pos_x + 121, pos_y + fontSize);
 }
 
-function typeWrite(context, canvas, string, startX, startY, lineHeight, padding) {
+/**
+* Draws text on the canvas in a typewriter-like fashion.
+* @param context 2D Canvas context in which the text box should be drawn.
+* @param convas Canvas in which the text box should be drawn.
+* @param string The text to type.
+* @param x The distance from the left of the canvas, in px.
+* @param y The distance from the top of the canvas, in px.
+* @param lineHeight The amount of space between lines of text.
+* @param padding The padding from the left and right of the canvas that will determine when to word-wrap
+*/
+function typeWrite (context, canvas, string, x, y, lineHeight, padding) {
   context.font = "14px Verdana";
   context.fillStyle = "#FFF";
 
   "use strict";
-  var cursorX = startX || 0;
-  var cursorY = startY || 0;
-  var lineHeight = lineHeight || 14; // Depends on the font size
-  padding = padding || 10;
+  var cursor_x = x || 0;
+  var cursor_y = y || 0;
+  var lineHeight = lineHeight || 14; 
+  var padding = padding || 10;
   var i = 0;
+
   $_inter = setInterval(function() {
     var rem = string.substr(i);
     var space = rem.indexOf(' ');
     space = (space === -1) ? string.length:space;
     var wordwidth = context.measureText(rem.substr(0, space)).width;
     var w = context.measureText(string.charAt(i)).width;
-    if(cursorX + wordwidth >= canvas.width - padding) {
-      cursorX = startX;
-      cursorY += lineHeight;
+
+    if (cursor_x + wordwidth >= canvas.width - padding) {
+      cursor_x = x;
+      cursor_y += lineHeight;
     }
-    context.fillText(string.charAt(i), cursorX, cursorY);
+
+    context.fillText(string.charAt(i), cursor_x, cursor_y);
+
     i++;
-    cursorX += w;
-    if(i === string.length) {
+    cursor_x += w;
+
+    if (i === string.length) {
       clearInterval($_inter);
     }
   }, 80);
 }
 
-function drawDownArrow(context, x, y, color) {
+function drawDownArrow (context, x, y, color) {
   context.fillStyle = color;
   context.beginPath();
   context.moveTo(x, y);
@@ -494,9 +448,11 @@ function drawDownArrow(context, x, y, color) {
   context.lineTo(x, y);
   context.closePath();
   context.fill();
+
+  // TODO: animate the arrow
 }
 
-function drawRightArrow(context, x, y, color) {
+function drawRightArrow (context, x, y, color) {
   context.fillStyle = color;
   context.beginPath();
   context.moveTo(x, y);
@@ -505,5 +461,7 @@ function drawRightArrow(context, x, y, color) {
   context.lineTo(x, y);
   context.closePath();
   context.fill();
+
+  //TODO: animate the arrow
 }
 
