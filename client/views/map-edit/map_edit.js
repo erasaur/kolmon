@@ -1,3 +1,6 @@
+console.log('map edit');
+
+
 var constants = KOL.constants;
 var Maps = KOL.Maps;
 var MapEditor = KOL.MapEditor;
@@ -35,7 +38,11 @@ Template.mapClickable.onCreated(function () {
   this._drag_start_X = 0;
   this._drag_start_Y = 0;
   this._selectingNextMap = new ReactiveVar(false);
-  this._enterAt = undefined;
+  this._enterAt = {
+    x: 0,
+    y: 0,
+    dir: constants.DIR_DOWN
+  };
 });
 
 
@@ -100,30 +107,15 @@ Template.mapClickable.helpers({
   canvasWidth: constants.CANVAS_WIDTH,
   canvasHeight: constants.CANVAS_HEIGHT,
   getMapsInWorld: function() {
-
     var worldId = helpers.get.currentParams().worldId;
 
     return Maps.find({worldId: worldId});
-  },
-  selectingNextMapVar: function() {
-    return Template.instance()._selectingNextMap;
   },
   selectingNextMap: function() {
     return Template.instance()._selectingNextMap.get();
   },
   nextMapId: function() {
     return Template.instance()._nextMapId;
-  },
-  hookEnterAt: function() {
-    var template = Template.instance();
-
-    template._enterAt = {
-      x: 0,
-      y: 0,
-      dir: constants.DIR_DOWN
-    };
-
-    return template._enterAt;
   }
 });
 
@@ -133,12 +125,17 @@ Template.mapClickable.events({
                                     template._currentMap.walls,
                                     template._currentMap.portals,
                                     template._currentMap.wild, function (error, result) {
-        if (!error) alert('Saved successfully');
-      });
+      if (!error) alert('Saved successfully');
+    });
   },
   "click #canvasRect": function(e, template) {
     /*
      Clear the rectangle, because it tends to stick around.
+
+     Not sure if this is necessary any more.
+
+     * Try to replace width = width with clearRect.
+
      */
     var canvasRect = template.find('#canvasRect');
     canvasRect.width = canvasRect.width;

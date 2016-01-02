@@ -3,13 +3,14 @@ var constants = KOL.constants;
 var Maps = KOL.Maps;
 var helpers = KOL.helpers;
 
-
 Template.nextMap.onCreated(function() {
+  var parentTemplate = this.parent();
+  this._selectingNextMap = parentTemplate._selectingNextMap;
+  this._enterAt = parentTemplate._enterAt;
   this._direction = constants.DIR_DOWN;
 });
 
 Template.nextMap.onRendered(function(){
-
   var template = this;
   var mapId = template.data.mapId;
   var subscription = this.subscribe('singleMapEdit', mapId);
@@ -40,8 +41,7 @@ Template.nextMap.onRendered(function(){
     }
   });
 
-
-  $(window).on('keydown', function(e) {
+  $(window).on('keydown.mapedit', function(e) {
     if( ! template._lastClick) {
       return;
     }
@@ -70,15 +70,16 @@ Template.nextMap.onRendered(function(){
       constants.PX_PER_CELL,
       template._direction);
   });
-
 });
 
+Template.nextMap.onDestroyed(function () {
+  $(window).off('keydown.mapedit');
+});
 
 Template.nextMap.helpers({
   canvasWidth: constants.CANVAS_WIDTH,
   canvasHeight: constants.CANVAS_HEIGHT
 });
-
 
 Template.nextMap.events({
   'click #next-canvas-select': function(e, template) {
@@ -106,10 +107,10 @@ Template.nextMap.events({
          + "Note that you may also press your arrow keys to define the new direction you are facing");
     }
     else {
-      template.data.enterAt.x = template._lastClick.x;
-      template.data.enterAt.y = template._lastClick.y;
-      template.data.enterAt.dir = template._direction;
-      template.data.selecting.set(false);
+      template._enterAt.x = template._lastClick.x;
+      template._enterAt.y = template._lastClick.y;
+      template._enterAt.dir = template._direction;
+      template._selectingNextMap.set(false);
     }
   },
   'keydown #next-canvas-select': function(e, template) {
