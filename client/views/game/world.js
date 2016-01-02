@@ -102,3 +102,17 @@ Template.world.events({
     this.sendChallenge(this._id);
   }
 });
+
+// battle ---------------------------------------------
+
+Template.battle.onCreated(function () {
+  var parentView = this.view.parentView;
+  var parentTemplate = parentView.templateInstance();
+  this.game = parentTemplate.game;
+});
+
+Template.battle.helpers({
+  game: function () {
+    return Template.instance().game;
+  }
+});

@@ -1,17 +1,17 @@
 <template name="world">
   {{> contentFor region="nav" template="nav"}}
 
-  <div class="col-sm-2">
-    <a href="{{pathFor route='worlds'}}">{{_ "lobby"}}</a> 
-
-    {{> Template.dynamic template=sidebar data=world}}
-  </div>
-
-  <div class="col-sm-10">
+  <div class="col-sm-8">
     <canvas id="canvas-background" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
     <canvas id="canvas-players" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
     <canvas id="canvas-foreground" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
     <canvas id="canvas-transition" width="{{canvasWidth}}" height="{{canvasHeight}}"></canvas>
+  </div>
+
+  <div class="col-sm-4">
+    <a href="{{pathFor route='worlds'}}">{{_ "lobby"}}</a> 
+
+    {{> Template.dynamic template=sidebar data=world}}
   </div>
 </template>
 
@@ -43,5 +43,36 @@
 </template>
 
 <template name="battle">
-  nothing to see here
+  <div style="padding: 10px; margin-bottom: 10px; border: 1px solid black;">
+    <ul>
+      <li>Your current: {{game.ownCurrent}}</li>
+      <li>Enemy current: {{game.enemyCurrent}}</li>
+
+      <li>
+        Your team: 
+        <ul>
+          {{#each game.ownPokemon}}
+            <li>{{this.name}}</li>
+            <li>{{this.health}}</li>
+          {{/each}}
+        </ul>
+      </li>
+      <li>
+        Enemy team: 
+        <ul>
+          {{#each game.enemyPokemon}}
+            <li>{{this.name}}</li>
+            <li>{{this.health}}</li>
+          {{/each}}
+        </ul>
+      </li>
+    </ul>
+  </div>
+  <div style="padding: 10px; border: 1px solid black;">
+    <ul>
+      {{#each game.output}}
+        <li>{{this}}</li>
+      {{/each}}
+    </ul>
+  </div>
 </template>
