@@ -71,7 +71,11 @@
   <div style="padding: 10px; border: 1px solid black;">
     <ul>
       {{#each game.output}}
-        <li>{{this}}</li>
+        {{#if systemOutput}}
+          <li style="color: red;">{{message}}</li>
+        {{else}}
+          <li>{{createdAt}}: {{message}}</li>
+        {{/if}}
       {{/each}}
     </ul>
   </div>

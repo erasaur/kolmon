@@ -14,13 +14,16 @@ KOL.Battle = (function () {
 
   Battle.prototype.load = function loadBattle (options) {
     this._renderers = options.renderers;
-
-    //TODO load bg images
+    this._battleRenderer = new BattleRenderer({
+      renderers: this._renderers
+    });
   };
 
   Battle.prototype.init = function initBattle (options) {
-    this._battle = options.battle;
+    // use local collection to store output
+    this._outputCollection = new Mongo.Collection('battle-output');
 
+    this._battle = options.battle;
     this._player = options.player;
     this._ownPokemon = _.map(this._player.teamIds, function (id) {
       return new Pokemon(id);
@@ -52,8 +55,8 @@ KOL.Battle = (function () {
   // elements. animations (e.g for swapping pokemon or for attacking) should
   // be handled separately.
   Battle.prototype.render = function renderBattle () {
-    //TODO render bg, ui
-    //TODO render pokemon
+    // render bg, ui, pokemon
+    this._battleRenderer.render();
   };
 
   // getters ------------------------------------------
@@ -78,36 +81,77 @@ KOL.Battle = (function () {
     return this._ownPokemon;
   };
 
+  Battle.prototype.outputList = function getOutputList () {
+    return this._outputCollection.find();
+  };
+
   // events -------------------------------------------
 
-  Battle.prototype.output = function output (type, message) {
+  Battle.prototype.output = function output (options) {
     //TODO output to panel with different colored text depending on type
-    console.log('output of type [' + type + ']: ' + message);
+    this._outputCollection.insert({ 
+      createdAt: Date.now(),
+      createdBy: options.player,
+      type: options.type,
+      message: options.message
+    }); 
+  };
+
+  Battle.prototype.validCommand = function validCommand (command) {
+    //TODO
+    return true;
   };
 
   Battle.prototype.parseCommand = function parseCommand (command) {
-    //TODO
+    if (!this.validCommand(command)) {
+      this.output({
+        type: constants.OUTPUT_SYSTEM,
+        message: 'Invalid command!'
+      });
+      return;
+    }
+
+    this._ownQueue.push({
+      player: this._player
+      command: command
+    });
+
+    // Meteor.call('pushCommand', command);
   };
 
   Battle.prototype.switchPokemon = function switchPokemon (player, index) {
     this._status = constants.STATE_SWITCH_POKEMON;
 
     var pokemon;
-    if (player._id === this._player._id) {
+    var switchOwn = player._id === this._player._id;
+    if (switchOwn) {
       pokemon = this._ownPokemon;
     } else {
       pokemon = this._enemyPokemon;
     }
 
     if (pokemon[index] && pokemon[index].health() > 0) {
-      // switch
+      if (switchOwn) {
+        this._ownCurrent = pokemon[index];
+        this._ownDep.changed();
+      } else {
+        this._enemyCurrent = pokemon[index];
+        this._enemyDep.changed();
+      }
     } else {
       this.output('error', 'unable to switch pokemon');
     }
   };
 
-  Battle.prototype.execCommand = function executeCommand (command, local) {
+  Battle.prototype.execCommand = function executeCommand (options, local) {
     this._executing = true;
+
+    this.output({
+      type: constants.OUTPUT_COMMAND,
+      player: options.player,
+      message: options.command
+    });
+    console.log('is local: ', local);
 
     //TODO switching pokemon & animating
     //TODO using potions
@@ -117,14 +161,13 @@ KOL.Battle = (function () {
     //TODO animations
     //TODO damage calculations, fainting, pokemon switching/losing
 
-    if (local) { // propagate to global
-      Meteor.call('battleExecCommand', command);
-    }
+    // if (local) { // propagate to global
+    //   Meteor.call('execCommand', command);
+    // }
   };
 
   Battle.prototype.moveDone = function moveComplete () {
     this._executing = false;
-    this.processQueue(); // run next move
   };
 
   Battle.prototype.moveTime = function getMoveTime (move, pokemon) {
@@ -136,11 +179,11 @@ KOL.Battle = (function () {
   };
 
   Battle.prototype.update = function updateBattle (event, lastUpdate) {
-    switch (this._state) {
-      case constants.STATE_EXEC_MOVE:
-        // run animation
-        break;
-      // case constants.STATE_SWITCH_POKEMON: break; // noop
+    // re-render ui elements (e.g health, statuses, etc)
+    this._battleRenderer.update();
+
+    if (!this._executing) {
+      this.processQueue();
     }
   };
 

@@ -27,6 +27,10 @@ KOL.Renderer = (function () {
     this._images = {};
   };
 
+  Renderer.prototype.context = function getContext () {
+    return this._context;
+  };
+
   Renderer.prototype.loadImages = function (options) {
     if (!_.isArray(options.srcs)) {
       options.srcs = [options.srcs];

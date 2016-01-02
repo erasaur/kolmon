@@ -61,6 +61,10 @@ KOL.constants = {
   BATTLE_WILD: 251,
   BATTLE_TRAINER: 252,
 
+  OUTPUT_COMMAND: 301,
+  OUTPUT_USER: 302,
+  OUTPUT_SYSTEM: 303,
+
   MOVE_TIME: 500, // time in ms to travel one cell
   UPDATE_STEP: 20, // ms per update
   UPDATES_PER_CALL: 25, // throttle update calls to roughly half a second,
