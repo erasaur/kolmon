@@ -255,7 +255,7 @@ function drawStatusPanel (context, pos_x, pos_y, isEnemy, name, gender, level, s
   var radius = 5;
   var fontSize = 13;
   var percentHP = currentHP / maxHP;
-  var percentExp = currentEXP / maxEXP;
+  var percentEXP = currentEXP / maxEXP;
   var healthBarColor;
 
   // back panel
@@ -301,7 +301,7 @@ function drawStatusPanel (context, pos_x, pos_y, isEnemy, name, gender, level, s
     gradient.addColorStop(0, "#FFF");   
     gradient.addColorStop(1, "deepskyblue");
     context.fillStyle = gradient;
-    roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), (width - (2 * 5)) * percentExp, 
+    roundRect(context, pos_x + 5, pos_y + (height / 6 * 5), (width - (2 * 5)) * percentEXP, 
       4, 2, true, false);
   }
 
