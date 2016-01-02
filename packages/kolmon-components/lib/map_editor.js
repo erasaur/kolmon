@@ -1,7 +1,49 @@
 var constants = KOL.constants;
-
+var Player = KOL.Player;
 
 KOL.MapEditor = {
+
+  /**
+   * Draw an arrow on the context, starting from point p1 to point p2
+   * @param ctx
+   * @param p1
+   * @param p2
+   */
+  arrow: function(ctx, p1, p2) {
+
+    ctx.save();
+    var dist = Math.sqrt((p2[0] - p1[0]) * (p2[0] - p1[0]) + (p2[1] - p1[1]) * (p2[1] - p1[1]));
+
+    ctx.beginPath();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#0000ff';
+    ctx.moveTo(p1[0], p1[1]);
+    ctx.lineTo(p2[0], p2[1]);
+    ctx.stroke();
+
+    var angle = Math.acos((p2[1] - p1[1]) / dist);
+
+    if (p2[0] < p1[0]) angle = 2 * Math.PI - angle;
+
+    var size = 15;
+
+    ctx.beginPath();
+    ctx.translate(p2[0], p2[1]);
+    ctx.rotate(-angle);
+    ctx.fillStyle = '#0000ff';
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#ff0000';
+    ctx.moveTo(0, -size);
+    ctx.lineTo(-size, -size);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(size, -size);
+    ctx.lineTo(0, -size);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  },
+
   /**
    * Checks whether two rectangles intersect.
    * If only their sides are touching, then they do not intersect.
@@ -72,6 +114,46 @@ KOL.MapEditor = {
   },
 
 
+  containedInRectangle: function(point, rect) {
+    return point.x >= rect.x
+        && point.x < rect.x + rect.w
+        && point.y >= rect.y
+        && point.y < rect.y + rect.h;
+  },
+
+  /**
+   * Our precondition is that point has been upperLeftSnapped.
+   * Essentially, we are testing that the cell in the lower left quadrant of this gridSnapPoint
+   *    is in any portal or wall of currentMap.
+   *
+   *
+   * @param point
+   * @param currentMap
+   */
+  containedInWallOrPortal: function(point, currentMap, pixelsPerCell) {
+    var snapPoint = this.getUpperLeftSnapPoint(point.x, point.y, pixelsPerCell);
+    var inPoint = {
+      x: snapPoint.x + pixelsPerCell / 2,
+      y: snapPoint.y + pixelsPerCell / 2
+    };
+    var intersectionFound = false;
+    var self = this;
+    currentMap.walls.forEach(function(wall) {
+      if(self.containedInRectangle(inPoint, wall)) {
+        intersectionFound = true;
+      }
+    });
+
+    currentMap.portals.forEach(function(portal) {
+      if(self.containedInRectangle(inPoint, portal)) {
+        intersectionFound = true;
+      }
+    });
+
+    return intersectionFound;
+  },
+
+
 
 
   /**
@@ -81,9 +163,9 @@ KOL.MapEditor = {
    * @param currentMap Map object as defined in collections/map.js
    */
   drawSavedRectangles: function(canvas, currentMap) {
-    canvas.width = canvas.width;
-
     var canvasContext = canvas.getContext('2d');
+
+    canvasContext.clearRect(0,0,canvas.width, canvas.height);
 
     canvasContext.fillStyle = constants.PORTAL_FILL_STYLE;
     currentMap.portals.forEach(function(portal) {
@@ -99,8 +181,6 @@ KOL.MapEditor = {
     currentMap.wild.forEach(function(wild) {
       canvasContext.fillRect(wild.x, wild.y, wild.w, wild.h);
     });
-
-    canvasContext.stroke();
   },
 
   /**
@@ -110,14 +190,40 @@ KOL.MapEditor = {
    *
    */
   drawSavedCell: function(canvas, point, pixelsPerCell) {
-    canvas.width = canvas.width;
+//    canvas.width = canvas.width;
 
     var canvasContext = canvas.getContext('2d');
+    canvasContext.clearRect(0,0,canvas.width, canvas.height);
 
     canvasContext.fillStyle = constants.UNIT_FILL_STYLE;
     canvasContext.fillRect(point.x, point.y, pixelsPerCell, pixelsPerCell);
 
-    canvasContext.stroke();
+//    canvasContext.stroke();
+  },
+
+
+  drawPlayer: function(canvas, point, pixelsPerCell, direction) {
+    var context = canvas.getContext('2d');
+    var imgPath = '/player.png';
+    var img = new Image();
+    img.onload = function() {
+      var width = pixelsPerCell;
+      var height = img.height / constants.PLAYER_NUM_FRAMES;
+      var offsetY = height - pixelsPerCell;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(
+        img,
+        (direction % 4) * width, // source x in spritesheet
+        1, // source y in spritesheet
+        width,
+        height,
+        point.x,
+        point.y - offsetY,
+        width,
+        height
+      );
+    }
+    img.src = imgPath;
   },
 
 

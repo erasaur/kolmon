@@ -12,6 +12,7 @@ KOL.constants = {
   CANVAS_HEIGHT: 312,
   PX_PER_CELL: 16,
 
+  PLAYER_HEIGHT: 66,
   PLAYER_NUM_FRAMES: 3, // number of frames in walking animation
 
   get CENTER_X () {
@@ -65,7 +66,7 @@ KOL.constants = {
   OUTPUT_USER: 302,
   OUTPUT_SYSTEM: 303,
 
-  MOVE_TIME: 500, // time in ms to travel one cell
+  MOVE_TIME: 450, // time in ms to travel one cell
   UPDATE_STEP: 20, // ms per update
   UPDATES_PER_CALL: 25, // throttle update calls to roughly half a second,
 
