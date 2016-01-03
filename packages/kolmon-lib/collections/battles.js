@@ -12,32 +12,30 @@ schemas.Battle = new SimpleSchema({
   createdAt: {
     type: String
   },
-  sender: {
-    type: String
-  },
-  senderId: {
-    type: String
-  },
-  receiver: {
-    type: String
-  },
-  receiverId: {
-    type: String
-  },
-  status: {
-    type: Number,
-    allowedValues: [constants.STATUS_PENDING, constants.STATUS_ACCEPTED, constants.STATUS_REJECTED],
-    defaultValue: constants.STATUS_PENDING
-  },
-  turn: {
-    type: Number,
-    allowedValues: [constants.TURN_SENDER, constants.TURN_RECEIVER],
-    defaultValue: constants.TURN_RECEIVER // defender goes first
-  },
-  // timeLeft: { // time left for turn
+  // sender: {
+  //   type: String
+  // },
+  // senderId: {
+  //   type: String
+  // },
+  // receiver: {
+  //   type: String
+  // },
+  // receiverId: {
+  //   type: String
+  // },
+  // status: {
   //   type: Number,
-  //   decimal: true
-  // }
+  //   allowedValues: [constants.STATUS_PENDING, constants.STATUS_ACCEPTED, constants.STATUS_REJECTED],
+  //   defaultValue: constants.STATUS_PENDING
+  // },
+  turnId: {
+    type: String // id of player whose turn it is
+  },
+  turnStartTime: { // time the turn was started
+    type: Number,
+    decimal: true
+  }
 });
 
 var Battles = KOL.Battles = new Mongo.Collection('battles');

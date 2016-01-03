@@ -82,8 +82,6 @@ KOL.World = (function () {
   };
 
   World.prototype.keydown = function onWorldKeydown (event, lastUpdate) {
-    event.preventDefault();
-
     var player = this._player;
     var key = event.keyCode || event.which;
     var newDir = this._keyMap[key];

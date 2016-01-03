@@ -97,31 +97,26 @@ KOL.Battle = (function () {
     }); 
   };
 
-  Battle.prototype.validCommand = function validCommand (command) {
-    //TODO
-    return true;
+  Battle.prototype.keydown = function onBattleKeydown (event, lastUpdate) {
+    // only process keydown when it is our turn
+    if (this._state === constants.TURN_SELF) {
+      this._battleRenderer.keydown(event, lastUpdate);
+    }
   };
 
-  Battle.prototype.parseCommand = function parseCommand (command) {
-    if (!this.validCommand(command)) {
-      this.output({
-        type: constants.OUTPUT_SYSTEM,
-        message: 'Invalid command!'
-      });
-      return;
-    }
+  Battle.prototype.useMove = function useMove (move) {
 
-    this._ownQueue.push({
-      player: this._player
-      command: command
-    });
+  };
 
-    // Meteor.call('pushCommand', command);
+  Battle.prototype.useItem = function useItem (item) {
+
+  };
+
+  Battle.prototype.runAway = function runAway () {
+
   };
 
   Battle.prototype.switchPokemon = function switchPokemon (player, index) {
-    this._status = constants.STATE_SWITCH_POKEMON;
-
     var pokemon;
     var switchOwn = player._id === this._player._id;
     if (switchOwn) {
@@ -139,69 +134,23 @@ KOL.Battle = (function () {
         this._enemyDep.changed();
       }
     } else {
-      this.output('error', 'unable to switch pokemon');
+      this.output({
+        type: constants.OUTPUT_SYSTEM,
+        message: pokemon[index].name() + ' has already fainted!'
+      });
     }
   };
 
-  Battle.prototype.execCommand = function executeCommand (options, local) {
-    this._executing = true;
-
-    this.output({
-      type: constants.OUTPUT_COMMAND,
-      player: options.player,
-      message: options.command
-    });
-    console.log('is local: ', local);
-
-    //TODO switching pokemon & animating
-    //TODO using potions
-    //TODO use pokeballs
-
-    //TODO critical hit, evasion, status effects, etc.
-    //TODO animations
-    //TODO damage calculations, fainting, pokemon switching/losing
-
-    // if (local) { // propagate to global
-    //   Meteor.call('execCommand', command);
-    // }
-  };
-
-  Battle.prototype.moveDone = function moveComplete () {
-    this._executing = false;
-  };
-
-  Battle.prototype.moveTime = function getMoveTime (move, pokemon) {
-    if (!move || pokemon.isUnableToMove()) {
-      return -1;
-    }
-    var base = constants.MAX_POKEMON_BASE_SPEED / pokemon.speed;
-    return Math.round(base * constants.BATTLE_SPEED_WEIGHT + move.startTime);
-  };
-
-  Battle.prototype.update = function updateBattle (event, lastUpdate) {
-    // re-render ui elements (e.g health, statuses, etc)
+  Battle.prototype.update = function updateBattle (dt, now) {
+    // re-render ui elements (e.g health, statuses, bag screen, etc)
     this._battleRenderer.update();
-
-    if (!this._executing) {
-      this.processQueue();
-    }
-  };
-
-  // checks that the move has not yet been encountered before
-  Battle.prototype.moveIsNew = function moveIsNew (move) {
-    var ownNewest = _.last(this._ownQueue);
-    var enemyNewest = _.last(this._enemyQueue);
-    return (!ownNewest || move.startTime > ownNewest.startTime) &&
-           (!enemyNewest || move.startTime > enemyNewest.startTime);
   };
 
   // run this method reactively with an autorun instead of in update.
   // this way we only fetch updates when we need to (i.e there's a new move)
-  Battle.prototype.fetchQueue = function fetchQueue () {
+  Battle.prototype.fetch = function fetch () {
     // if battling a trainer, update local queue with enemy commands
-    this._battle = Battles.findOne(this._battle, {
-      fields: { 'moveQueue': 1 } // only listen on changes to moveQueue
-    });
+    this._battle = Battles.findOne(this._battle);
 
     _.each(this._battle.moveQueue, function (move) {
       if (!this.moveIsNew(move)) return;
