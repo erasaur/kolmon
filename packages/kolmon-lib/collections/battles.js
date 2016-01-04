@@ -12,6 +12,44 @@ schemas.Battle = new SimpleSchema({
   createdAt: {
     type: String
   },
+  playerIds: {
+    type: [String] // players involved in battle
+  },
+  pokemon: {
+    type: Object,
+    optional: true
+
+    // example:
+    // pokemon: {
+    //   playerId: [{
+    //     id: 'pokemonId',
+    //     active: true
+    //   }],
+    //
+    //   playerId: [{
+    //     id: 'pokemonId',
+    //     active: true
+    //   }]
+    // }
+  },
+  moves: {
+    type: [Object],
+    maxCount: 2, // only allow 2 moves for now
+    optional: true
+
+    // example:
+    // moves: [{
+    //   playerId: 'a',
+    //   pokemonId: '123',
+    //   index: 0,              // index of move in moveset
+    //   completeIds: [ 'b' ]   // id of players that have completed this move
+    // }, {
+    //   playerId: 'b',
+    //   pokemonId: '321',
+    //   index: 0,
+    //   completeIds: [ 'a' ]   // complete if diff(playerIds, completeIds) == 0
+    // }]
+  },
   // sender: {
   //   type: String
   // },
@@ -29,12 +67,9 @@ schemas.Battle = new SimpleSchema({
   //   allowedValues: [constants.STATUS_PENDING, constants.STATUS_ACCEPTED, constants.STATUS_REJECTED],
   //   defaultValue: constants.STATUS_PENDING
   // },
-  turnId: {
-    type: String // id of player whose turn it is
-  },
-  turnStartTime: { // time the turn was started
+  state: {
     type: Number,
-    decimal: true
+    defaultValue: constants.BATTLE_STATE_PENDING
   }
 });
 

@@ -60,9 +60,9 @@ schemas.Player = new SimpleSchema({
     type: Boolean,
     defaultValue: false
   },
-  inBattle: {
-    type: Boolean,
-    defaultValue: false
+  battleId: {
+    type: String,
+    optional: true
   },
   startTime: { // initiation time of last move
     type: Date,

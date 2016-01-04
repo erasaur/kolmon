@@ -44,10 +44,6 @@ KOL.Battle = (function () {
     this._ownDep.changed();
     this._enemyDep.changed();
 
-    // queue of commands
-    this._ownQueue = [];
-    this._enemyQueue = [];
-
     this.render();
   };
 
@@ -98,14 +94,51 @@ KOL.Battle = (function () {
   };
 
   Battle.prototype.keydown = function onBattleKeydown (event, lastUpdate) {
-    // only process keydown when it is our turn
-    if (this._state === constants.TURN_SELF) {
-      this._battleRenderer.keydown(event, lastUpdate);
+    // move cursor icon, render different menu, etc
+    //TODO disable certain inputs until battle state is pending
+  };
+
+  // stage a move to be executed when both players have staged a move.
+  // allows us to calculate pokemon/move speeds to determine which goes first.
+  Battle.prototype.stageMove = function stageMove (options) {
+    if (this._state === constants.BATTLE_STATE_PENDING) {
+      // playerId, pokemonId, (move) index
+      Meteor.call('stageMove', options);
     }
   };
 
-  Battle.prototype.useMove = function useMove (move) {
+  Battle.prototype.execMoves = function execMoves () {
+    this._battle = Battles.findOne(this._battle._id);
 
+    // if both moves have already been executed, do nothing
+    // if both moves have not been executed, process both in order, executing the 'faster' one first
+    // otherwise, find the move that has yet to be executed and execute that
+    //TODO account for status effects, etc.
+  };
+
+  Battle.prototype.useMove = function useMove (move, local) {
+    if (this._state !== constants.BATTLE_STATE_EXECUTING) return;
+
+    var self = this;
+    var pokemon;
+
+    if (move.playerId === self._player._id) {
+      pokemon = self._ownCurrent;
+    } else {
+      pokemon = self._enemyCurrent;
+    }
+
+    //TODO run damage calculations
+    
+    // run animations, change health bars, etc.
+    self._battleRenderer.useMove(move, function () {
+      // update move to acknowledge that we have executed it
+      if (local) {
+        Meteor.call('moveComplete', move.playerId);
+      }
+      // run other move now, if we haven't already
+      self.execMoves();
+    });
   };
 
   Battle.prototype.useItem = function useItem (item) {
@@ -141,64 +174,39 @@ KOL.Battle = (function () {
     }
   };
 
-  Battle.prototype.update = function updateBattle (dt, now) {
-    // re-render ui elements (e.g health, statuses, bag screen, etc)
-    this._battleRenderer.update();
-  };
+  // Battle.prototype.update = function updateBattle (dt, now) {
+  //   // re-render ui elements (e.g health, statuses, bag screen, etc)
+  //   this._battleRenderer.update();
+  // };
 
   // run this method reactively with an autorun instead of in update.
-  // this way we only fetch updates when we need to (i.e there's a new move)
-  Battle.prototype.fetch = function fetch () {
-    // if battling a trainer, update local queue with enemy commands
-    this._battle = Battles.findOne(this._battle);
-
-    _.each(this._battle.moveQueue, function (move) {
-      if (!this.moveIsNew(move)) return;
-
-      if (move.playerId === this._player._id) {
-        this._ownQueue.push(move);
-      } else {
-        this._enemyQueue.push(move);
-      }
+  // this way we only fetch updates when we need to (i.e changing state)
+  Battle.prototype.fetchState = function fetchState () {
+    this._state = Battles.findOne(this._battle._id, {
+      fields: { 'state': 1 } // listen for changes on state only
     });
+
+    switch (this._state) {
+      case constants.BATTLE_STATE_EXECUTING:
+        this.execMoves();
+        break;
+      // case constants.BATTLE_STATE_PENDING:
+      //   break;
+    }
   };
 
-  Battle.prototype.processQueue = function processQueue () {
-    if (this._executing || // already executing a command
-       !this._ownQueue.length && !this._enemyQueue.length) { // none pending
-      return;
-    }
+  Battle.prototype.fetchPokemon = function fetchPokemon () {
+    var poke = this._battle.pokemon;
+    var ownIds = _.pluck(poke[this._player._id], 'id');
+    var enemyIds = _.pluck(poke[this._enemy._id], 'id');
+    var pokemon = Pokemon.find({ '_id': { $in: _.union(ownIds, enemyIds) } });
 
-    // execute the oldest command between the two queues
-    var ownOldest = this._ownQueue[0];
-    var enemyOldest = this._enemyQueue[0];
+    // call fetchUpdate on each pokemon
+  };
 
-    var ownTime = this.moveTime(ownOldest, this._ownCurrent);
-    var enemyTime = this.moveTime(enemyOldest, this._enemyCurrent);
-    var chooseOwn; // boolean to decide whether we should process our own move
-
-    if (ownTime !== enemyTime) {
-      if (ownTime < 0) { // own pokemon is unable to move (e.g paralyzed)
-        chooseOwn = false;
-      } else if (enemyTime < 0) { // enemy is unable to move
-        chooseOwn = true;
-      } else {
-        chooseOwn = ownTime < enemyTime; // choose older one
-      }
-    } 
-    // handle unlikely case that both move times are equal
-    else {
-      if (ownTime < 0) return; // both own and enemy are unable to move
-      chooseOwn = Math.random() < 0.5; // choose randomly
-    }
-
-    if (chooseOwn) {
-      this._ownQueue.shift();
-      this.execCommand(ownOldest, true);
-    } else {
-      this._enemyQueue.shift();
-      this.execCommand(enemyOldest, false);
-    }
+  Battle.prototype.fetch = function fetchBattle () {
+    this._battle = Battles.findOne(this._battle._id);
+    // update current pokemon
   };
 
   return Battle;
