@@ -159,9 +159,9 @@ KOL.Game = (function () {
       case constants.STATE_MAP:
         self._world.update(dt, now);
         break;
-      case constants.STATE_BATTLE:
-        self._battle.update(dt, now);
-        break;
+      // case constants.STATE_BATTLE:
+      //   self._battle.update(dt, now);
+      //   break;
     }
   };
 

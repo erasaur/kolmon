@@ -99,10 +99,10 @@ KOL.World = (function () {
     else if (!this._map.getWall(newX, newY)) {
       player.setDirection(newDir, lastUpdate);
 
-      var wild = this._map.getWild(newX, newY);
-      if (wild) {
-        this.encounterWild(wild);
-      }
+      // var wild = this._map.getWild(newX, newY);
+      // if (wild) {
+      //   this.encounterWild(wild);
+      // }
     }
   };
 
@@ -115,18 +115,19 @@ KOL.World = (function () {
       });
 
       self._game.fetchPokemon(encounter.id, function () {
-        self._game.loadBattle({
-
-        });
         self._game.changeState({
           state: constants.STATE_BATTLE,
           transition: constants.TRANSITION_FADE_OUT,
           onfinish: function () {
-
+            self._game.init({}); //TODO
           }
         });
       });
     }
+  };
+
+  World.prototype.updated = function worldUpdated () {
+    this._updated.changed();
   };
 
   World.prototype.render = function renderWorld () {

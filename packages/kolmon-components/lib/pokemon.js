@@ -7,9 +7,10 @@ KOL.Pokemon = (function () {
 
   };
 
-  // run this with autorun
-  Pokemon.prototype.fetchUpdates = function updatePokemon () {
-
+  // automatically called by battle whenever appropriate.
+  // updates the local object with newly-published data from db.
+  Pokemon.prototype.update = function updatePokemon () {
+    _.extend(this, Pokemon.findOne(this._id));
   };
 
   Pokemon.prototype.isUnableToMove = function getIsUnableToMove () {

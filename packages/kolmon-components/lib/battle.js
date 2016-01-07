@@ -20,6 +20,8 @@ KOL.Battle = (function () {
   };
 
   Battle.prototype.init = function initBattle (options) {
+    var c = constants;
+
     // use local collection to store output
     this._outputCollection = new Mongo.Collection('battle-output');
 
@@ -29,20 +31,41 @@ KOL.Battle = (function () {
       return new Pokemon(id);
     });
 
-    if (options.type === constants.BATTLE_TRAINER) {
-      this._enemy = options.enemy;
-      this._enemyPokemon = _.map(this._enemy.teamIds, function (id) {
-        return new Pokemon(id);
-      });
-    } else {
-      this._enemyPokemon = new Pokemon(options.enemy);
-    }
+    this._enemy = options.enemy;
+    this._enemyPokemon = _.map(this._enemy.teamIds, function (id) {
+      return new Pokemon(id);
+    });
 
     this._ownCurrent = this._ownPokemon[0];
     this._enemyCurrent = this._enemyPokemon[0];
 
     this._ownDep.changed();
     this._enemyDep.changed();
+
+    // rendering config -------------------------------
+    
+    this._cursor = { // keep track of cursor state
+      main: c.BATTLE_CURSOR_FIGHT,
+      team: {
+        index: 0, // current index within the list of pokemon
+        length: 6
+      },
+      bag: {
+        tab: c.BAG_TAB_ITEMS, // current tab within the bag
+        index: 0 // current index within the tab
+      },
+      prompt: {
+        index: 0,
+        length: 0
+      }
+    };
+    this._view = c.BATTLE_VIEW_MAIN;
+
+    this._cursorMap = {};
+    this._cursorMap[c.BATTLE_CURSOR_BAG][c.KEY_LEFT] = c.BATTLE_CURSOR_FIGHT;
+    this._cursorMap[c.BATTLE_CURSOR_RUN][c.KEY_LEFT] = c.BATTLE_CURSOR_TEAM;
+    this._cursorMap[c.BATTLE_CURSOR_FIGHT][c.KEY_RIGHT] = c.BATTLE_CURSOR_BAG;
+    this._cursorMap[c.BATTLE_CURSOR_TEAM][c.KEY_RIGHT] = c.BATTLE_CURSOR_RUN;
 
     this.render();
   };
@@ -93,9 +116,106 @@ KOL.Battle = (function () {
     }); 
   };
 
-  Battle.prototype.keydown = function onBattleKeydown (event, lastUpdate) {
-    // move cursor icon, render different menu, etc
-    //TODO disable certain inputs until battle state is pending
+  Battle.prototype.keydownMain = function onBattleKeydownMain (key) {
+    if (key == constants.KEY_ENTER) {
+      switch (this._cursor.main) {
+        case constants.BATTLE_CURSOR_FIGHT:
+          break;
+        case constants.BATTLE_CURSOR_BAG:
+          break;
+        case constants.BATTLE_CURSOR_TEAM:
+          break;
+        case constants.BATTLE_CURSOR_RUN:
+          break;
+      }
+    } else {
+      var cursor = this._cursorMap[this._cursor.main][key];
+      if (cursor) {
+        this._cursor.main = cursor;
+      }
+    }
+  };
+
+  Battle.prototype.keydownTeam = function onBattleKeydownTeam (key) {
+    if (key == constants.KEY_ENTER) {
+      // render text: 'switch into battle?'
+      // display YES/NO prompt 
+      // register prompt callback
+    } else {
+      var current = this._cursor.team.index;
+      var len = this._cursor.team.length;
+      var newIndex;
+
+      switch (key) {
+        case constants.KEY_LEFT:
+          newIndex = Math.max(current - len/2, 0);
+          break;
+        case constants.KEY_RIGHT:
+          newIndex = Math.min(current + len/2, len-1);
+          break;
+      }
+      this._cursor.team.index = newIndex; 
+    }
+  };
+
+  Battle.prototype.keydownBag = function onBattleKeydownBag (key) {
+    switch (key) {
+      case constants.KEY_ENTER:
+        break;
+      case constants.KEY_LEFT:
+         
+        break;
+    }
+  };
+
+  Battle.prototype.keydownPrompt = function onBattleKeydownPrompt (event) {
+    var current = this._cursor.prompt.index;
+    var len = this._cursor.prompt.length;
+    var newIndex;
+
+    switch (key) {
+      case constants.KEY_ENTER:
+        break;
+      case constants.KEY_UP:
+        newIndex = Math.max(current - 1, 0); 
+        break;
+      case constants.KEY_DOWN:
+        newIndex = Math.min(current + 1, len-1);
+        break;
+    }
+    this._cursor.prompt.index = newIndex;
+  };
+
+  Battle.prototype.prompt = function prompt (options) {
+    this._cursor.prompt.index = 0; // reset prompt index
+    this._battleRenderer.renderPrompt(_.pluck(options, 'text'));
+    this._view = constants.BATTLE_VIEW_PROMPT;
+  };
+
+  Battle.prototype.keydown = function onBattleKeydown (event) {
+    var key = event.keyCode || event.which;
+
+    // disable inputs if battle state not pending
+    if (this._state !== constants.BATTLE_STATE_PENDING) return;
+
+    // this._keyMap = {
+    //   [constants.BATTLE_VIEW_MAIN]: this.keydownMain,
+    //   [constants.BATTLE_VIEW_TEAM]: this.keydownTeam,
+    //   [constants.BATTLE_VIEW_BAG]: this.keydownBag,
+    //   [constants.BATTLE_VIEW_PROMPT]: this.keydownPrompt
+    // };
+    // this._keyMap[this._view](key);
+
+    switch (this._view) {
+      case constants.BATTLE_VIEW_MAIN:
+        this.keydownMain(key); break;
+      case constants.BATTLE_VIEW_TEAM:
+        this.keydownTeam(key); break;
+      case constants.BATTLE_VIEW_BAG:
+        this.keydownBag(key); break;
+      case constants.BATTLE_VIEW_PROMPT:
+        this.keydownPrompt(key); break;
+    }
   };
 
   // stage a move to be executed when both players have staged a move.
@@ -114,6 +234,8 @@ KOL.Battle = (function () {
     // if both moves have not been executed, process both in order, executing the 'faster' one first
     // otherwise, find the move that has yet to be executed and execute that
     //TODO account for status effects, etc.
+
+    //TODO call update on the pokemon affected by each move
   };
 
   Battle.prototype.useMove = function useMove (move, local) {

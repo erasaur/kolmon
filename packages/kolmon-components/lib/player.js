@@ -268,7 +268,7 @@ KOL.Player = (function () {
 
     // if it is a local change, propagate to global
     if (local) {
-      this._world._updated.changed();
+      this._world.updated();
       Meteor.call('setPosition', this.x, this.y);
     }
   };
