@@ -63,6 +63,7 @@ KOL.constants = {
   BATTLE_VIEW_MAIN: 271, // main battle view
   BATTLE_VIEW_TEAM: 272, // team list view
   BATTLE_VIEW_BAG: 273, // bag view
+  BATTLE_VIEW_PROMPT: 274,
 
   OUTPUT_COMMAND: 301,
   OUTPUT_USER: 302,
