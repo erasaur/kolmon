@@ -465,3 +465,5 @@ function drawRightArrow (context, x, y, color) {
   //TODO: animate the arrow
 }
 
+
+

@@ -346,7 +346,7 @@ KOL.BattleRenderer = (function () {
     this._fgContext.closePath();
     this._fgContext.fill();
 
-    //TODO: animate the arrow
+    // TODO: animate the arrow
   };
 
 })();
