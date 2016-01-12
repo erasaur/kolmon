@@ -1,5 +1,4 @@
 KOL.constants = {
-
   // config -------------------------------------------
 
   CANVAS_WIDTH: 384,
@@ -31,6 +30,9 @@ KOL.constants = {
   },
 
   EPSILON: 1e-9,
+
+  MAX_TEAM_SIZE: 6,
+  NUM_BAG_TABS: 2, // number of tabs
 
   // constants ----------------------------------------
 
@@ -70,11 +72,6 @@ KOL.constants = {
   OUTPUT_SYSTEM: 303,
 
   // battle rendering
-  BATTLE_CURSOR_FIGHT: 0,
-  BATTLE_CURSOR_BAG: 1,
-  BATTLE_CURSOR_POKEMON: 2,
-  BATTLE_CURSOR_RUN: 3,
   BAG_TAB_ITEMS: 0,
   BAG_TAB_POKE_BALLS: 1
-
 };
