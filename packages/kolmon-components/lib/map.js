@@ -83,8 +83,8 @@ KOL.Map = (function () {
     return _.find(rects, function (rect) {
       return (x < rect.x + rect.w) &&
              (x >= rect.x) &&
-             (y < rect.y + rect.h - constants.PX_PER_CELL) &&
-             (y >= rect.y - constants.PX_PER_CELL);
+             (y < rect.y + rect.h) &&
+             (y >= rect.y);
     });
   };
 
