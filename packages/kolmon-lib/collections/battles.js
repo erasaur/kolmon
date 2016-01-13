@@ -40,13 +40,13 @@ schemas.Battle = new SimpleSchema({
     // example:
     // stage: [{
     //   playerId: 'a',
-    //   type: constants.BATTLE_STAGE_MOVE,
+    //   type: constants.BATTLE_COMMAND_MOVE,
     //   pokemonId: '123',
     //   index: 0,              // index of move in moveset
     //   completeIds: [ 'b' ]   // id of players that have completed this move
     // }, {
     //   playerId: 'b',
-    //   type: constants.BATTLE_STAGE_SWITCH,
+    //   type: constants.BATTLE_COMMAND_SWITCH,
     //   pokemonId: '321',
     //   index: 0,
     //   completeIds: [ 'a' ]   // complete if diff(playerIds, completeIds) == 0

@@ -180,7 +180,7 @@ KOL.Battle = (function () {
         options: [{ 
           text: 'YES', callback: function () { // switch selected poke in
             self.stageCommand({
-              type: c.BATTLE_STAGE_SWITCH,
+              type: c.BATTLE_COMMAND_SWITCH,
               playerId: self._player._id,
               pokemonId: self._ownPokemon[self._cursor.team.index]
             });
@@ -278,6 +278,19 @@ KOL.Battle = (function () {
     // TODO lookup priority of command based on priority table
     // if both players are using same move, and priority for move is
     // the same, then calculate speed of respective pokemon
+    
+    if (command.type === c.BATTLE_COMMAND_SWITCH) {
+      return c.PRIORITY['switch'];
+    }
+    else if (command.type === c.BATTLE_COMMAND_RUN) {
+      return c.PRIORITY['run'];
+    }
+    else if (command.type === c.BATTLE_COMMAND_ITEM) {
+      return c.PRIORITY['item'];
+    }
+    else { // is a move
+      return c.PRIORITY['moves'][command.moveId];
+    }
   };
 
   Battle.prototype.execMoves = function execMoves () {
@@ -287,15 +300,22 @@ KOL.Battle = (function () {
     // if both moves have not been executed, process both in order, executing 
     // the one with higher priority first.
     // otherwise, find the move that has yet to be executed and execute that
-    var playerIds = [this._player._id, this._enemy._id];
-    var unprocessed = _.filter(this._battle.moves, function (move) {
-      return _.without(playerIds, move.completeIds).length > 0;
+    var unprocessed = _.filter(this._battle.stage, function (move) {
+      return move.completeIds.length < 2;
     });
 
     if (unprocessed.length) {
       _.sort(unprocessed, function (move) {
-        return self.movePriority(move);
+        move.priority = self.commandPriority(move);
+        return move.priority;
       });
+
+      var first = unprocessed[0];
+      var second = unprocessed[1];
+
+      if (second && first.priority === second.priority) {
+        // choose first based on speed    
+      }
     }
 
     //TODO call method to update the pokemon affected by each move

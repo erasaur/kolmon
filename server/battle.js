@@ -4,38 +4,57 @@ var Players = KOL.Players;
 var Pokemon = KOL.Pokemon;
 
 var stageSwitch = function stageSwitch (user, player, battle, options) {
-  if (!_.contains(battle.pokemonIds, options.pokemonId)) {
-    throw new Meteor.Error('error', 'Pokemon is not in battle');
+  if (!_.contains(user.pokemonIds, options.pokemonId)) {
+    throw new Meteor.Error('error', 'Invalid pokemon selected!');
   }
 
   var pokemon = Pokemon.findOne(options.pokemonId);
-  if (pokemon.health
+  if (!pokemon.stats.health) {
+    throw new Meteor.Error('error', 'Pokemon has already fainted!');
+  }
+
+  return { pokemonId: options.pokemonId };
+};
+
+var stageItem = function stageItem (user, player, battle, options) {
+  var bag = Bags.findOne(user.bagId);
+  var item = _.find(bag.items, function (item) {
+    return item.id === options.itemId && item.count > 0;
+  });
+  if (!item) {
+    throw new Meteor.Error('error', 'Invalid item selected!');
+  }
+
+  return { itemId: options.itemId };
 };
 
 var stageMove = function stageMove (user, player, battle, options) {
-  if (!(0 <= options.moveIndex && options.moveIndex < 4)) {
-    throw new Meteor.Error('error', 'Invalid move selected');
-  }
-  if (!_.contains(battle.pokemonIds, options.pokemonId)) {
-    throw new Meteor.Error('error', 'Pokemon is not in battle');
+  var moveIndex = options.moveIndex;
+  var pokemonId = options.pokemonId;
+
+  if (!(0 <= moveIndex && moveIndex < 4)) {
+    throw new Meteor.Error('error', 'Invalid move selected!');
   }
 
-  var pokemon = Pokemon.findOne(options.pokemonId);
+  var team = battle.pokemon[player._id];
+  var current = _.find(team, function (p) { return p.active; });
+  if (!current ||
+      current.id !== pokemonId ||
+      !_.contains(user.pokemonIds, pokemonId)) {
+    throw new Meteor.Error('error', 'Invalid pokemon selected!');
+  }
+
+  var pokemon = Pokemon.findOne(pokemonId);
   var index = options.moveIndex;
 
-  if (pokemon.userId !== user._id || !pokemon.moves[index]) {
-    throw new Meteor.Error('error', 'Invalid move or pokemon');
+  if (!pokemon.moves[index]) {
+    throw new Meteor.Error('error', 'Invalid move selected!');
   }
 
-  var move = {
-    playerId: options.playerId,
-    type: options.type,
+  return {
     pokemonId: options.pokemonId,
-    index: options.moveIndex,
-    completeIds: []
+    moveId: pokemon.moves[index].id
   };
-
-  return { $push: { 'stage': move } };
 };
 
 Meteor.methods({
@@ -66,17 +85,24 @@ Meteor.methods({
 
     // stage the command ------------------------------
 
-    var modifier;
-    if (options.type === c.BATTLE_STAGE_SWITCH) {
-      modifier = stageSwitch(user, player, battle, options);
+    var command;
+    if (options.type === c.BATTLE_COMMAND_SWITCH) {
+      command = stageSwitch(user, player, battle, options);
     }
-    else if (options.type === c.BATTLE_STAGE_ITEM) {
-      modifier = stageItem(user, player, battle, options);
+    else if (options.type === c.BATTLE_COMMAND_ITEM) {
+      command = stageItem(user, player, battle, options);
     }
-    else if (options.type === c.BATTLE_STAGE_MOVE) {
-      modifier = stageMove(user, player, battle, options);
+    else if (options.type === c.BATTLE_COMMAND_MOVE) {
+      command = stageMove(user, player, battle, options);
     }
 
+    _.defaults(command, {
+      playerId: player._id,
+      type: options.type,
+      completeIds: []
+    });
+
+    var modifier = { $push: { 'stage': command } };
     // if other player has already staged a move, set state to executing
     if (battle.stage.length) {
       modifier.$set = { 'state': constants.BATTLE_STATE_EXECUTING };
@@ -122,7 +148,9 @@ Meteor.methods({
         $set: { 'state': constants.BATTLE_STATE_PENDING, 'moves': [] }
       };
     } else {
-      modifier = { $set: { 'moves': battle.moves } };
+      modifier = {
+        $set: { 'moves': battle.moves }
+      };
     }
     Battles.update(battle._id, modifier);
   },

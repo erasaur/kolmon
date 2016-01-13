@@ -8,25 +8,26 @@ schemas.Bag = new SimpleSchema({
   userId: {
     type: String
   },
-  pokedollars: {
+  money: {
     type: Number,
+    min: 0,
     defaultValue: 0
   },
   items: {
-    type: [String],
+    type: [Object],
     defaultValue: []
+
+    // items: [
+    //   { id: 'abc', count: 1 }
+    // ]
   },
   balls: {
-    type: [String],
-    defaultValue: []
-  },
-  keyItems: {
-    type: [String],
-    defaultValue: []
-  },
-  machines: { // tm/hm
-    type: [String],
-    defaultValue: []
+    type: [Object],
+    defaultValue: [],
+
+    // items: [
+    //   { id: 'abc', count: 1 }
+    // ]
   }
 });
 
