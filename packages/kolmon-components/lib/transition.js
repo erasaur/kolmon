@@ -12,7 +12,7 @@ KOL.Transition = (function () {
   Transition.prototype.load = function loadTransition (options) {
     var self = this;
 
-    self._type = constants.TRANSITION_FADE_OUT;
+    self._type = options.transition || constants.TRANSITION_FADE_OUT;
     self._renderers = options.renderers;
     self._running = false;
     self._numFrames = constants.TRANSITION_NUM_FRAMES;

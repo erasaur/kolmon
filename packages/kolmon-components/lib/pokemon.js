@@ -15,9 +15,13 @@ KOL.Pokemon = (function () {
     // check health/status effects
   };
 
+  Pokemon.prototype.speed = function getMoveTime () {
+    // if unableToMove, then return some negative value.
+  };
+
   Pokemon.prototype.health = function getHealth () {
     this._dep.depend();
-    return this.health;
+    return this.stats.health;
   };
 
   Pokemon.prototype.fetch = function fetchPokemon () {

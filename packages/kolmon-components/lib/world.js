@@ -116,11 +116,10 @@ KOL.World = (function () {
       self._game.fetchPokemon(encounter.id, function () {
         self._game.changeState({
           state: constants.STATE_BATTLE,
-          transition: constants.TRANSITION_FADE_OUT,
-          onfinish: function () {
-            self._game.init({}); //TODO
-          }
+          transition: constants.TRANSITION_FADE_OUT
         });
+        // TODO
+        // self._game.initBattle();
       });
     }
   };

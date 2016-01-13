@@ -37,6 +37,7 @@ KOL.constants = {
   // constants ----------------------------------------
 
   KEY_ENTER: 13,
+  KEY_ESCAPE: 27,
   KEY_LEFT: 37,
   KEY_UP: 38,
   KEY_RIGHT: 39,
@@ -66,6 +67,10 @@ KOL.constants = {
   BATTLE_VIEW_TEAM: 272, // team list view
   BATTLE_VIEW_BAG: 273, // bag view
   BATTLE_VIEW_PROMPT: 274,
+  BATTLE_STAGE_MOVE: 281,
+  BATTLE_STAGE_SWITCH: 282,
+  BATTLE_STAGE_ITEM: 283,
+  BATTLE_STAGE_RUN: 284,
 
   OUTPUT_COMMAND: 301,
   OUTPUT_USER: 302,

@@ -31,9 +31,18 @@ schemas.Pokemon = new SimpleSchema({
     type: Number,
     min: 1
   },
-  hp: {
-    type: Number,
-    min: 0
+  stats: {
+    type: Object,
+    blackbox: true
+
+    // stats: {
+    //   health: 100,
+    //   speed: 150,
+    //   attack: 200,
+    //   spAttack: 230,
+    //   defense: 150,
+    //   spDefense: 200
+    // }
   },
   moves: { // XXX limit what moves based on poke
     type: [schemas.Move]

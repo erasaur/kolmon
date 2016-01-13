@@ -17,9 +17,11 @@ KOL.Battle = (function () {
     this._battleRenderer = new BattleRenderer({
       renderers: this._renderers
     });
+    this._game = options.game;
   };
 
   Battle.prototype.init = function initBattle (options) {
+    // reset current computations
     this._computations = {};
 
     // use local collection to store output
@@ -27,13 +29,16 @@ KOL.Battle = (function () {
 
     this._battle = options.battle;
     this._player = options.player;
-    this._ownPokemon = _.map(this._player.teamIds, function (id) {
-      return new Pokemon(id);
-    });
-
     this._enemy = options.enemy;
-    this._enemyPokemon = _.map(this._enemy.teamIds, function (id) {
-      return new Pokemon(id);
+
+    // setup pokemon ----------------------------------
+    
+    var pokemon = this._battle.pokemon;
+    this._ownPokemon = _.map(pokemon[this._player._id], function (pokemon) {
+      return new Pokemon(pokemon.id);
+    });
+    this._enemyPokemon = _.map(pokemon[this._enemy._id], function (pokemon) {
+      return new Pokemon(pokemon.id);
     });
 
     this._ownCurrent = this._ownPokemon[0];
@@ -117,6 +122,11 @@ KOL.Battle = (function () {
     });
   };
 
+  Battle.prototype.switchView = function switchView (view) {
+    this._prevView = this._view; // store prev view for going back, etc.
+    this._view = view;
+  };
+
   Battle.prototype.moveCursor = function moveCursor (key, cursor) {
     switch (key) {
       case c.KEY_UP:
@@ -169,10 +179,22 @@ KOL.Battle = (function () {
         text: 'Switch into battle?',
         options: [{ 
           text: 'YES', callback: function () { // switch selected poke in
-            self.switchPokemon(self._player, self._cursor.team.index);
+            self.stageCommand({
+              type: c.BATTLE_STAGE_SWITCH,
+              playerId: self._player._id,
+              pokemonId: self._ownPokemon[self._cursor.team.index]
+            });
+            self.switchView(self._prevView); // exit prompt view
           }
-        }, { text: 'NO' }]
+        }, { 
+          text: 'NO', callback: function () {
+            self.switchView(self._prevView); // exit prompt view
+          }
+        }]
       });
+    }
+    else if (key == c.KEY_ESCAPE) { // analogous to "b" button
+      this.switchView(c.BATTLE_VIEW_MAIN);
     }
   };
 
@@ -181,6 +203,9 @@ KOL.Battle = (function () {
       // get the current item within the current tab
       // display specific item view for that item
       this.renderItem(this._bag[this._cursor.bag.index]);
+    }
+    else if (key == c.KEY_ESCAPE) { // analogous to "b" button
+      this.switchView(c.BATTLE_VIEW_MAIN);
     }
     // move up and down within the current tab
     else if (_.contains([c.KEY_UP, c.KEY_DOWN], key)) {
@@ -193,9 +218,10 @@ KOL.Battle = (function () {
   };
 
   Battle.prototype.keydownPrompt = function onBattleKeydownPrompt (event) {
-    if (key === c.KEY_ENTER) {
+    if (key === c.KEY_ENTER || key === c.KEY_ESCAPE) {
       // run callback for prompt
       this._prompt[this._cursor.prompt.index].callback();
+      this._prompt = null;
     } else if (_.contains([c.KEY_UP, c.KEY_DOWN], key)) {
       this.moveCursor(key, this._cursor.prompt); 
     }
@@ -214,36 +240,65 @@ KOL.Battle = (function () {
     // disable inputs if battle state not pending
     if (this._state !== c.BATTLE_STATE_PENDING) return;
 
-    switch (this._view) {
-      case c.BATTLE_VIEW_MAIN:
-        this.keydownMain(key); break;
-      case c.BATTLE_VIEW_TEAM:
-        this.keydownTeam(key); break;
-      case c.BATTLE_VIEW_BAG:
-        this.keydownBag(key); break;
-      case c.BATTLE_VIEW_PROMPT:
-        this.keydownPrompt(key); break;
+    // if game ended, any key returns the user to map
+    else if (this._state === c.BATTLE_STATE_END) {
+      this._game.endBattle();
+    }
+
+    // otherwise process keydown as usual
+    else {
+      switch (this._view) {
+        case c.BATTLE_VIEW_MAIN:
+          this.keydownMain(key); break;
+        case c.BATTLE_VIEW_TEAM:
+          this.keydownTeam(key); break;
+        case c.BATTLE_VIEW_BAG:
+          this.keydownBag(key); break;
+        case c.BATTLE_VIEW_PROMPT:
+          this.keydownPrompt(key); break;
+      }
     }
   };
 
-  // stage a move to be executed when both players have staged a move.
+  // battle methods -----------------------------------
+
+  // stage a move to be executed once both players have staged a move.
   // allows us to calculate pokemon/move speeds to determine which goes first.
-  Battle.prototype.stageMove = function stageMove (options) {
+  Battle.prototype.stageCommand = function stageCommand (options) {
     if (this._state === c.BATTLE_STATE_PENDING) {
-      // playerId, pokemonId, (move) index
-      Meteor.call('stageMove', options);
+      // playerId, type, pokemonId (if using a move or switching), moveIndex 
+      // (if using a move), itemId (if using an item)
+      Meteor.call('stageCommand', options);
     }
+  };
+
+  // return the adjusted `startTime` for a move, accounting for factors
+  // such as status effects, speed, etc.
+  Battle.prototype.commandPriority = function getCommandPriority (command) {
+    // TODO lookup priority of command based on priority table
+    // if both players are using same move, and priority for move is
+    // the same, then calculate speed of respective pokemon
   };
 
   Battle.prototype.execMoves = function execMoves () {
     this._battle = Battles.findOne(this._battle._id);
 
     // if both moves have already been executed, do nothing
-    // if both moves have not been executed, process both in order, executing the 'faster' one first
+    // if both moves have not been executed, process both in order, executing 
+    // the one with higher priority first.
     // otherwise, find the move that has yet to be executed and execute that
-    //TODO account for status effects, etc.
+    var playerIds = [this._player._id, this._enemy._id];
+    var unprocessed = _.filter(this._battle.moves, function (move) {
+      return _.without(playerIds, move.completeIds).length > 0;
+    });
 
-    //TODO call update on the pokemon affected by each move
+    if (unprocessed.length) {
+      _.sort(unprocessed, function (move) {
+        return self.movePriority(move);
+      });
+    }
+
+    //TODO call method to update the pokemon affected by each move
   };
 
   Battle.prototype.useMove = function useMove (move, local) {
@@ -261,7 +316,7 @@ KOL.Battle = (function () {
     //TODO run damage calculations
     
     // run animations, change health bars, etc.
-    self._battleRenderer.useMove(move, function () {
+    self._battleRenderer.renderMove(move, function () {
       // update move to acknowledge that we have executed it
       if (local) {
         Meteor.call('moveComplete', move.playerId);
@@ -272,35 +327,79 @@ KOL.Battle = (function () {
   };
 
   Battle.prototype.useItem = function useItem (item) {
-
+    this.renderText('Sorry, items are pretty much unusable right now.');
   };
 
   Battle.prototype.runFromBattle = function runFromBattle () {
-    // TODO allow running from wild battles
-    this.renderText('Can\'t run from trainer battle!');
+    var self = this; 
+    self.prompt({
+      text: 'Are you sure you want to forfeit?',
+      options: [{ 
+        text: 'YES', callback: function () { // end battle with a loss
+          self.endBattle({
+            victorId: self._enemy._id,
+            message: 'You have forfeited...'
+          });
+          self.switchView(self._prevView); // exit prompt view
+        }
+      }, { 
+        text: 'NO', callback: function () {
+          self.switchView(self._prevView); // exit prompt view
+        }
+      }]
+    });
   };
 
   Battle.prototype.switchPokemon = function switchPokemon (player, index) {
-    var pokemon;
-    var switchOwn = (player._id === this._player._id);
+    var options = {
+      playerId: player._id,
+      index: index // index of pokemon in team
+    };
+    Meteor.call('switchPokemon', options, function (error, result) {
+      if (_.isString(error.reason)) this.renderText(error);
+      else this.renderText('Error while switching pokemon!');
+    });
+  };
 
-    if (switchOwn) {
-      pokemon = this._ownPokemon;
-    } else {
-      pokemon = this._enemyPokemon;
-    }
+  Battle.prototype.fetchCurrent = function fetchCurrent () {
+    var self = this;
+    Tracker.autorun(function (computation) {
+      var battle = Battles.findOne(self._battle._id, {
+        fields: { 'pokemon': 1 } 
+      });
 
-    if (pokemon[index] && pokemon[index].health > 0) {
-      if (switchOwn) {
-        this._ownCurrent = pokemon[index];
-        this._ownDep.changed();
-      } else {
-        this._enemyCurrent = pokemon[index];
-        this._enemyDep.changed();
-      }
-    } else {
-      this.renderText(pokemon[index].name + ' has already fainted!');
-    }
+      var activeIndex;
+      var isOwnTeam;
+      var pokemon;
+      _.each(battle.pokemon, function (team, playerId) {
+        // get active pokemon in the team
+        activeIndex = _.findIndex(team, function (p) { return p.active });
+        isOwnTeam = (playerId === self._player._id);
+
+        // no active, team must have been eliminated so end game
+        if (activeIndex === -1) {
+          player = isOwnTeam ? self._player : self._enemy;
+          self.endBattle({
+            victorId: player._id,
+            message: player.username + ' is the victor!'
+          });
+          return false; // quit the loop
+        } 
+        // otherwise, update the active pokemon in the team
+        else {
+          if (isOwnTeam) {
+            self._ownCurrent = self._ownPokemon[activeIndex];
+            self._ownDep.changed();
+          } else {
+            self._enemyCurrent = self._enemyPokemon[activeIndex];
+            self._enemyDep.changed();
+          }
+        }
+      });
+
+      // store computation so we can stop it later
+      self._computations[computation._id] = computation;
+    });
   };
 
   // run this method reactively with an autorun instead of in update.
@@ -308,18 +407,29 @@ KOL.Battle = (function () {
   Battle.prototype.fetchState = function fetchState () {
     var self = this;
     Tracker.autorun(function (computation) {
-      this._state = Battles.findOne(this._battle._id, {
+      var battle = Battles.findOne(self._battle._id, {
         fields: { 'state': 1 } // listen for changes on state only
       });
+      self._state = battle.state;
 
-      switch (this._state) {
+      switch (self._state) {
         case c.BATTLE_STATE_EXECUTING:
-          this.execMoves();
+          self.execMoves();
           break;
       }
 
       // store computation so we can stop it later
       self._computations[computation._id] = computation;
+    });
+  };
+
+  Battle.prototype.endBattle = function endBattle (options) {
+    this._state = c.BATTLE_STATE_END;
+    this.renderText('Loading...');
+    this.cleanup();
+
+    Meteor.call('endBattle', options.victorId, function (error, result) {
+      this.renderText(options.message);
     });
   };
 

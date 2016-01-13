@@ -53,7 +53,8 @@ KOL.Game = (function () {
       renderers: self._renderers
     });
     self._battle = new Battle({
-      renderers: self._renderers
+      renderers: self._renderers,
+      game: self
     });
 
     // fetch initial map document
@@ -189,6 +190,19 @@ KOL.Game = (function () {
       if (_.isFunction(options.onfinish)) {
         options.onfinish();
       }
+    });
+  };
+
+  Game.prototype.initBattle = function gameInitBattle (options) {
+    this.changeState({
+      state: constants.STATE_BATTLE
+    });
+    this._battle.init(options);
+  };
+
+  Game.prototype.endBattle = function gameEndBattle () {
+    this.changeState({
+      state: constants.STATE_MAP
     });
   };
 

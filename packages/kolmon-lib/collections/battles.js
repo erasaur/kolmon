@@ -32,19 +32,21 @@ schemas.Battle = new SimpleSchema({
     //   }]
     // }
   },
-  moves: {
+  stage: {
     type: [Object],
-    maxCount: 2, // only allow 2 moves for now
+    maxCount: 2, // only allow 2 commands for now
     optional: true
 
     // example:
-    // moves: [{
+    // stage: [{
     //   playerId: 'a',
+    //   type: constants.BATTLE_STAGE_MOVE,
     //   pokemonId: '123',
     //   index: 0,              // index of move in moveset
     //   completeIds: [ 'b' ]   // id of players that have completed this move
     // }, {
     //   playerId: 'b',
+    //   type: constants.BATTLE_STAGE_SWITCH,
     //   pokemonId: '321',
     //   index: 0,
     //   completeIds: [ 'a' ]   // complete if diff(playerIds, completeIds) == 0
