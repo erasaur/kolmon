@@ -5,6 +5,7 @@ var Players = KOL.Players;
 
 Meteor.startup(function () {
   constants.MOVES = JSON.parse(Assets.getText('moves.json'));
+  constants.ITEMS = JSON.parse(Assets.getText('items.json'));
   constants.POKEMON = JSON.parse(Assets.getText('pokemon.json'));
   constants.TYPES = JSON.parse(Assets.getText('types.json'));
   constants.PRIORITY = JSON.parse(Assets.getText('priority.json'));

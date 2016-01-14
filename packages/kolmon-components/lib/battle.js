@@ -31,15 +31,22 @@ KOL.Battle = (function () {
     this._player = options.player;
     this._enemy = options.enemy;
 
+    // setup bag --------------------------------------
+
+    this._bag = new Bag(options.bag);
+
     // setup pokemon ----------------------------------
     
     var pokemon = this._battle.pokemon;
+    // TODO store pokemon in object with pokemonId's as keys rather
+    // than storing an array of pokemon objects
     this._ownPokemon = _.map(pokemon[this._player._id], function (pokemon) {
       return new Pokemon(pokemon.id);
     });
     this._enemyPokemon = _.map(pokemon[this._enemy._id], function (pokemon) {
       return new Pokemon(pokemon.id);
     });
+    this._pokemon = _.union(this._ownPokemon, this._enemyPokemon);
 
     this._ownCurrent = this._ownPokemon[0];
     this._enemyCurrent = this._enemyPokemon[0];
@@ -53,6 +60,10 @@ KOL.Battle = (function () {
       main: {
         index: 0,
         length: 4 // fight, bag, team, run
+      },
+      fight: {
+        index: 0,
+        length: 4 // 4 possible moves
       },
       team: {
         index: 0, // current index within the list of pokemon
@@ -71,17 +82,33 @@ KOL.Battle = (function () {
       }
     };
     this._view = c.BATTLE_VIEW_MAIN;
+    this._state = c.BATTLE_STATE_PENDING; // allow inputs
     this._prompt; // temporarily store prompt options and their callbacks
 
+    // initial render
     this.render();
   };
 
-  // this render function need only be called once per battle to render initial
-  // elements. animations (e.g for swapping pokemon or for attacking) should
-  // be handled separately.
   Battle.prototype.render = function renderBattle () {
-    // render bg, ui, pokemon
-    this._battleRenderer.render();
+    switch (this._view) {
+      case c.BATTLE_VIEW_MAIN:
+        this._battleRenderer.renderMain(this._cursor.main); 
+        break;
+      case c.BATTLE_VIEW_BAG:
+        this._battleRenderer.renderBag(this._cursor.bagTab, this._cursor.bag); 
+        break;
+      case c.BATTLE_VIEW_TEAM:
+        this._battleRenderer.renderTeam(this._cursor.team); 
+        break;
+      case c.BATTLE_VIEW_POKEMON:
+        var pokemon = this._ownPokemon[this._cursor.team.index];
+        this._battleRenderer.renderPokemon(pokemon);
+        break;
+      case c.BATTLE_VIEW_ITEM:
+        var item = this._bag.getItem(this._cursor.bag.index);
+        this._battleRenderer.renderItem(item);
+        break;
+    }
   };
 
   // getters ------------------------------------------
@@ -123,8 +150,8 @@ KOL.Battle = (function () {
   };
 
   Battle.prototype.switchView = function switchView (view) {
-    this._prevView = this._view; // store prev view for going back, etc.
     this._view = view;
+    this.render(); // re-render view
   };
 
   Battle.prototype.moveCursor = function moveCursor (key, cursor) {
@@ -149,21 +176,22 @@ KOL.Battle = (function () {
     return Math.max(cursor.index, 0);
   };
 
-  Battle.prototype.prompt = function showPrompt (prompt) {
-    this.renderText(prompt.text);
-    this.renderPrompt(prompt.options);
+  Battle.prototype.prompt = function prompt (options) {
+    this._cursor.prompt.index = 0; // reset prompt index
+    this._battleRenderer.renderPrompt(_.keys(options, 'text'));
+    this._prompt = options;
   };
 
   Battle.prototype.keydownMain = function onBattleKeydownMain (key) {
-    if (key == c.KEY_ENTER) {
+    if (key === c.KEY_ENTER) {
       // render the appropriate view based on cursor
-      switch (this._view) {
+      switch (this._cursor.main) {
         case 0: // fight
-          this._battleRenderer.renderFight(); break;
+          this.switchView(c.BATTLE_VIEW_FIGHT); break;
         case 1: // team
-          this._battleRenderer.renderTeam(); break;
+          this.switchView(c.BATTLE_VIEW_TEAM); break;
         case 2: // bag
-          this._battleRenderer.renderBag(); break;
+          this.switchView(c.BATTLE_VIEW_BAG); break;
         case 3: // run
           this.runFromBattle(); break;
       }
@@ -172,39 +200,65 @@ KOL.Battle = (function () {
     }
   };
 
+  Battle.prototype.keydownFight = function onBattleKeydownFight (key) {
+    if (key === c.KEY_ENTER) {
+      // this.useMove(this._cursor.fight
+    }
+    else if (key === c.KEY_ESCAPE) { // analogous to "b" button
+      this.switchView(c.BATTLE_VIEW_MAIN);
+    } else {
+      this.moveCursor(key, this._cursor.fight);
+    }
+  };
+
   Battle.prototype.keydownTeam = function onBattleKeydownTeam (key) {
-    if (key == c.KEY_ENTER) {
+    if (key === c.KEY_ENTER) {
       var self = this;
       self.prompt({
-        text: 'Switch into battle?',
         options: [{ 
-          text: 'YES', callback: function () { // switch selected poke in
+          text: 'INFO', callback: function () {
+            self.switchView(c.BATTLE_VIEW_POKEMON);
+          },
+          text: 'SWITCH', callback: function () { // switch selected poke in
             self.stageCommand({
               type: c.BATTLE_COMMAND_SWITCH,
               playerId: self._player._id,
               pokemonId: self._ownPokemon[self._cursor.team.index]
             });
-            self.switchView(self._prevView); // exit prompt view
+            self.render(); // re-render view to exit prompt
           }
         }, { 
-          text: 'NO', callback: function () {
-            self.switchView(self._prevView); // exit prompt view
+          text: 'CANCEL', callback: function () {
+            self.render(); // re-render view to exit prompt
           }
         }]
       });
     }
-    else if (key == c.KEY_ESCAPE) { // analogous to "b" button
+    else if (key === c.KEY_ESCAPE) { // analogous to "b" button
       this.switchView(c.BATTLE_VIEW_MAIN);
     }
   };
 
   Battle.prototype.keydownBag = function onBattleKeydownBag (key) {
-    if (key == c.KEY_ENTER) {
-      // get the current item within the current tab
-      // display specific item view for that item
-      this.renderItem(this._bag[this._cursor.bag.index]);
+    if (key === c.KEY_ENTER) {
+      var self = this;
+      self.prompt({
+        options: [{ 
+          text: 'INFO', callback: function () {
+            self.switchView(c.BATTLE_VIEW_ITEM);
+          }
+        }, { 
+          text: 'USE', callback: function () {
+            self.useItem();
+          }
+        }, {
+          text: 'CANCEL', callback: function () {
+            self.render(); // re-render view to exit prompt
+          }
+        }]
+      });
     }
-    else if (key == c.KEY_ESCAPE) { // analogous to "b" button
+    else if (key === c.KEY_ESCAPE) { // analogous to "b" button
       this.switchView(c.BATTLE_VIEW_MAIN);
     }
     // move up and down within the current tab
@@ -213,6 +267,7 @@ KOL.Battle = (function () {
     } 
     // move to left and right tabs
     else if (_.contains([c.KEY_LEFT, c.KEY_RIGHT])){
+      this._bag.switchTab(this._cursor.bagTab.index);
       this.moveCursor(key, this._cursor.bagTab);
     }
   };
@@ -227,13 +282,6 @@ KOL.Battle = (function () {
     }
   };
 
-  Battle.prototype.prompt = function prompt (options) {
-    this._cursor.prompt.index = 0; // reset prompt index
-    this._battleRenderer.renderPrompt(_.keys(options, 'text'));
-    this._view = c.BATTLE_VIEW_PROMPT;
-    this._prompt = options;
-  };
-
   Battle.prototype.keydown = function onBattleKeydown (event) {
     var key = event.keyCode || event.which;
 
@@ -245,17 +293,22 @@ KOL.Battle = (function () {
       this._game.endBattle();
     }
 
+    // if viewing a prompt, handle prompt first
+    else if (this._prompt) {
+      this.keydownPrompt(key);
+    }
+
     // otherwise process keydown as usual
     else {
       switch (this._view) {
         case c.BATTLE_VIEW_MAIN:
           this.keydownMain(key); break;
+        case c.BATTLE_VIEW_FIGHT:
+          this.keydownFight(key); break;
         case c.BATTLE_VIEW_TEAM:
           this.keydownTeam(key); break;
         case c.BATTLE_VIEW_BAG:
           this.keydownBag(key); break;
-        case c.BATTLE_VIEW_PROMPT:
-          this.keydownPrompt(key); break;
       }
     }
   };
@@ -266,6 +319,7 @@ KOL.Battle = (function () {
   // allows us to calculate pokemon/move speeds to determine which goes first.
   Battle.prototype.stageCommand = function stageCommand (options) {
     if (this._state === c.BATTLE_STATE_PENDING) {
+      this._state = c.BATTLE_STATE_STAGING;
       // playerId, type, pokemonId (if using a move or switching), moveIndex 
       // (if using a move), itemId (if using an item)
       Meteor.call('stageCommand', options);
@@ -289,39 +343,54 @@ KOL.Battle = (function () {
       return c.PRIORITY['item'];
     }
     else { // is a move
-      return c.PRIORITY['moves'][command.moveId];
+      return c.PRIORITY['moves'][command.moveId] || 0; // 0 by default
     }
   };
 
   Battle.prototype.execMoves = function execMoves () {
-    this._battle = Battles.findOne(this._battle._id);
+    var self = this;
+    self._battle = Battles.findOne(self._battle._id);
 
     // if both moves have already been executed, do nothing
     // if both moves have not been executed, process both in order, executing 
     // the one with higher priority first.
     // otherwise, find the move that has yet to be executed and execute that
-    var unprocessed = _.filter(this._battle.stage, function (move) {
-      return move.completeIds.length < 2;
+    var unprocessed = _.filter(self._battle.stage, function (move) {
+      return !_.contains(move.completeIds, self._player._id);
     });
 
     if (unprocessed.length) {
-      _.sort(unprocessed, function (move) {
-        move.priority = self.commandPriority(move);
-        return move.priority;
-      });
-
       var first = unprocessed[0];
       var second = unprocessed[1];
 
-      if (second && first.priority === second.priority) {
-        // choose first based on speed    
+      if (second) { // calculate priorities to see which one is actually first
+        var firstPriority = self.movePriority(first);
+        var secondPriority = self.movePriority(second);
+
+        if (firstPriority === secondPriority) {
+          var firstPokemon = self._ownCurrent;
+          var secondPokemon = self._enemyCurrent;
+
+          if (first.playerId !== self._player._id) {
+            firstPokemon = self._enemyCurrent;
+            secondPokemon = self._ownCurrent;
+          }
+          
+          // if second pokemon has faster speed, it should go first
+          if (secondPokemon.speed() > firstPokemon.speed()) {
+            first = second;
+          }
+        } 
+        else if (secondPriority > firstPriority) {
+          first = second;
+        }
       }
     }
 
     //TODO call method to update the pokemon affected by each move
   };
 
-  Battle.prototype.useMove = function useMove (move, local) {
+  Battle.prototype.useMove = function useMove (move) {
     if (this._state !== c.BATTLE_STATE_EXECUTING) return;
 
     var self = this;
@@ -338,9 +407,7 @@ KOL.Battle = (function () {
     // run animations, change health bars, etc.
     self._battleRenderer.renderMove(move, function () {
       // update move to acknowledge that we have executed it
-      if (local) {
-        Meteor.call('moveComplete', move.playerId);
-      }
+      Meteor.call('moveComplete', move.playerId);
       // run other move now, if we haven't already
       self.execMoves();
     });
@@ -459,8 +526,7 @@ KOL.Battle = (function () {
       computation.stop();
     });
 
-    var pokemon = _.union(this._ownPokemon, this._enemyPokemon);
-    _.each(pokemon, function (pokemon) {
+    _.each(this._pokemon, function (pokemon) {
       pokemon.cleanup();
     });
   };

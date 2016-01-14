@@ -66,7 +66,6 @@ KOL.constants = {
   BATTLE_VIEW_MAIN: 271, // main battle view
   BATTLE_VIEW_TEAM: 272, // team list view
   BATTLE_VIEW_BAG: 273, // bag view
-  BATTLE_VIEW_PROMPT: 274,
   BATTLE_COMMAND_MOVE: 281,
   BATTLE_COMMAND_SWITCH: 282,
   BATTLE_COMMAND_ITEM: 283,

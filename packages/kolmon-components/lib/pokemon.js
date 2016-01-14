@@ -1,3 +1,6 @@
+var c = KOL.constants;
+var Pokemon = KOL.Pokemon; // TODO fix namespace conflict
+
 KOL.Pokemon = (function () {
   function Pokemon (options) {
     if (!this instanceof Pokemon) {
@@ -9,6 +12,14 @@ KOL.Pokemon = (function () {
   Pokemon.prototype.load = function loadPokemon (options) {
     this._computations = {};
     this._dep = new Tracker.Dependency();
+
+    var pokemon = options;
+    if (_.isString(options)) {
+      pokemon = Pokemon.findOne(options);
+    }
+
+    // extend c.POKEMON document to get descriptions, etc.
+    _.extend(this, pokemon, c.POKEMON[pokemon.id]);
   };
 
   Pokemon.prototype.isUnableToMove = function getIsUnableToMove () {
