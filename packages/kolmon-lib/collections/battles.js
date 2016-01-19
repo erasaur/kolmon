@@ -13,7 +13,17 @@ schemas.Battle = new SimpleSchema({
     type: String
   },
   playerIds: {
-    type: [String] // players involved in battle
+    type: [String], // players involved in battle
+    maxCount: 2 // only allow 2 players for now
+  },
+  active: { // active pokemon indexes
+    type: Object,
+    optional: true
+
+    // active: {
+    //   playerId: 0,
+    //   playerId2: 3
+    // }
   },
   pokemon: {
     type: Object,
@@ -21,15 +31,15 @@ schemas.Battle = new SimpleSchema({
 
     // example:
     // pokemon: {
-    //   playerId: [{
-    //     id: 'pokemonId',
-    //     active: true
-    //   }],
+    //   playerId: [
+    //     'pokemonId',
+    //     'pokemonId2'
+    //   ],
     //
-    //   playerId: [{
-    //     id: 'pokemonId',
-    //     active: true
-    //   }]
+    //   playerId2: [
+    //     'pokemonId',
+    //     'pokemonId2'
+    //   ]
     // }
   },
   stage: {

@@ -10,7 +10,6 @@ KOL.Pokemon = (function () {
   }
 
   Pokemon.prototype.load = function loadPokemon (options) {
-    this._computations = {};
     this._dep = new Tracker.Dependency();
 
     var pokemon = options;
@@ -36,19 +35,8 @@ KOL.Pokemon = (function () {
   };
 
   Pokemon.prototype.fetch = function fetchPokemon () {
-    var self = this;
-    Tracker.autorun(function (computation) {
-      _.extend(this, Pokemon.findOne(this._id));
-      self._dep.changed();
-      self._computations[computation._id] = computation;
-    });
-  };
-
-  // TODO inheriting methods from base class
-  Pokemon.prototype.cleanup = function cleanupBattle () {
-    _.each(this._computations, function (computation) {
-      computation.stop();
-    });
+    _.extend(this, Pokemon.findOne(this._id));
+    this._dep.changed();
   };
 
   return Pokemon;
