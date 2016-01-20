@@ -24,78 +24,73 @@ var commandPriority = function getCommandPriority (command) {
   }
 };
 
-var execMove = function execMove (player, battle, command) {
-  var playerId = player._id;
-  var enemyId = battle.playerIds[0];
-  if (enemyId === playerId) {
-    enemyId = battle.playerIds[1];
+var execMove = function execMove (battle, command) {
+  if (battle.state === c.BATTLE_STATE_ENDING) return battle;
+
+  var playerAId = command.playerId;
+  var playerBId = battle.playerIds[0];
+  if (playerBId === playerAId) {
+    playerBId = battle.playerIds[1];
   }
 
-  var ownPokemon = battle.pokemon[playerId];
-  var enemyPokemon = battle.pokemon[enemyId];
+  var playerAPokemon = battle.pokemon[playerAId];
+  var playerBPokemon = battle.pokemon[playerBId];
 
-  // var ownCurrent = Pokemon.findOne(ownPokemon[battle.active[playerId]]);
-  var enemyCurrent = Pokemon.findOne(enemyPokemon[battle.active[enemyId]]);
+  // var playerACurrent = Pokemon.findOne(playerAPokemon[battle.active[playerAId]]);
+  var playerBCurrent = Pokemon.findOne(playerBPokemon[battle.active[playerBId]]);
   var move = c.MOVES[command.moveId];
 
   // TODO critical, super (in)effective, status effects, immunities (e.g
   // normal -> dark, levitate, etc), accuracy, pp, normal/special att/def,
   // level, environment, etc.
-  enemyCurrent.stats.health = enemyCurrent.stats.health - move.power;
+  playerBCurrent.stats.health = playerBCurrent.stats.health - move.power;
 
-  if (enemyCurrent.stats.health <= 0) {
+  if (playerBCurrent.stats.health <= 0) {
     // attempt to set next pokemon as active
-    var team = Pokemon.find({ '_id': { $in: enemyPokemon } });
+    var team = Pokemon.find({ '_id': { $in: playerBPokemon } });
 
     // attempt to find a non-active pokemon to take over
     var nextActive = _.findIndex(team, function (p) {
-      return p.id !== enemyCurrent._id && p.stats.health > 0;
+      return p.id !== playerBCurrent._id && p.stats.health > 0;
     });
-    var modifier = {};
 
-    if (nextActive !== -1) { // has next pokemon
-      modifier['active.' + enemyId] = nextActive;
-    } else { // enemy loses
-      modifier['active.' + enemyId] = -1;
-      modifier['state'] = c.BATTLE_STATE_ENDING;
-    }
-    Battles.update(battle._id, { $set: modifier });
+    battle.active[playerBId] = nextActive;
+    battle.state = c.BATTLE_STATE_ENDING;
   } else {
     Pokemon.update(enemyId, { 
-      $set: { 'stats.health': enemyCurrent.stats.health } 
+      $set: { 'stats.health': playerBCurrent.stats.health } 
     });
   }
+
+  return battle;
 };
 
-var execItem = function execItem (item) {
-  // TODO
+var execItem = function execItem (command, battle) {
+  // TODO 
+  var item = c.ITEMS[command.itemId];
+
 };
 
-var execSwitch = function execSwitch (switch) {
+var execSwitch = function execSwitch (command, battle) {
   // TODO check health of pokemon to make sure switch is valid
 };
 
-var execCommand = function execCommand (command) {
+var execCommand = function execCommand (command, battle) {
   switch (command.type) {
     case c.BATTLE_COMMAND_MOVE:
-      execMove(command); break;
+      execMove(command, battle); break;
     case c.BATTLE_COMMAND_ITEM:
-      execItem(command); break;
+      execItem(command, battle); break;
     case c.BATTLE_COMMAND_SWITCH:
-      execSwitch(command); break;
+      execSwitch(command, battle); break;
   }
 };
 
 // for simplicity, execute both moves at once,
 // processing in order of higher priority first.
-var execCommands = function execCommands (player, battle) {
-  var unprocessed = [];
-
-  _.each(battle.stage, function (command) {
-    if (!_.contains(move.completeIds, player._id)) {
-      command.completeIds.push(player._id);
-      unprocessed.push(command);
-    }
+var execCommands = function execCommands (battle) {
+  var unprocessed = _.filter(battle.stage, function (command) {
+    return !command.completeIds.length;
   });
 
   // nothing to do here, so return
@@ -126,19 +121,23 @@ var execCommands = function execCommands (player, battle) {
   }
 
   // exec in order of priority
-  execCommand(first);
-  execCommand(second);
+  battle = execCommand(first, battle);
+  battle = execCommand(second, battle);
+  battle.stage = [ first, second ];
 
-  return [ first, second ];
+  return battle;
+};
+
+var execComplete = function (player, battle) {
 };
 
 Meteor.methods({
-  'execCommands': function () {
+  'execCommands': function (battleId) {
+    check(battleId, String);
     if (!this.userId) return;
 
     var user = Meteor.user();
-    var player = Players.findOne(user.playerId);
-    var battle = Battles.findOne(player.battleId);
+    var battle = Battles.findOne(battleId);
 
     if (!battle || battle.state !== constants.BATTLE_STATE_EXECUTING) {
       throw new Meteor.Error('error', 'Invalid battle state');
@@ -149,16 +148,50 @@ Meteor.methods({
       throw new Meteor.Error('error', 'Not all players have staged yet');
     }
 
-    // exec staged commands and update battle doc completeIds
-    var commands = execCommands(player, battle);
-
-    // update battle doc state
+    // by default, state should be pending after commands have been
+    // executed, except when one player loses (in which case, state
+    // becomes c.BATTLE_STATE_ENDING)
     battle.state = c.BATTLE_STATE_PENDING;
 
-    // save changes
-    Battles.update(battle._id, { $set: battle });
+    // exec staged commands, update battle doc:
+    // - update completeIds
+    // - update battle state (e.g if one player loses)
+    // - update battle stage
+    var result = execCommands(battle);
 
-    return commands;
+    // save changes
+    Battles.update(battle._id, { $set: result });
+  },
+  'endExec': function () {
+    if (!this.userId) return;
+
+    var user = Meteor.user();
+    var player = Players.findOne(user.playerId);
+    var battle = Battles.findOne(player.battleId);
+
+    if (!battle || battle.state !== constants.BATTLE_STATE_EXECUTING) {
+      throw new Meteor.Error('error', 'Invalid battle state');
+    }
+
+    // check whether both players have completed executing
+    var isComplete = true;
+    _.each(battle.stage, function (command) {
+      if (!_.contains(command.completeIds, player._id)) {
+        command.completeIds.push(player._id);
+      }
+      if (command.completeIds.length !== battle.playerIds.length) {
+        isComplete = false;
+      }
+    });
+
+    var modifier = {};
+    if (isComplete) {
+      // both players complete, unset stage
+      modifier['$unset'] = { 'stage': '' };
+    } else {
+      modifier['$set'] = { 'stage': battle.stage };
+    }
+    Battles.update(battle._id, modifier);
   },
   'endBattle': function () {
     // TODO

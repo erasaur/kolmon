@@ -1,5 +1,6 @@
 var c = KOL.constants;
 var Pokemon = KOL.Pokemon;
+var BattleRenderer = KOL.BattleRenderer;
 
 KOL.Battle = (function () {
   function Battle (options) {
@@ -110,6 +111,22 @@ KOL.Battle = (function () {
         this._battleRenderer.renderItemInfo(item);
         break;
     }
+  };
+
+  Battle.prototype.renderCommand = function renderCommand (command, cb) {
+    switch (command.type) {
+      case c.BATTLE_COMMAND_MOVE:
+        this._battleRenderer.renderMove(command, cb); break;
+      case c.BATTLE_COMMAND_ITEM:
+        this._battleRenderer.renderItem(command, cb); break;
+      case c.BATTLE_COMMAND_SWITCH:
+        this._battleRenderer.renderSwitch(command, cb); break;
+    }
+    this.fetchPokemon(command.playerId); // fetch updates for specific player
+
+    // render battle text
+    var message = this.commandMessage(command);
+    this._battleRenderer.renderText(message);
   };
 
   // getters ------------------------------------------
@@ -262,7 +279,7 @@ KOL.Battle = (function () {
       this.moveCursor(key, this._cursor.bag);
     } 
     // move to left and right tabs
-    else if (_.contains([c.KEY_LEFT, c.KEY_RIGHT])){
+    else if (_.contains([c.KEY_LEFT, c.KEY_RIGHT], key)){
       this._bag.switchTab(this._cursor.bagTab.index);
       this.moveCursor(key, this._cursor.bagTab);
     }
@@ -347,32 +364,48 @@ KOL.Battle = (function () {
   };
 
   Battle.prototype.commandMessage = function getCommandMessage (command) {
-    var playerId = command.playerId;
+    var isOwn = command.playerId === this._player._id;
+    var message;
 
     switch (command.type) {
       case c.BATTLE_COMMAND_MOVE: // need to get pokemon name and move name
-        
+        var pokemon = isOwn ? this._enemyCurrent : this._ownCurrent;
+        var move = c.MOVES[command.moveId];
+        message = pokemon.name() + ' used ' + move.name + '!';
         break;
       case c.BATTLE_COMMAND_ITEM: // just need to get item name
+        var player = isOwn ? this._player : this._enemy;
+        var item = c.ITEMS[command.itemId];
+        message = player.username + ' used ' + item.name + '!';
         break;
-      case c.BATTLE_COMMAND_SWITCH: // 
+      case c.BATTLE_COMMAND_SWITCH:
+        var player = isOwn ? this._player : this._enemy;
+        var pokemon = c.POKEMON[command.pokemonId];
+        message = player.username + ' switched in ' + pokemon.name + '!';
+        break;
     }
+    return message;
   };
 
   // execute the next staged command
   Battle.prototype.execCommands = function execCommands () {
-    if (this._state !== c.BATTLE_STATE_EXECUTING) return;
+    var self = this;
+    if (self._state !== c.BATTLE_STATE_EXECUTING) return;
 
-    Meteor.call('execCommands', function (error, result) {
-      var first = result[0].playerId;
-      var second = result[1].playerId;
-      
-      if (result[0].type === 
-      var firstCurrent = battle.pokemon[first][battle.active[first]];
-      var secondCurrent = battle.pokemon[second][battle.active[second]];
+    // fetch updated staged commands
+    var battle = Battles.findOne(self._battle._id, { 
+      fields: { 'stage': 1 }
+    });
+    self._stage = battle.stage;
 
-      self._battleRenderer.renderText(result);
-      self.fetchPokemon(); // fetch updates
+    // commands are ordered now
+    var first = self._stage[0];
+    var second = self._stage[1];
+    
+    self.renderCommand(first, function () {
+      self.renderCommand(second, function () {
+        Meteor.call('endExec');
+      });
     });
   };
 
@@ -396,8 +429,14 @@ KOL.Battle = (function () {
 
   // fetching updates ---------------------------------
 
-  Battle.prototype.fetchPokemon = function fetchPokemon () {
-    _.each(this._pokemon, function (p) { p.fetch(); });
+  Battle.prototype.fetchPokemon = function fetchPokemon (playerId) {
+    var pokemon;
+    if (playerId) {
+      pokemon = playerId === this._player._id ? this._ownPokemon : this._enemyPokemon;
+    } else {
+      pokemon = this._pokemon;
+    }
+    _.each(pokemon, function (p) { p.fetch(); });
   };
 
   Battle.prototype.fetchCurrent = function fetchCurrent () {

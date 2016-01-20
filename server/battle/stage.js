@@ -122,5 +122,7 @@ Meteor.methods({
     }
 
     Battles.update(battle._id, modifier);
+    Meteor.call('execCommands', battle._id);
   }
 });
+

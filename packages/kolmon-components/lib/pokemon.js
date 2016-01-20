@@ -25,6 +25,10 @@ KOL.Pokemon = (function () {
     // check health/status effects
   };
 
+  Pokemon.prototype.name = function getName () {
+
+  };
+
   Pokemon.prototype.speed = function getMoveTime () {
     // if unableToMove, then return some negative value.
   };
