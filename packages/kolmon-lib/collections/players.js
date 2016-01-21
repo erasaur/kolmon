@@ -23,6 +23,10 @@ schemas.Player = new SimpleSchema({
     optional: true,
     defaultValue: constants.DEFAULT_PLAYER_SRC
   },
+  // state: {
+  //   type: Number,
+  //   defaultValue: constants.STATE_MAP
+  // },
   worldId: {
     type: String,
     optional: true

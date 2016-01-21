@@ -65,7 +65,6 @@ KOL.Game = (function () {
         player: options.player,
         renderers: self._renderers
       });
-
       self.start();
     });
   };
@@ -146,6 +145,9 @@ KOL.Game = (function () {
       case constants.STATE_MAP:
         self._world.keydown(event, this._lastUpdate);
         break;
+      case constants.STATE_BATTLE:
+        self._battle.keydown(event);
+        break;
     }
   };
 
@@ -194,16 +196,12 @@ KOL.Game = (function () {
   };
 
   Game.prototype.initBattle = function gameInitBattle (options) {
-    this.changeState({
-      state: constants.STATE_BATTLE
-    });
+    this.changeState({ state: constants.STATE_BATTLE });
     this._battle.init(options);
   };
 
   Game.prototype.endBattle = function gameEndBattle () {
-    this.changeState({
-      state: constants.STATE_MAP
-    });
+    this.changeState({ state: constants.STATE_MAP });
   };
 
   return Game;

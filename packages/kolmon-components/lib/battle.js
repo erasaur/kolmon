@@ -416,7 +416,7 @@ KOL.Battle = (function () {
       options: [{ 
         text: 'YES', callback: function () { // end battle with a loss
           self._battleRenderer.renderText('Loading...');
-          Meteor.call('forfeit', self.endBattle);
+          Meteor.call('forfeitBattle', self.endBattle);
           self.switchView(self._prevView); // exit prompt view
         }
       }, { 
@@ -472,7 +472,7 @@ KOL.Battle = (function () {
       switch (self._state) {
         case c.BATTLE_STATE_EXECUTING:
           self.execCommands(); break;
-        case c.BATTLE_STATE_ENDING:
+        case c.BATTLE_STATE_END:
           self.endBattle(); break;
       }
 
@@ -483,13 +483,15 @@ KOL.Battle = (function () {
 
   Battle.prototype.endBattle = function endBattle () {
     var self = this;
-    self._state = c.BATTLE_STATE_ENDING;
+    self._state = c.BATTLE_STATE_END;
     self.cleanup();
 
-    Meteor.call('endBattle', function (error, result) {
-      self.renderText(result + ' is the victor!');
-      self._state = c.BATTLE_STATE_END;
+    var battle = Battles.findOne(self._battle._id);
+    var winnerId = _.find(battle.active, function (index, playerId) {
+      return index !== -1;
     });
+    var winner = winnerId === this._player._id ? this._player : this._enemy;
+    self.renderText(winner.username + ' is the victor!');
   };
 
   // TODO inheriting methods from base class

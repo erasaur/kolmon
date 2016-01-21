@@ -25,7 +25,7 @@ var commandPriority = function getCommandPriority (command) {
 };
 
 var execMove = function execMove (battle, command) {
-  if (battle.state === c.BATTLE_STATE_ENDING) return battle;
+  if (battle.state === c.BATTLE_STATE_END) return battle;
 
   var playerAId = command.playerId;
   var playerBId = battle.playerIds[0];
@@ -43,7 +43,7 @@ var execMove = function execMove (battle, command) {
   // TODO critical, super (in)effective, status effects, immunities (e.g
   // normal -> dark, levitate, etc), accuracy, pp, normal/special att/def,
   // level, environment, etc.
-  playerBCurrent.stats.health = playerBCurrent.stats.health - move.power;
+  playerBCurrent.stats.health = Math.max(0, playerBCurrent.stats.health - move.power);
 
   if (playerBCurrent.stats.health <= 0) {
     // attempt to set next pokemon as active
@@ -55,18 +55,18 @@ var execMove = function execMove (battle, command) {
     });
 
     battle.active[playerBId] = nextActive;
-    battle.state = c.BATTLE_STATE_ENDING;
-  } else {
-    Pokemon.update(enemyId, { 
-      $set: { 'stats.health': playerBCurrent.stats.health } 
-    });
+    battle.state = c.BATTLE_STATE_END;
   }
+
+  Pokemon.update(playerBCurrent._id, {
+    $set: { 'stats.health': playerBCurrent.stats.health }
+  });
 
   return battle;
 };
 
 var execItem = function execItem (command, battle) {
-  // TODO 
+  // TODO
   var item = c.ITEMS[command.itemId];
 
 };
@@ -128,9 +128,6 @@ var execCommands = function execCommands (battle) {
   return battle;
 };
 
-var execComplete = function (player, battle) {
-};
-
 Meteor.methods({
   'execCommands': function (battleId) {
     check(battleId, String);
@@ -139,7 +136,7 @@ Meteor.methods({
     var user = Meteor.user();
     var battle = Battles.findOne(battleId);
 
-    if (!battle || battle.state !== constants.BATTLE_STATE_EXECUTING) {
+    if (!battle || battle.state !== c.BATTLE_STATE_EXECUTING) {
       throw new Meteor.Error('error', 'Invalid battle state');
     }
 
@@ -150,17 +147,19 @@ Meteor.methods({
 
     // by default, state should be pending after commands have been
     // executed, except when one player loses (in which case, state
-    // becomes c.BATTLE_STATE_ENDING)
+    // becomes c.BATTLE_STATE_END)
     battle.state = c.BATTLE_STATE_PENDING;
 
     // exec staged commands, update battle doc:
     // - update completeIds
     // - update battle state (e.g if one player loses)
     // - update battle stage
-    var result = execCommands(battle);
+    battle = execCommands(battle);
+    Battles.update(battle._id, { $set: battle });
 
-    // save changes
-    Battles.update(battle._id, { $set: result });
+    if (battle.state === c.BATTLE_STATE_END) {
+      Meteor.call('endBattle', battleId);
+    }
   },
   'endExec': function () {
     if (!this.userId) return;
@@ -169,7 +168,7 @@ Meteor.methods({
     var player = Players.findOne(user.playerId);
     var battle = Battles.findOne(player.battleId);
 
-    if (!battle || battle.state !== constants.BATTLE_STATE_EXECUTING) {
+    if (!battle || battle.state !== c.BATTLE_STATE_EXECUTING) {
       throw new Meteor.Error('error', 'Invalid battle state');
     }
 
@@ -192,10 +191,5 @@ Meteor.methods({
       modifier['$set'] = { 'stage': battle.stage };
     }
     Battles.update(battle._id, modifier);
-  },
-  'endBattle': function () {
-    // TODO
-    //
-    // return the username of the player whose active is not -1 (the winner)
   }
 });

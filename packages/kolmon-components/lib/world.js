@@ -113,14 +113,14 @@ KOL.World = (function () {
         return random <= encounter.rate;
       });
 
-      self._game.fetchPokemon(encounter.id, function () {
-        self._game.changeState({
-          state: constants.STATE_BATTLE,
-          transition: constants.TRANSITION_FADE_OUT
-        });
-        // TODO
-        // self._game.initBattle();
-      });
+      // self._game.fetchPokemon(encounter.id, function () {
+      //   self._game.changeState({
+      //     state: constants.STATE_BATTLE,
+      //     transition: constants.TRANSITION_FADE_OUT
+      //   });
+      //   // TODO
+      //   // self._game.initBattle();
+      // });
     }
   };
 

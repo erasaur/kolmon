@@ -38,16 +38,14 @@ Meteor.startup(function () {
       var intervalInMs = constants.CRON_CLEANUP_TIME * 60 * 1000;
       var expired = Date.now() - intervalInMs;
 
-      var count = Players.find({
-        'worldId': { $ne: null }, 'lastUpdate': { $le: expired }
-      }).count();
-      console.log('number of players to cleanup: ', count);
-
+      // cleanup from world
       Players.update({
         'worldId': { $ne: null }, 'lastUpdate': { $le: expired }
       }, {
         $unset: { 'worldId': '' }
       });
+
+      // TODO cleanup battles
     }
   });
   SyncedCron.start();
