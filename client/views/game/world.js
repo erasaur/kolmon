@@ -105,14 +105,14 @@ Template.world.events({
 
 // battle ---------------------------------------------
 
-Template.battle.onCreated(function () {
-  var parentView = this.view.parentView;
-  var parentTemplate = parentView.templateInstance();
-  this.game = parentTemplate.game;
-});
+// Template.battle.onCreated(function () {
+//   var parentView = this.view.parentView;
+//   var parentTemplate = parentView.templateInstance();
+//   this.game = parentTemplate.game;
+// });
 
-Template.battle.helpers({
-  game: function () {
-    return Template.instance().game;
-  }
-});
+// Template.battle.helpers({
+//   game: function () {
+//     return Template.instance().game;
+//   }
+// });

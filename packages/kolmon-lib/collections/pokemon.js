@@ -55,4 +55,4 @@ schemas.Pokemon = new SimpleSchema({
 });
 
 var Pokemon = KOL.Pokemon = new Mongo.Collection('pokemon');
-Pokemon.attachSchema(schemas.Pokemon);
+// Pokemon.attachSchema(schemas.Pokemon);

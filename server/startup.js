@@ -1,7 +1,7 @@
 var constants = KOL.constants;
 var Maps = KOL.Maps;
 var Worlds = KOL.Worlds;
-var Players = KOL.Players;
+var Pokemon = KOL.Pokemon;
 
 Meteor.startup(function () {
   constants.MOVES = JSON.parse(Assets.getText('moves.json'));
@@ -24,10 +24,33 @@ Meteor.startup(function () {
   // constants.MAX_POKEMON_BASE_DEF = maxDef;
 
   //TODO clear all players
+  
+  // constants.LINKS = JSON.parse(Assets.getText("links.json"));
 
-  // if (Challenges.find().count() === 0) {
-  //   Challenges._ensureIndex({ createdAt: 1 }, { expireAfterSeconds: 300 });
-  // }
+  if (Pokemon.find().count() === 0 ) {
+    var links = JSON.parse(Assets.getText("links.json"));
+
+    // TODO fix this
+    for (var i in links) {
+      var link = links[i];
+      Pokemon.insert({
+        index: parseInt(i),
+        link: link,
+        side: "front"
+      });
+    }
+
+    var links_back = JSON.parse(Assets.getText("links-back.json"));
+
+    for ( var j in links_back) {
+      var link = links_back[j];
+      Pokemon.insert({
+        index: parseInt(j),
+        link: link,
+        side: "back"
+      });
+    }
+  }
 
   if (Worlds.find().count() === 0) {
     var world = {

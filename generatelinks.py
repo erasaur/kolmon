@@ -10,7 +10,6 @@ with open('links.json', 'a') as f:
     #   print(os.path.join(dirname, subdirname))
 
 
-    # print path to all filenames.
     first = True
     for filename in filenames:
 

@@ -1,0 +1,15 @@
+<template name="bag">
+  {{> contentFor region="nav" template="nav"}}
+
+  <div class="col-sm-2">
+    <a href="{{pathFor route='worlds'}}">{{_ "lobby"}}</a> 
+  </div>
+
+
+  <div class="col-sm-10">
+    <canvas id="canvas-background" width="{{canvasWidth}}" height="{{canvasHeight}}" style="z-index: -1;"></canvas>
+    <canvas id="canvas-foreground" width="{{canvasWidth}}" height="{{canvasHeight}}" style="z-index: 1;"></canvas>
+    <canvas id="canvas-text" width="{{canvasWidth}}" height="{{canvasHeight}}" style="z-index: 2;"></canvas>
+  </div>
+
+</template>

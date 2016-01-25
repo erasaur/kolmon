@@ -1,5 +1,9 @@
 {
-  "0": "Missingno",
+  "0": {
+    "name": "Missingno",
+    "front": "",
+    "back": ""
+  },
   "1": "Bulbasaur",
   "2": "Ivysaur",
   "3": "Venusaur",

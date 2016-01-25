@@ -42,41 +42,6 @@
   </div>
 </template>
 
-<template name="battle">
-  <div style="padding: 10px; margin-bottom: 10px; border: 1px solid black;">
-    <ul>
-      <li>Your current: {{game.ownCurrent}}</li>
-      <li>Enemy current: {{game.enemyCurrent}}</li>
-
-      <li>
-        Your team: 
-        <ul>
-          {{#each game.ownPokemon}}
-            <li>{{this.name}}</li>
-            <li>{{this.health}}</li>
-          {{/each}}
-        </ul>
-      </li>
-      <li>
-        Enemy team: 
-        <ul>
-          {{#each game.enemyPokemon}}
-            <li>{{this.name}}</li>
-            <li>{{this.health}}</li>
-          {{/each}}
-        </ul>
-      </li>
-    </ul>
-  </div>
-  <div style="padding: 10px; border: 1px solid black;">
-    <ul>
-      {{#each game.output}}
-        {{#if systemOutput}}
-          <li style="color: red;">{{message}}</li>
-        {{else}}
-          <li>{{createdAt}}: {{message}}</li>
-        {{/if}}
-      {{/each}}
-    </ul>
-  </div>
-</template>
+<!-- <template name="battle">
+  nothing to see here
+</template> -->

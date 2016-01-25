@@ -1,0 +1,27 @@
+<template name="battle">
+  {{> contentFor region="nav" template="nav"}}
+  
+  <div class="col-sm-2">
+    <a href="{{pathFor route='worlds'}}">{{_ "lobby"}}</a> 
+  </div>
+
+  
+  <div class="col-sm-10">
+    <canvas id="canvas-background" width="{{canvasWidth}}" height="{{canvasHeight}}" style="z-index: -1;"></canvas>
+    <canvas id="canvas-foreground" width="{{canvasWidth}}" height="{{canvasHeight}}" style="z-index: 1;"></canvas>
+    <canvas id="canvas-text" width="{{canvasWidth}}" height="{{canvasHeight}}" style="z-index: 2;"></canvas>
+
+    <div style="position: relative; width: {{canvasWidth}}px; height: {{canvasHeight}}px">
+      {{#each enemyPokes}}
+      <img class="animated zoomIn enemyPoke" draggable="false" style="position: absolute; bottom: 200px; right: 90px; zoom: 80%;" src="{{link}}">
+      {{/each}}
+      {{#each myPokes}}
+      <img class="animated zoomIn myPoke" draggable="false" style="position: absolute; bottom: 20px; left: 35px; zoom: 160%;" src="{{link}}">
+      {{/each}}
+
+    </div>
+    
+  </div>
+  
+  <!-- <audio autoplay loop><source src="battle.mp3" type="audio/mpeg">It appears that your browser doesn't support audio.</audio>  -->
+</template>

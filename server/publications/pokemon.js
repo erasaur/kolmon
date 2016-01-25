@@ -7,3 +7,8 @@ Meteor.publish('pokemon', function (pokeIds) {
 
   return Pokemon.find({ '_id': { $in: pokeIds } });
 });
+
+// TODO remove this
+Meteor.publish('pokemonList', function () {
+  return Pokemon.find();
+});
