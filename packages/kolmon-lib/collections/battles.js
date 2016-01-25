@@ -16,6 +16,10 @@ schemas.Battle = new SimpleSchema({
     type: [String], // players involved in battle
     maxCount: 2 // only allow 2 players for now
   },
+  lastUpdate: {
+    type: Number,
+    optional: true
+  },
   active: { // active pokemon indexes
     type: Object,
     optional: true

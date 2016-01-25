@@ -25,5 +25,6 @@ Package.onUse(function (api) {
   api.addFiles('lib/map.js');
 
   api.addFiles('lib/world.js');
+  api.addFiles('lib/battle.js');
   api.addFiles('lib/game.js');
 });

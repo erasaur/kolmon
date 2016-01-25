@@ -35,9 +35,9 @@ KOL.World = (function () {
 
     self._keyMap = {};
     self._keyMap[constants.KEY_UP] = constants.DIR_UP;
-    self._keyMap[constants.KEY_LEFT]: constants.DIR_LEFT;
-    self._keyMap[constants.KEY_RIGHT]: constants.DIR_RIGHT;
-    self._keyMap[constants.KEY_DOWN]: constants.DIR_DOWN;
+    self._keyMap[constants.KEY_LEFT] = constants.DIR_LEFT;
+    self._keyMap[constants.KEY_RIGHT] = constants.DIR_RIGHT;
+    self._keyMap[constants.KEY_DOWN] = constants.DIR_DOWN;
 
     // setup map --------------------------------------
 

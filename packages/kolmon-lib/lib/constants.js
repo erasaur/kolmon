@@ -21,7 +21,7 @@ KOL.constants = {
   UPDATE_STEP: 20, // ms per update
   UPDATES_PER_CALL: 25, // throttle update calls to roughly half a second,
 
-  CRON_CLEANUP_TIME: 1 // time between cleanups, in minutes
+  CRON_CLEANUP_TIME: 1, // time between cleanups, in minutes
 
   FILL_STYLE: {
     portal: 'rgba(225,0,0,0.5)',

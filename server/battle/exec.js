@@ -155,6 +155,7 @@ Meteor.methods({
     // - update battle state (e.g if one player loses)
     // - update battle stage
     battle = execCommands(battle);
+    battle.lastUpdate = Date.now();
     Battles.update(battle._id, { $set: battle });
 
     if (battle.state === c.BATTLE_STATE_END) {

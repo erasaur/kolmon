@@ -45,8 +45,26 @@ Meteor.startup(function () {
         $unset: { 'worldId': '' }
       });
 
-      // TODO cleanup battles
+      // cleanup battles
+      var idleBattles = Battles.find({ 'lastUpdate': { $le: expired } }, {
+        fields: { 'playerIds': 1 }
+      });
+      if (idleBattles.count()) {
+        var battleIds = [];
+        var playerIds = [];
+
+        idleBattles.forEach(function (doc) {
+          battleIds.push(doc._id);
+          playerIds.concat(doc.playerIds);
+        });
+
+        Players.update({ '_id': { $in: playerIds } }, {
+          $unset: { 'battleId': '' }
+        }, { multi: true });
+        Battles.remove({ '_id': { $in: battleIds } });
+      }
     }
   });
+
   SyncedCron.start();
 });

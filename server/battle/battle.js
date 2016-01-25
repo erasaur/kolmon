@@ -1,3 +1,4 @@
+var c = KOL.constants;
 var Battles = KOL.Battles;
 var Players = KOL.Players;
 
@@ -39,5 +40,31 @@ Meteor.methods({
 
     Battles.update(battle._id, modifier);
     Players.update({ '_id': { $in: battle.playerIds } }, { $unset: { 'battleId': '' } });
+  },
+  'exitBattle': function () {
+    var user = Meteor.user();
+    var player = Players.findOne(user.playerId);
+    var battle = Battles.findOne(player.battleId);
+
+    if (!battle || battle.state !== c.BATTLE_STATE_END) {
+      throw new Meteor.Error('error', 'Invalid battle state');
+    }
+
+    if (!_.contains(battle.playerIds, player._id)) {
+      throw new Meteor.Error('error', 'Already left battle');
+    }
+
+    // if both players have already left, remove battle doc
+    if (battle.playerIds.length <= 1) {
+      Battles.remove(battle._id);
+    } else {
+      Battles.update(battle._id, { 
+        $pull: { 'playerIds': player._id }
+      });
+    }
+
+    Players.update(player._id, {
+      $unset: { 'battleId': '' }
+    });
   }
 });

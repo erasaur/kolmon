@@ -202,6 +202,7 @@ KOL.Game = (function () {
 
   Game.prototype.endBattle = function gameEndBattle () {
     this.changeState({ state: constants.STATE_MAP });
+    Meteor.call('exitBattle');
   };
 
   return Game;
