@@ -26,7 +26,7 @@ KOL.BattleRenderer = (function () {
   // TODO
   BattleRenderer.prototype.renderBag = function renderBag (tabIndex, index) {
     // tabIndex is the index of the current tab. 0 should be items, 1 should be
-    // balls. 
+    // balls (should use constants.BAG_TAB_ITEMS and BAG_TAB_BALLS respectively) 
     // index is the index of the cursor within the tab (e.g 5th index would mean
     // the cursor is highlighting the 6th item in the list)
   };
