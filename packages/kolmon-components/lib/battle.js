@@ -86,6 +86,7 @@ KOL.Battle = (function () {
     this._view = c.BATTLE_VIEW_MAIN;
     this._state = c.BATTLE_STATE_PENDING; // allow inputs
     this._prompt; // temporarily store prompt options and their callbacks
+    this._promptText; // temporarily store prompt option text
 
     // initial render
     this.render();
@@ -110,6 +111,10 @@ KOL.Battle = (function () {
         var item = this._bag.getItem(this._cursor.bag.index);
         this._battleRenderer.renderItemInfo(item);
         break;
+    }
+
+    if (this._prompt) {
+      this._battleRenderer.renderPrompt(this._promptText, this._cursor.prompt.index);
     }
   };
 
@@ -196,8 +201,9 @@ KOL.Battle = (function () {
 
   Battle.prototype.prompt = function prompt (options) {
     this._cursor.prompt.index = 0; // reset prompt index
-    this._battleRenderer.renderPrompt(_.keys(options, 'text'));
     this._prompt = options;
+    this._promptText = _.keys(options, 'text');
+    this.render();
   };
 
   Battle.prototype.keydownMain = function onBattleKeydownMain (key) {
@@ -348,7 +354,7 @@ KOL.Battle = (function () {
   Battle.prototype.stageItem = function stageItem () {
     this.stageCommand({
       type: c.BATTLE_COMMAND_ITEM,
-      itemId: this._bag.getItem(this._cursor.bag.index)
+      itemId: this._bag.getItemId(this._cursor.bag.index)
     });
   };
 

@@ -17,6 +17,79 @@ KOL.BattleRenderer = (function () {
     // this._textContext = this._renderers.text.context();
   };
 
+  // TODO
+  BattleRenderer.prototype.renderMain = function renderMain (index) {
+    // index is an integer in the range [0,4) indicating which option
+    // (fight, team, bag, run, in that order) the cursor is pointing to
+  };
+
+  // TODO
+  BattleRenderer.prototype.renderBag = function renderBag (tabIndex, index) {
+    // tabIndex is the index of the current tab. 0 should be items, 1 should be
+    // balls. 
+    // index is the index of the cursor within the tab (e.g 5th index would mean
+    // the cursor is highlighting the 6th item in the list)
+  };
+
+  // TODO
+  BattleRenderer.prototype.renderTeam = function renderTeam (index) {
+    // index is an integer in the range [0,6) indicating which pokemon
+    // the cursor is currently pointing to
+  };
+
+  // TODO
+  BattleRenderer.prototype.renderPokemonInfo = function renderPokemonInfo (pokemon) {
+    // pokemon will be an object containing the name, description, etc. of the
+    // pokemon (refer to pokemon.json)
+  };
+
+  // TODO
+  BattleRenderer.prototype.renderItemInfo = function renderItemInfo (item) {
+    // item will be an object containing an item field and a count field.
+    // the item field will be an object containing the name, description, etc.
+    // the count field will be an integer indicating the count of that item.
+  };
+
+  // TODO
+  BattleRenderer.prototype.renderMove = function renderMove (command, cb) {
+    // command will be an object containing information about the move to be
+    // rendered, such as the current active pokemon and the move to be used. 
+    // after the move is rendered/animated, the method should call cb (callback)
+    // for now, this method can just call cb immediately.
+  };
+
+  // TODO
+  BattleRenderer.prototype.renderItem = function renderItem (command, cb) {
+    // command will be an object containing information about the move to be
+    // rendered, such as the item to be used.
+    // after the move is rendered/animated, the method should call cb (callback)
+    // for now, this method can just call cb immediately.
+  };
+
+  // TODO
+  BattleRenderer.prototype.renderSwitch = function renderSwitch (command, cb) {
+    // command will be an object containing information about the move to be
+    // rendered, such as the pokemon to be switched in.
+    // after the move is rendered/animated, the method should call cb (callback)
+    // for now, this method can just call cb immediately.
+  };
+
+  // TODO
+  BattleRenderer.prototype.renderText = function renderText (message) {
+    // this method can just call typeWrite with the provided message.
+    // however, we might want to keep a queue of messages that are waiting
+    // to be written. for example, if this method is called twice with 2 
+    // different messages, we might want to let the first message finish
+    // rendering before the second one starts.
+  };
+
+  // TODO
+  BattleRenderer.prototype.renderPrompt = function renderPrompt (options, index) {
+    // options will be an array of strings. each string will be one option
+    // (e.g [ 'YES', 'NO' ])
+    // index will be the index of the current option the cursor is pointing to
+  };
+
   BattleRenderer.prototype.render = function renderBattleRenderer (options) {
     var ownCurrent = options.ownCurrent;
     var enemyCurrent = options.enemyCurrent;
@@ -349,4 +422,5 @@ KOL.BattleRenderer = (function () {
     //TODO: animate the arrow
   };
 
+  return BattleRenderer;
 })();

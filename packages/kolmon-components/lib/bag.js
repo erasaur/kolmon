@@ -28,6 +28,12 @@ KOL.Bag = (function () {
     this._tabIndex = index;
   };
 
+  Bag.prototype.getItemId = function (index) {
+    var tab = this._tabs[this._tabIndex]; // e.g 'items'
+    var item = this[tab][index]; // e.g { id: 'asd', count: 3 }
+    return item && item.id;
+  };
+
   Bag.prototype.getItem = function (index) {
     var tab = this._tabs[this._tabIndex]; // e.g 'items'
     var item = this[tab][index]; // e.g { id: 'asd', count: 3 }
