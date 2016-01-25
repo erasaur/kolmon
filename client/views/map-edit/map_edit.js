@@ -1,6 +1,3 @@
-console.log('map edit');
-
-
 var constants = KOL.constants;
 var Maps = KOL.Maps;
 var MapEditor = KOL.MapEditor;
@@ -92,9 +89,6 @@ Template.mapClickable.onRendered(function () {
           h: template._portalRect.h,
           enterAt: template._enterAt
         });
-
-        console.log(template._enterAt);
-        console.log(template._currentMap.portals);
 
         MapEditor.drawSavedRectangles(template.find('#canvasRectSaved'), template._currentMap);
       }

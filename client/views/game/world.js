@@ -59,7 +59,7 @@ Template.world.onRendered(function () {
     var subscription;
     var docs = self.game.fetchDocs();
 
-    if (docs.ids) {
+    if (docs && docs.ids) {
       subscription = self.subscribe(docs.sub, doc.ids);
 
       if (subscription.ready()) {
