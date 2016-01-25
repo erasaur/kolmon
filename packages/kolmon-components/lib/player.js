@@ -76,6 +76,17 @@ KOL.Player = (function () {
     Meteor.call('enterMap', map._id);
   };
 
+  Player.prototype.initMove = function initMove (direction, startTime) {
+    this.moving = true;
+    this.direction = direction;
+    this.startTime = startTime;
+
+    this._destination.x = this.nextX(this.x, direction);
+    this._destination.y = this.nextY(this.y, direction);
+
+    Meteor.call('initMove', direction);
+  };
+
   /**
    * Method that gets called on every update step to update the player's
    * position in the specified direction and by the specified offset.
@@ -273,15 +284,8 @@ KOL.Player = (function () {
     }
   };
 
-  Player.prototype.setDirection = function setDirection (direction, startTime) {
-    this.moving = true;
+  Player.prototype.setDirection = function setDirection (direction) {
     this.direction = direction;
-    this.startTime = startTime;
-
-    this._destination.x = this.nextX(this.x, direction);
-    this._destination.y = this.nextY(this.y, direction);
-
-    Meteor.call('setDirection', direction);
   };
 
   Player.prototype.positionChanged = function positionChanged () {

@@ -99,7 +99,7 @@ KOL.World = (function () {
       this.changeMap(portal);
     }
     else if (!this._map.getWall(newX, newY)) {
-      player.setDirection(newDir, lastUpdate);
+      player.initMove(newDir, lastUpdate);
 
       var wild = this._map.getWild(newX, newY);
       if (wild) {
@@ -172,7 +172,8 @@ KOL.World = (function () {
       self._player.changeMap(self._map);
 
       // set the player position to the map defaults
-      self._player.setDestination(self._map.initialPosition(portal.enterAt));
+      self._player.setDestination(portal.enterAt);
+      self._player.setDirection(portal.enterAt.dir);
       self._player.setPosition(true);
       self._player.positionChanged();
 

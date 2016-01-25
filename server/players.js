@@ -107,10 +107,11 @@ Meteor.methods({
       }
     }, { validate: false });
   },
-  setDirection: function (direction) {
+  initMove: function (direction) {
     check(direction, Number);
 
     //TODO: validation
+    if (!this.userId) return;
 
     var now = Date.now();
     var user = Meteor.users.findOne(this.userId);
